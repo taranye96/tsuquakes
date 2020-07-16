@@ -1,0 +1,566 @@
+#!/bin/bash
+#################################
+
+
+LONMIN=99
+LONMAX=101 # Longitude range of plots
+LATMIN=-4
+LATMAX=-2 # Latitude range of plotslots
+BOUNDS="-BWesn -B2p"
+REGION=-R$LONMIN/$LONMAX/$LATMIN/$LATMAX
+nNAME=scenarios
+SCALE=2i
+CLIPFILE=perimeter.xy
+TOPO=/Users/tnye/tsuquakes/data/Mentawai2010/IDN_alt/IDN_alt.grd
+nfaults=2886
+slip1=/Users/tnye/FakeQuakes/Men_fine_dt.5/output/ruptures/run.000000.rupt
+slip2=/Users/tnye/FakeQuakes/Men_fine_dt.5/output/ruptures/run.000001.rupt
+slip3=/Users/tnye/FakeQuakes/Men_fine_dt.5/output/ruptures/run.000002.rupt
+slip4=/Users/tnye/FakeQuakes/Men_fine_dt.5/output/ruptures/run.000003.rupt
+#################################
+
+#GMT settings
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset MAP_FRAME_PEN thicker,black
+gmt gmtset PS_MEDIA=a2
+
+
+#Make topo and bathy grids
+
+gmt grdcut $TOPO -Gtopo_no.grd $REGION
+gmt grdclip topo_no.grd -Sa0/nan -Gtopo.grd
+gmt grdgradient topo_no.grd -Ne0.6 -A315 -Gtopo.grad
+
+#Make cpt files
+gmt makecpt -C/Users/dmelgar/code/python/cpt/etopo1.cpt -T-5500/4250/1 -Z -V0 > topo.cpt
+gmt makecpt -C/Users/dmelgar/code/python/cpt/gray_lt.cpt -T-0.6/0.6/0.01 -Z -V0 > grey_topo.cpt
+
+
+#Make map
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -Y6.5i -K > $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/color_linear.cpt -T0/5.4/0.1 -Z > slip.cpt
+
+echo -126.189582,49.528665 > hypo.txt
+
+
+#render topo
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 1 slip subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $10}' $slip1 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Cslip.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+echo -126 50.9 Mw 8.27 > label
+gmt pstext label -R -J -F+f16p,black -N -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Cslip.cpt -D0.18i/1.6i/2.6i/0.12i -B1:"Slip(m)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------      rise times     ------------
+
+BOUNDS="-Bwesn -B2p"
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/magma.cpt -T0/13/0.1 -I > rise_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 1 rise time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $8}' $slip1 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Crise_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Crise_time.cpt -D0.18i/1.6i/2.6i/0.12i -B2:"Rise time (s)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------     onset times     ------------
+
+BOUNDS="-Bwesn -B2p"
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/GMT_seis.cpt -T0/90/1 -I -Z > onset_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 1 onset time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $13}' $slip1 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Conset_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Conset_time.cpt -D0.18i/1.6i/2.6i/0.12i -B10:"Onset time (s)":/:: -E -O -K>> $nNAME.eps
+
+
+
+
+
+
+
+############################
+#######   PANEL 2    #######
+############################
+
+echo Working on scenario 2
+
+
+#Make map
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/color_linear.cpt -T0/15/0.1 -Z > slip.cpt
+
+echo -124.595129 45.458097 > hypo.txt
+
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 2 slip subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $10}' $slip2 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Cslip.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+echo -126 50.9 Mw 8.66 > label
+gmt pstext label -R -J -F+f16p,black -N -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Cslip.cpt -D0.18i/1.6i/2.6i/0.12i -B2:"Slip(m)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------      rise times     ------------
+
+BOUNDS="-Bwesn -B2p"
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/magma.cpt -T0/26/0.1 -I > rise_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 2 rise time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $8}' $slip2 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Crise_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Crise_time.cpt -D0.18i/1.6i/2.6i/0.12i -B5:"Rise time (s)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------     onset times     ------------
+
+BOUNDS="-Bwesn -B2p"
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/GMT_seis.cpt -T0/160/1 -I -Z > onset_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 2 onset time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $13}' $slip2 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Conset_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Conset_time.cpt -D0.18i/1.6i/2.6i/0.12i -B30:"Onset time (s)":/:: -E -O -K >> $nNAME.eps
+
+
+
+
+
+############################
+#######   PANEL 3    #######
+############################
+
+echo Working on scenario 3
+
+
+#Make map
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X-10.5i -Y-6.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/color_linear.cpt -T0/12.5/0.1 -Z > slip.cpt
+BOUNDS="-BWeSn -B2p"
+
+echo -124.724199 45.580335 > hypo.txt
+
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 3 slip subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $10}' $slip3 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Cslip.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+echo -126 50.9 Mw 8.91 > label
+gmt pstext label -R -J -F+f16p,black -N -O -K >> $nNAME.eps
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Cslip.cpt -D0.18i/1.6i/2.6i/0.12i -B2:"Slip(m)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------      rise times     ------------
+
+BOUNDS="-BweSn -B2p"
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/magma.cpt -T0/22/0.1 -I > rise_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 3 rise time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $8}' $slip3 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Crise_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Crise_time.cpt -D0.18i/1.6i/2.6i/0.12i -B4:"Rise time (s)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------     onset times     ------------
+
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/GMT_seis.cpt -T0/260/1 -I -Z > onset_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 3 onset time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $13}' $slip3 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Conset_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Conset_time.cpt -D0.18i/1.6i/2.6i/0.12i -B40:"Onset time (s)":/:: -E -O -K>> $nNAME.eps
+
+
+
+
+
+############################
+#######   PANEL 4    #######
+############################
+
+echo Working on scenario 4
+
+
+#Make map
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/color_linear.cpt -T0/38/0.1 -Z > slip.cpt
+
+echo -124.929334 48.170844 > hypo.txt
+
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 4 slip subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $10}' $slip4 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Cslip.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+echo -126 50.9 Mw 9.24 > label
+gmt pstext label -R -J -F+f16p,black -N -O -K >> $nNAME.eps
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Cslip.cpt -D0.18i/1.6i/2.6i/0.12i -B10:"Slip(m)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------      rise times     ------------
+
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/magma.cpt -T0/38/0.1 -I > rise_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 4 rise time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $8}' $slip4 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Crise_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Crise_time.cpt -D0.18i/1.6i/2.6i/0.12i -B10:"Rise time (s)":/:: -E -O -K >> $nNAME.eps
+
+
+#--------     onset times     ------------
+
+
+gmt psbasemap $REGION -JM$SCALE $BOUNDS  -K -O -X2.1i >> $nNAME.eps
+gmt makecpt -C/Users/dmelgar/code/python/cpt/GMT_seis.cpt -T0/300/1 -I -Z > onset_time.cpt
+#render topo
+
+
+gmt grdimage topo.grad -R -J -Cgrey_topo.cpt -O -K >> $nNAME.eps
+
+line=2
+line_slip=2
+for i in `seq 1 $nfaults`;
+do
+    echo Model 4 onset time subfault $i
+    #Get current line
+    sed -n ${line}p ${SLAB} > slab.tmp
+    line=$(expr $line + 1)
+	awk '{print ">-Z" $13}' $slip4 | sed -n ${line_slip}p > element.xy
+    line_slip=$(expr $line_slip + 1)
+    #Extracxt node coordinates
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    awk '{print $8,$9}' slab.tmp >> element.xy
+    awk '{print $11,$12}' slab.tmp >> element.xy
+    awk '{print $5,$6}' slab.tmp >> element.xy
+    #Now plot the triangle
+    gmt psxy element.xy -R -J -L -Conset_time.cpt -O -K >> $nNAME.eps
+    gmt psxy element.xy -R -J -W0.01p,100/100/100 -O -K >> $nNAME.eps
+done
+
+
+#Draw coastline
+gmt pscoast -R -J $BOUNDS -A2 -Df -N2,1p -N1,2.5p -W0.35p -O -K >> $nNAME.eps
+
+gmt psxy hypo.txt -Sa0.6c -W0.7p,black -G218/165/32 -R -J -O -K >> $nNAME.eps
+
+
+gmt psscale -Conset_time.cpt -D0.18i/1.6i/2.6i/0.12i -B50:"Onset time (s)":/:: -E -O >> $nNAME.eps
+
+
+
+#Convert to raster and move
+echo converting to raster
+gmt ps2raster $nNAME.eps -Tf -A -P
+gmt ps2raster $nNAME.eps -Tg -A -P
+echo cleaning up
+mv $nNAME.pdf ./PDF/$nNAME.pdf
+mv $nNAME.eps ./EPS/$nNAME.eps
+mv $nNAME.png ./PNG/$nNAME.png
