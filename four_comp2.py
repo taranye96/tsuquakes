@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib import cm
 
-project = '8min_16cores'
+project = 'sd0.3_etal_standard'
 run = 'run.000000'
 
 param_dir = f'/Users/tnye/FakeQuakes/{project}/' 

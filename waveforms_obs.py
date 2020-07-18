@@ -18,37 +18,31 @@ from matplotlib.legend import Legend
 from matplotlib.font_manager import FontProperties
 
 # Read in dataframes
-df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/pga_pgv.csv')
-df_pgd = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/pgd_flatfile.csv')
-sm_stations = np.array(pd.read_csv('/Users/tnye/tsuquakes/data/sm_stations.csv'))
-disp_stations = np.array(pd.read_csv('/Users/tnye/tsuquakes/data/disp_stations.csv'))
+df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs.csv')
+sm_stations = np.array(pd.read_csv('/Users/tnye/tsuquakes/data/stations/sm_stations.csv'))
+disp_stations = np.array(pd.read_csv('/Users/tnye/tsuquakes/data/stations/disp_stations.csv'))
 
 # Corrected Miniseed files directories
 acc_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/accel_corr'
 vel_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr'
-
-# GPS files directory 
-gps_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/disp_corr'
+disp_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/disp_corr'
 
 # Get corrected mseed files
-corr_acc = np.array(sorted((glob(acc_dir + '/*'))))
-filt_vel = np.array(sorted((glob(vel_dir + '/*'))))
-
-# Get GPS data
-gps_files = np.array(sorted((glob(gps_dir + '/*'))))
+acc_files = np.array(sorted((glob(acc_dir + '/*'))))
+vel_files = np.array(sorted((glob(vel_dir + '/*'))))
+disp_files = np.array(sorted((glob(disp_dir + '/*'))))
 
 # Get arrays of pga, pgv, and hypocentral distance 
 pga = np.array(df['pga'])
 pgv = np.array(df['pgv'])
-pgd = np.array(df_pgd['pgd_meters'])
+pgd = np.array(df['pgd'])
 hypdist = np.array(df['hypdist'])
-hypdist_pgd = np.array(df_pgd['hypdist'])
 
 origintime = pd.to_datetime('2010-10-25T14:42:22')
 
 epi_lon = 100.082
 epi_lat = -3.487
-hypdepth = df['hypdepth'][0]
+hypdepth = df['hypdepth (km)'][0]
 
 ############################### Acceleration ##################################
 
@@ -56,21 +50,21 @@ hypdepth = df['hypdepth'][0]
 
 streams = []
 stream_counter = []
-for i, file in enumerate(corr_acc):
+for i, file in enumerate(acc_files):
     st = read(file)
     tr = st[0]
 
     if i == 0:
         stream_counter.append(st)
     else:
-        if tr.stats.station == read(corr_acc[i-1])[0].stats.station:
+        if tr.stats.station == read(acc_files[i-1])[0].stats.station:
             stream_counter[0] = stream_counter[0] + st
         else:
             streams.append(stream_counter)
             stream_counter = []
             stream_counter.append(st)
         
-        if i == (len(corr_acc) - 1):
+        if i == (len(acc_files) - 1):
             streams.append(stream_counter)
 
 ##### Start calculations #####
@@ -166,7 +160,7 @@ for st in streams:
     fig.text(-.03, 0.5, 'Amplitude (m/s/s)', va='center', rotation='vertical')
 
     # Save figure
-    figpath = '/Users/tnye/tsuquakes/plots/waveforms/acc/' + station + '.wf.png'
+    figpath = '/Users/tnye/tsuquakes/plots/waveforms/obs/acc/' + station + '.wf.png'
     plt.savefig(figpath, bbox_inches='tight', dpi=300)
     plt.close()
 
@@ -176,21 +170,21 @@ for st in streams:
 
 streams = []
 stream_counter = []
-for i, file in enumerate(filt_vel):
+for i, file in enumerate(vel_files):
     st = read(file)
     tr = st[0]
 
     if i == 0:
         stream_counter.append(st)
     else:
-        if tr.stats.station == read(filt_vel[i-1])[0].stats.station:
+        if tr.stats.station == read(vel_files[i-1])[0].stats.station:
             stream_counter[0] = stream_counter[0] + st
         else:
             streams.append(stream_counter)
             stream_counter = []
             stream_counter.append(st)
         
-        if i == (len(filt_vel) - 1):
+        if i == (len(vel_files) - 1):
             streams.append(stream_counter)
 
 ##### Start calculations #####
@@ -286,7 +280,7 @@ for st in streams:
     fig.text(-.03, 0.5, 'Amplitude (m/s)', va='center', rotation='vertical')
 
     # Save figure
-    figpath = '/Users/tnye/tsuquakes/plots/waveforms/vel/' + station + '.wf.png'
+    figpath = '/Users/tnye/tsuquakes/plots/waveforms/obs/vel/' + station + '.wf.png'
     plt.savefig(figpath, bbox_inches='tight', dpi=300)
     plt.close()
 
@@ -296,21 +290,21 @@ for st in streams:
 
 streams = []
 stream_counter = []
-for i, file in enumerate(gps_files):
+for i, file in enumerate(disp_files):
     st = read(file)
     tr = st[0]
 
     if i == 0:
         stream_counter.append(st)
     else:
-        if tr.stats.station == read(gps_files[i-1])[0].stats.station:
+        if tr.stats.station == read(disp_files[i-1])[0].stats.station:
             stream_counter[0] = stream_counter[0] + st
         else:
             streams.append(stream_counter)
             stream_counter = []
             stream_counter.append(st)
         
-        if i == (len(gps_files) - 1):
+        if i == (len(disp_files) - 1):
             streams.append(stream_counter)
 
 ##### Start calculations #####
@@ -406,6 +400,6 @@ for st in streams:
     fig.text(-.03, 0.5, 'Amplitude (m)', va='center', rotation='vertical')
 
     # Save figure
-    figpath = '/Users/tnye/tsuquakes/plots/waveforms/disp/' + station + '.wf.png'
+    figpath = '/Users/tnye/tsuquakes/plots/waveforms/obs/disp/' + station + '.wf.png'
     plt.savefig(figpath, bbox_inches='tight', dpi=300)
     plt.close()
