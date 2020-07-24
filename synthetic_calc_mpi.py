@@ -11,7 +11,7 @@ import time
 from mpi4py import MPI
 from stringcolor import *
 from glob import glob
-from os import makedirs
+from os import makedirs, path
 import numpy as np
 from numpy import genfromtxt
 import pandas as pd
@@ -30,38 +30,52 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 
 # ncpus = 4
+ncpus = size
 
 # parameter = 'stress_drop_runs'
 # project = 'sd0.3_etal_standard'
 
-ncpus = sys.argv[0]
+
 parameter = sys.argv[1]
 project = sys.argv[2]
 
-param_dir = f'/Users/tnye/FakeQuakes/{parameter}/{project}/' 
+param_dir = f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}' 
 
-rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
-
-# runs = ['run.000000', 'run.000001', 'run.000002', 'run.000003', 'run.000004',
-#         'run.000005', 'run.000006', 'run.000007', 'run.000008', 'run.000009',
-#         'run.000010', 'run.000011', 'run.000012', 'run.000013', 'run.000014',
-#         'run.000015']
+rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
 
 data_types = ['disp','sm']
-# data_types = ['sm']
 
+################################ Set up Folders ###############################
+
+# Set up folder for flatfile
+if not path.exists(f'{param_dir}/flatfiles'):
+    makedirs(f'{param_dir}/flatfiles')
+    
+# Set up folders for fourier plots
+for rupture in rupture_list:
+    run = rupture.rsplit('.', 1)[0]
+    if not path.exists(f'{param_dir}/plots/fourier_spec'):
+        makedirs(f'{param_dir}/plots/fourier_spec')
+    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}'):
+        makedirs(f'{param_dir}/plots/fourier_spec/{run}')
+    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/acc'):
+        makedirs(f'{param_dir}/plots/fourier_spec/{run}/acc')
+    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/vel'):
+        makedirs(f'{param_dir}/plots/fourier_spec/{run}/vel')
+    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/disp'):
+        makedirs(f'{param_dir}/plots/fourier_spec/{run}/disp')
 
 ############################# Start Parallelization ###########################
 
 # Set up full array of data on main process 
 if rank == 0:
-    fulldata = np.arange(len(runs), dtype=int)
+    fulldata = np.arange(len(rupture_list), dtype=int)
     # print(cs(f"I'm {rank} and fulldata is: {fulldata}", "OrangeRed"))
 else:
     fulldata=None
 
 # Number of items on each process
-count = len(runs)//ncpus
+count = len(rupture_list)//ncpus
 
 # Set up empty array for each process to receive data
 subdata = np.empty(count, dtype=int)
@@ -74,9 +88,6 @@ comm.Scatter(fulldata,subdata,root=0)
 ############################### Do Calculations ###############################
 
 ### Set paths and parameters #### 
-
-# Set up folder for flatfile
-makedirs(f'/Users/tnye/tsuquakes/flatfiles/{parameter}/{project}')
 
 # Data directory                          
 data_dir = '/Users/tnye/tsuquakes/data'
@@ -101,24 +112,18 @@ for index in subdata:
     rupture = rupture_list[index]
     run = rupture.rsplit('.', 1)[0]
     # print(cs(f"Processor {rank} beginning {run}...", "Gold"))
-    print(f"Processor {rank} beginning {run}")
-    
-    # Set up folders for fourier plots
-    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_spec/synthetic/{parameter}/{project}/{run}')
-    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_spec/synthetic/{parameter}/{project}/{run}/acc')
-    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_spec/synthetic/{parameter}/{project}/{run}/vel')
-    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_spec/synthetic/{parameter}/{project}/{run}/disp')
-    
+#    print(f"Processor {rank} beginning {run}")
+        
     # Synthetic miniseed dir
-    disp_dir = param_dir + f'disp/output/waveforms/{run}/'
-    sm_dir = param_dir + f'sm/output/waveforms/{run}/'
+    disp_dir = f'{param_dir}/disp/output/waveforms/{run}/'
+    sm_dir = f'{param_dir}/sm/output/waveforms/{run}/'
     
     # Gather displacement and strong motion files
     disp_files = np.array(sorted(glob(disp_dir + '*.sac')))
     sm_files = np.array(sorted(glob(sm_dir + '*.bb*.sac')))
     
     # Path to send flatfile
-    flatfile_path = f'/Users/tnye/tsuquakes/flatfiles/{parameter}/{project}/{run}.csv'
+    flatfile_path = f'{param_dir}/flatfiles/{run}.csv'
     
     # Filtering
     threshold = 0.0
@@ -222,6 +227,7 @@ for index in subdata:
         elif data =='sm':
             color = 'Chartreuse3'
 #        print(cs(f'Rank {rank} looping through {run} {data} stations...', color))
+        
         for i, station in enumerate(stn_name_list):
             
             # Get the instrument (HN or LX) and component (E,N,Z) for this station
@@ -381,7 +387,7 @@ for index in subdata:
             ######################### Intensity Measures ######################
             if data == 'disp':
                 # print(cs(f'Rank {rank}', rc), cs(f'beginning disp IMs for {run}', 'Pink'), cs(f'({station})', 'Khaki'))
-                print(f'....Processor {rank} working on disp IMs for {run} {station}')
+#                print(f'....Processor {rank} working on disp IMs for {run} {station}')
                 ## PGD
                 # Get euclidean norm of displacement components 
                 euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
@@ -418,7 +424,7 @@ for index in subdata:
                 
             if data == 'sm':
                 # print(cs(f'Rank {rank}', rc), cs(f'beginning acc IMs for {run}', 'SpringGreen3'), cs(f'({station})', 'Khaki'))
-                print(f'....Processor {rank} working on acc IMs for {run} {station}')
+#                print(f'....Processor {rank} working on acc IMs for {run} {station}')
                 ## PGA         
                 # Get euclidean norm of acceleration components 
                 acc_euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
@@ -448,7 +454,7 @@ for index in subdata:
                 IM_fns.plot_spectra(E_record, freqs, amps, 'acc', parameter=parameter, project=project, run=run)
     
                 # print(cs(f'Rank {rank}', rc), cs(f'beginning vel IMs for {run}', 'DodgerBlue'), cs(f'({station})', 'Khaki'))
-                print(f'....Processor {rank} working on vel IMs for {run} {station}')
+#                print(f'....Processor {rank} working on vel IMs for {run} {station}')
                 ## PGV
                 # Convert acceleration record to velocity 
                 E_vel = tmf.accel_to_veloc(E_record)
@@ -489,7 +495,7 @@ for index in subdata:
     dataset_dict = {'eventname':eventnames,'country':countries, 'origintime':origintimes,
                     'hyplon':hyplons, 'hyplat':hyplats, 'hypdepth (km)':hypdepths,
                     'mw':mws, 'm0':m0s, 'network':networks, 'station':stations,
-                    'stlon':stlons, 'stlat':stlats, 'stelev':stelevs,
+                    'station_type':stn_type_list, 'stlon':stlons, 'stlat':stlats, 'stelev':stelevs,
                     'mechanism':mechanisms, 'hypdist':hypdists, 'duration_e':E_Td_list,
                     'duration_n':N_Td_list, 'duration_z':Z_Td_list, 'duration_horiz':horiz_Td_list,
                     'duration_3comp':comp3_Td_list, 'pgd':pgd_list, 'pga':pga_list, 'pgv':pgv_list,
@@ -589,11 +595,11 @@ comm.Gather(subdata, recvbuf, root=0)
 # print(cs(f"After Gather, I'm {rank} and my data is: {recvbuf}", "Pink5"))
 
 total_time = (time.time() - start_time)
-if total_time < 60:
-    print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time)} seconds ---", 'SandyBrown'))
-elif total_time >= 60 and total_time < 3600:
-    print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/60)} minutes ---", 'SandyBrown'))
-elif total_time >= 3600 and total_time < 86400:
-    print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/3600)} hours ---", 'SandyBrown'))
-else:
-    print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/86400)} days ---", 'SandyBrown'))
+# if total_time < 60:
+#     print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time)} seconds ---", 'SandyBrown'))
+# elif total_time >= 60 and total_time < 3600:
+#     print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/60)} minutes ---", 'SandyBrown'))
+# elif total_time >= 3600 and total_time < 86400:
+#     print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/3600)} hours ---", 'SandyBrown'))
+# else:
+#     print(cs(f"--- Total duration for {len(runs)} runs on {ncpus} CPUS is ~{round(total_time/86400)} days ---", 'SandyBrown'))
