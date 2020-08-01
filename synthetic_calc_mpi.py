@@ -41,7 +41,7 @@ project = sys.argv[2]
 
 param_dir = f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}' 
 
-rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
+rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.sublist',dtype='U')
 
 data_types = ['disp','sm']
 
@@ -50,7 +50,9 @@ data_types = ['disp','sm']
 # Set up folder for flatfile
 if not path.exists(f'{param_dir}/flatfiles'):
     makedirs(f'{param_dir}/flatfiles')
-    
+if not path.exists(f'{param_dir}/flatfiles/IMs'):
+    makedirs(f'{param_dir}/flatfiles/IMs')
+
 # Set up folders for fourier plots
 for rupture in rupture_list:
     run = rupture.rsplit('.', 1)[0]
@@ -112,7 +114,7 @@ for index in subdata:
     rupture = rupture_list[index]
     run = rupture.rsplit('.', 1)[0]
     # print(cs(f"Processor {rank} beginning {run}...", "Gold"))
-#    print(f"Processor {rank} beginning {run}")
+    print(f"Processor {rank} beginning {run}")
         
     # Synthetic miniseed dir
     disp_dir = f'{param_dir}/disp/output/waveforms/{run}/'
@@ -123,7 +125,7 @@ for index in subdata:
     sm_files = np.array(sorted(glob(sm_dir + '*.bb*.sac')))
     
     # Path to send flatfile
-    flatfile_path = f'{param_dir}/flatfiles/{run}.csv'
+    flatfile_path = f'{param_dir}/flatfiles/IMs/{run}.csv'
     
     # Filtering
     threshold = 0.0
@@ -471,7 +473,7 @@ for index in subdata:
                 N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, data)
                 Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, data)
                 # Combine into one array and append to main list
-                vel_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
+                vel_spec = np.concatenate([E_spec_vel,N_spec_vel,Z_spec_vel])
                 vel_speclist.append(vel_spec.tolist())
                 # Plot spectra
                 freqs_v = [freqE_v,freqN_v,freqZ_v]
