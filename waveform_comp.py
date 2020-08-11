@@ -6,8 +6,12 @@ Created on Thu Jul 16 17:45:11 2020
 @author: tnye
 """
 
+###############################################################################
+# Script that calculates and plots synthetic disp, acc, and vel waveforms a
+# against observed
+###############################################################################
+
 # Imports
-import time
 from glob import glob
 import numpy as np
 from numpy import genfromtxt
@@ -26,22 +30,26 @@ data_types = ['disp', 'acc', 'vel']
 # Loop through projects
 for project in projects:
     
+    # List of rupture scenarios genrated by FakeQuakes
     rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
     
+    # Make sure path to save plots to exists
     if not path.exists(f'/Users/tnye/tsuquakes/plots/waveform_comp/{parameter}/{project}'):
         makedirs(f'/Users/tnye/tsuquakes/plots/waveform_comp/{parameter}/{project}')
 
     # Loop throuh rupture scenarios
     for rupture in rupture_list:
         
+        # Remove '.rupt' from rupture to obtain run name
         run = rupture.rsplit('.', 1)[0]
         
         # Loop through data types
         for data in data_types:
     
-            param_dir = f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/' 
-            
             ### Set paths and parameters #### 
+            
+            # Project directory 
+            proj_dir = f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/' 
             
             # Data directory                          
             data_dir = '/Users/tnye/tsuquakes/data'
@@ -58,19 +66,20 @@ for project in projects:
             hypdepth = eq_table['Depth (km)'][11]
                 
             # Synthetic miniseed dir
-            disp_syn_dir = param_dir + f'disp/output/waveforms/{run}/'
-            sm_syn_dir = param_dir + f'sm/output/waveforms/{run}/'
+            disp_syn_dir = proj_dir + f'disp/output/waveforms/{run}/'
+            sm_syn_dir = proj_dir + f'sm/output/waveforms/{run}/'
             disp_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/disp_corr'
             acc_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/accel_corr'
             vel_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr'
             
             # Filtering
             threshold = 0.0
-            fcorner = 1/15.                          # Frequency at which to high pass filter
-            order = 2                                # Number of poles for filter  
+            fcorner = 1/15.      # Frequency at which to high pass filter
+            order = 2            # Number of poles for filter  
             
             ##################### Data Processing and Calculations ####################
             
+            # Set parameters based on data type
             if data == 'disp':
                 metadata_file = data_dir + '/' + eventname + '/' + eventname + '_disp.chan'
                 syn_files = np.array(sorted(glob(disp_syn_dir + '*.sac')))
@@ -98,6 +107,7 @@ for project in projects:
             metadata.sta = metadata.sta.astype(str)
             metadata.sta = metadata.sta.str.replace(' ','')
             
+            # Initialize lists to save waveform times and amplitudes to
             syn_times = []
             syn_amps = []
             obs_times = []
@@ -121,9 +131,12 @@ for project in projects:
                 components = []
                 mseeds = []
             
+                # Obtain station name from filename and append to list
                 stn_name = station[0].split('/')[-1].split('.')[0]
                 stn_name_list.append(stn_name)
                 
+                # Loop stations, append all mseed files to a list, and append 
+                    # all channel codes to a list
                 for mseed_file in station:
                     if data == 'disp':
                         channel_code = mseed_file.split('/')[-1].split('.')[1]
@@ -147,8 +160,8 @@ for project in projects:
                     components.append(channel[2])
             
                     
-                    # Get the metadata for this station from the chan file - put it into
-                #     a new dataframe and reset the index so it starts at 0
+                # Get the metadata for this station from the chan file - put it into
+                    # a new dataframe and reset the index so it starts at 0
                 if country == 'Japan':
                     station_metadata = metadata[(metadata.net == station[0:2]) &
                                                 (metadata.sta == station[2:])].reset_index(drop=True)
@@ -157,8 +170,8 @@ for project in projects:
                     station_metadata = metadata[metadata.sta == station].reset_index(drop=True)       # what is going on here
                       
               
-                # Pull out the data. Take the first row of the subset dataframe, 
-                #    assuming that the gain, etc. is always the same:
+                # Pull out the station data. Take the first row of the subset dataframe, 
+                    # assuming that the gain, etc. is always the same:
                 stlon = station_metadata.loc[0].lon
                 stlat = station_metadata.loc[0].lat
                 stelev = station_metadata.loc[0].elev
@@ -167,13 +180,10 @@ for project in projects:
             
                 ##################### Start computations ######################        
             
-                # Compute the hypocentral distance
+                # Compute hypocentral distance
                 hypdist = tmf.compute_rhyp(stlon,stlat,stelev,hyplon,hyplat,hypdepth)
             
-                # List for all spectra at station
-                station_spec = []
-            
-                # Get the components
+                # Turn list of components into an array
                 components = np.asarray(components)
                 
                 ## East component 
@@ -206,7 +216,7 @@ for project in projects:
                 tr = E_record[0]
                 station = tr.stats.station 
                 
-                # Append trace data
+                # Append trace data, times, and hypocentral distance to lists
                 syn_times.append(tr.times('matplotlib').tolist())
                 syn_amps.append(tr.data.tolist())
                 hypdists.append(hypdist)
@@ -228,10 +238,13 @@ for project in projects:
                 components = []
                 mseeds = []
             
+                # Obtain station name from filename and append to list
                 stn_name = station[0].split('.')[0].split('/')[-1]
                 if stn_name != 'SISI':
                     stn_name_list.append(stn_name)
                     
+                    # Loop stations, append all mseed files to a list, and append 
+                        # all channel codes to a list
                     for mseed_file in station:
                         channel_code = mseed_file.split('/')[-1].split('.')[1]
                         components.append(channel_code)
@@ -268,11 +281,8 @@ for project in projects:
             
             
                 ####################### Start computations ####################     
-                
-                # List for all spectra at station
-                station_spec = []
             
-                # Get the components
+                # Turn list of components into an array
                 components = np.asarray(components)
                     
                 # Get index for E component 
@@ -287,14 +297,14 @@ for project in projects:
                 tr = E_record[0]
                 station = tr.stats.station 
                 
-                # Append trace data
+                # Append trace data and times to lists
                 obs_times.append(tr.times('matplotlib').tolist())
                 obs_amps.append(tr.data.tolist())     
                 
             
             ############################ Make Figure ##########################
             
-            # Set figure axes
+            # Set figure parameters based on data type
             if data == 'disp':
                    units = 'm'
                    channel = 'LX' 
@@ -311,28 +321,33 @@ for project in projects:
                    dim = 6,3
                    figsize = 10,30
             
-            # Sort hypdist and get indices
+            # Sort hypdist and get sorted indices
             sort_id = np.argsort(hypdists)
             sort_hypdists = np.sort(hypdists)
             
-            # Sort times and amps based off hypdist
+            # Function to sort list based on list of indices 
             def sort_list(list1, list2): 
                 zipped_pairs = zip(list2, list1) 
                 z = [x for _, x in sorted(zipped_pairs)] 
                 return z 
             
+            # Sort times and amps based off hypdist
             sort_syn_times = sort_list(syn_times, sort_id)
             sort_syn_amps = sort_list(syn_amps, sort_id)
             sort_obs_times = sort_list(obs_times, sort_id)
             sort_obs_amps = sort_list(obs_amps, sort_id)
             sort_stn_name = sort_list(stn_name_list, sort_id)
             
+            # Make figure and subplots
             if data == 'disp':
                 # Set up figure
                 fig, axs = plt.subplots(dim[0],dim[1],figsize=figsize)
-                k = 0
+                k = 0     # subplot index
+                # Loop rhough rows
                 for i in range(dim[0]):
+                    # Loop through columns
                     for j in range(dim[1]):
+                        # Only make enough subplots for length of station list
                         if k+1 <= len(stn_name_list):
                             axs[i][j].plot(sort_syn_times[k],sort_syn_amps[k],
                                              color='C1',lw=0.4,label='synthetic')
@@ -359,12 +374,10 @@ for project in projects:
                 else:
                         fig.delaxes(axs[5][1])
                         fig.delaxes(axs[5][2])
-                # fig.autofmt_xdate()
                 fig.suptitle('Waveform Comparison', fontsize=12, y=1)
                 fig.text(0.385, 0.135, (r"$\bf{" + 'Project:' + "}$" + '' + project))
                 fig.text(0.385, 0.115, (r'$\bf{' + 'Run:' + '}$' + '' + run))
                 fig.text(0.385, 0.09, (r'$\bf{' + 'DataType:' '}$' + '' + data))
-                # plt.tight_layout()
                 plt.subplots_adjust(left=0.1, right=0.9, bottom=0.075, top=0.925,
                                     wspace=0.3, hspace=0.4)
         
@@ -375,9 +388,12 @@ for project in projects:
                 # Set up figure
                 fig, axs = plt.subplots(dim[0],dim[1],figsize=(10,15))
                 # fig, axs = plt.subplots(dim[0],dim[1])
-                k = 0
+                k = 0     # subplot index
+                # Loop through rows
                 for i in range(dim[0]):
+                    # Loop through columns 
                     for j in range(dim[1]):
+                        # Only make enough subplots for length of station list
                         if k+1 <= len(stn_name_list):
                             axs[i][j].plot(sort_syn_times[k],sort_syn_amps[k],
                                              color='C1',lw=0.4,label='synthetic')
@@ -414,5 +430,3 @@ for project in projects:
                 plt.savefig(f'/Users/tnye/tsuquakes/plots/waveform_comp/{parameter}/{project}/{run}_{data}.png', dpi=300)
                 plt.close()
                 
-                time_elap = time.time()-start
-                print(f'time for {data} was {time_elap} seconds')
