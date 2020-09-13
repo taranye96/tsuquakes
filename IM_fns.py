@@ -178,7 +178,7 @@ def calc_spectra(stream, data_type):
     return(bin_means, freq, amp)
 
 
-def plot_spectra(stream, freqs, amps, data_type, synthetic=True, parameter='none', project='none', run='none'):
+def plot_spectra(stream, freqs, amps, data_type, plot_dir, synthetic=True, parameter='none', project='none', run='none'):
     """
     Plots Fourier spectra that have already been calculated. 
     
@@ -193,6 +193,7 @@ def plot_spectra(stream, freqs, amps, data_type, synthetic=True, parameter='none
                                 Disp
                                 Acc
                                 Vel
+            plot_dir(str): Home part of path to save plots.
             synthetic(True/False): Plotting synthetics
             parameter(str): Name of parameter folder.
             project(str): Name of simulation project.  This will be the main
@@ -261,7 +262,7 @@ def plot_spectra(stream, freqs, amps, data_type, synthetic=True, parameter='none
     #     plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_spec/obs/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
         
     if synthetic:
-        plt.savefig(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/fourier_spec/{run}/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
+        plt.savefig(f'{plot_dir}/parameters/{parameter}/{project}/plots/fourier_spec/{run}/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
     else:
         plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_spec/obs/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)    
     

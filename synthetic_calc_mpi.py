@@ -441,7 +441,7 @@ for index in subdata:
                 # Plot spectra
                 freqs = [freqE,freqN,freqZ]
                 amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'disp', parameter=parameter, project=project, run=run)
+                IM_fns.plot_spectra(E_record, freqs, amps, 'disp', home, parameter=parameter, project=project, run=run)
     
             else:
                 pgd_list = np.append(pgd_list,np.nan)
