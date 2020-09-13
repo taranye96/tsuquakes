@@ -228,7 +228,7 @@ def accel_to_veloc(acc_timeseries_stream):
     acc_times = acc_timeseries_stream[0].times()
     
     ## INtegrate the acceration time series to get velocity:
-    vel_amplitude = cumtrapz(acc_amplitude,x=acc_times)
+    vel_amplitude = cumtrapz(acc_amplitude,x=acc_times,initial=0)
     
     ## Make a copy of the old stream object:
     vel_timeseries_stream = acc_timeseries_stream.copy()
