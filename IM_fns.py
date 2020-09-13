@@ -6,14 +6,10 @@ Created on Wed May 13 13:49:52 2020
 @author: tnye
 """
 
-import numpy as np
-import pandas as pd
-from obspy.core import UTCDateTime
-import datetime
-from mtspec import mtspec
-from scipy.stats import binned_statistic 
-import matplotlib.pyplot as plt
-import seaborn as sns
+###############################################################################
+# Module with functions used to calculate various IMs and plot spectra. These
+# functions are imported into synthetic_calc_mpi.py. 
+###############################################################################
 
 
 def calc_tPGD(pgd, trace, IMarray, origintime, hypdist,):
@@ -30,6 +26,10 @@ def calc_tPGD(pgd, trace, IMarray, origintime, hypdist,):
         hypdist(float): Hypocentral distance (km). 
         
     """
+    
+    import numpy as np
+    from obspy.core import UTCDateTime
+    import datetime
     
     # Calculate time from origin 
     pgd_index = np.where(IMarray==pgd)
@@ -56,6 +56,10 @@ def calc_tPGA(E_trace, N_trace, pga_E, pga_N, origintime, hypdist,):
         hypdist(float): Hypocentral distance (km). 
         
     """
+    
+    import numpy as np
+    from obspy.core import UTCDateTime
+    import datetime
     
     # Get pga index for both horizontal components
     pgaE_index = np.where(np.abs(E_trace)==pga_E)
@@ -93,58 +97,81 @@ def calc_spectra(stream, data_type):
         freq(list): FFT frequencies
         amp(list): FFT amplitudes
     """
+    
+    import numpy as np
+    from mtspec import mtspec
+    from scipy import interpolate
+    from scipy.stats import binned_statistic 
 
     # Read in file 
     tr = stream[0]
     data = tr.data
     delta = tr.stats.delta
     samprate = tr.stats.sampling_rate
-
+    npts = tr.stats.npts
+    
     nyquist = 0.5 * samprate
 
-    # Calc spectra amplitudes and frequencies
+    ## Calc spectra amplitudes and frequencies
+    
+    # Switched number of tapers from 7 to 5.  Decreases computation time and
+        # results are similar
     amp_squared, freq =  mtspec(data, delta=delta, time_bandwidth=4, 
-                             number_of_tapers=7, quadratic=True)
-    # amp_squared, freq =  mtspec(data, delta=delta, time_bandwidth=4, 
-    #                          number_of_tapers=7, nfft=8192, quadratic=True)
+                              number_of_tapers=5, nfft=npts, quadratic=True)
+    
     # Take square root to get amplitude 
     amp = np.sqrt(amp_squared)
+    
+    # Use scipy interpolate function to fill in data in missing bins
+    f = interpolate.interp1d(freq, amp)
+    freq_new = np.arange(np.min(freq), np.max(freq), 0.0001)
+    amp_new = f(freq_new)
 
-    # Remove zero frequencies so that I can take log, and remove data after fc
+    # Remove certain frequencies that are too low or high. 
     indexes = []
-
-    for i, val in enumerate(freq):
-        if val == 0:
+    
+    for i, val in enumerate(freq_new):
+        
+        # Remove frequencies below 1/2 length of record
+        if val <= 1/(delta*npts*0.5) :
+            indexes.append(i)
+        
+        # Remove frequencies above 10 Hz for sm data because of the way it was processed 
+        elif val > 10 and data_type in ('acc', 'vel'):
             indexes.append(i)
 
-        elif val > nyquist: 
+        # Remove frequencies above nyquist frequency for disp data
+            # (it's already removed in the previous step for sm data)
+        elif val > nyquist and data_type == 'disp': 
             indexes.append(i)
+    
+    # Remove any duplicate indexes
+    indexes = np.unique(indexes)
 
-    freq = np.delete(freq,indexes)
-    amp = np.delete(amp,indexes) 
-
-    # Create bins for sm data: sampling rate not the same for each station so I 
-    # created bin edges off of the max sampling rate: 100Hz
+    freq_new = np.delete(freq_new,indexes)
+    amp_new = np.delete(amp_new,indexes) 
     
     if data_type == 'accel':
         data_type = 'sm'
     
     if data_type == 'sm':
-        bins = [-2.68124124, -2.50603279, -2.33082434, -2.15561589,
-                      -1.98040744, -1.80519899, -1.62999054, -1.45478209,
-                      -1.27957364, -1.10436519, -0.92915674, -0.75394829,
-                      -0.57873984, -0.40353139, -0.22832294, -0.05311449, 
-                      0.12209396, 0.29730241, 0.47251086, 0.64771931, 0.82292776, 
-                      0.99813621, 1.17334466, 1.3485531 , 1.52376155, 1.69897]
+        # Starting bins at 0.004 Hz (that is about equal to half the length
+            # of the record for the synthetic and observed data) and ending at
+            # 10 Hz because after that the sm data is unusable due to how it was
+            # processed. 
+        bins = np.logspace(np.log10(0.004), np.log10(10), num=21)
     
-    # GNSS stations all had same sampling rate, so just using 25 is fine 
     elif data_type == 'disp':
-        bins = 25
+        # Starting bins at 0.004 Hz (that is about equal to half the length
+            # of the record for the synthetic and observed data) and ending at
+            # 0.5 Hz because that is the nyquist frequency .
+        bins = np.logspace(np.log10(0.004), np.log10(0.5), num=21)
     
-    bin_means, bin_edges, binnumber = binned_statistic(np.log10(freq),
-                                                       np.log10(amp),
+    bin_means, bin_edges, binnumber = binned_statistic(freq_new,
+                                                       amp_new,
                                                        statistic='mean',
                                                        bins=bins)
+    
     for i in range(len(bin_means)):
         bin_means[i] = 10**bin_means[i]
         
@@ -173,6 +200,8 @@ def plot_spectra(stream, freqs, amps, data_type, synthetic=True, parameter='none
             run(str): Synthetics run number.  This will be the directory where the
                       plots are stored.
     """
+    
+    import matplotlib.pyplot as plt
     
     # Read in file 
     fig, axs = plt.subplots(3)

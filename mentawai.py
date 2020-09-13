@@ -397,7 +397,7 @@ for data in data_types:
         #     filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNZ.corr' 
         #     trv.write(filename_vel, format='MSEED')
         
-         ### Integrate unfiltered acc data to get velocity data
+         ### Integrate filtered acc data to get velocity data
         
             ## East component 
             E_vel_unfilt = tmf.accel_to_veloc(E_record)
@@ -464,7 +464,7 @@ for data in data_types:
             pgd_list = np.append(pgd_list,np.nan)
             tPGD_orig_list = np.append(tPGD_orig_list,np.nan)
             tPGD_parriv_list = np.append(tPGD_parriv_list,np.nan)
-            disp_spec = [np.nan] * 75
+            disp_spec = [np.nan] * 60
             disp_speclist.append(disp_spec)
 
             
@@ -498,15 +498,13 @@ for data in data_types:
             IM_fns.plot_spectra(E_record, freqs, amps, 'acc', synthetic=False)
 
 
-            ## PGV
-            # Convert acceleration record to velocity 
-            E_vel = tmf.accel_to_veloc(E_record)
-            N_vel = tmf.accel_to_veloc(N_record)
-            # Calculate PGV on each component
-            pgv_E = np.max(np.abs(E_vel))
-            pgv_N = np.max(np.abs(N_vel))
-            # Get geometric average of the PGVs
-            pgv = tmf.get_geom_avg(pgv_E,pgv_N)
+            ## PGV      
+            # Get euclidean norm of velocity components 
+            vel_euc_norm = avg.get_eucl_norm_3comp(E_vel[0].data,
+                                                N_vel[0].data,
+                                                Z_vel[0].data)
+            # Calculate PGV
+            pgv = np.max(np.abs(vel_euc_norm))
             pgv_list = np.append(pgv_list,pgv)
             
             ## Vel Spectra
@@ -527,9 +525,9 @@ for data in data_types:
             tPGA_orig_list = np.append(tPGA_orig_list,np.nan)
             tPGA_parriv_list = np.append(tPGA_parriv_list,np.nan)
             
-            acc_spec = [np.nan] * 75
+            acc_spec = [np.nan] * 60
             acc_speclist.append(acc_spec)
-            vel_spec = [np.nan] * 75
+            vel_spec = [np.nan] * 60
             vel_speclist.append(vel_spec)
 
 
@@ -550,60 +548,51 @@ disp_cols = ['E_disp_bin1', 'E_disp_bin2', 'E_disp_bin3', 'E_disp_bin4',
                  'E_disp_bin8', 'E_disp_bin9', 'E_disp_bin10', 'E_disp_bin11',
                  'E_disp_bin12', 'E_disp_bin13', 'E_disp_bin14', 'E_disp_bin15',
                  'E_disp_bin16', 'E_disp_bin17', 'E_disp_bin18', 'E_disp_bin19',
-                 'E_disp_bin20', 'E_disp_bin21', 'E_disp_bin22', 'E_disp_bin23', 
-                 'E_disp_bin24', 'E_disp_bin25', 'N_disp_bin1', 'N_disp_bin2',
+                 'E_disp_bin20', 'N_disp_bin1', 'N_disp_bin2',
                  'N_disp_bin3', 'N_disp_bin4', 'N_disp_bin5', 'N_disp_bin6',
                  'N_disp_bin7', 'N_disp_bin8', 'N_disp_bin9', 'N_disp_bin10',
                  'N_disp_bin11', 'N_disp_bin12', 'N_disp_bin13', 'N_disp_bin14',
                  'N_disp_bin15', 'N_disp_bin16', 'N_disp_bin17', 'N_disp_bin18',
-                 'N_disp_bin19', 'N_disp_bin20', 'N_disp_bin21', 'N_disp_bin22',
-                 'N_disp_bin23', 'N_disp_bin24', 'N_disp_bin25', 'Z_disp_bin1',
+                 'N_disp_bin19', 'N_disp_bin20', 'Z_disp_bin1',
                  'Z_disp_bin2', 'Z_disp_bin3', 'Z_disp_bin4', 'Z_disp_bin5',
                  'Z_disp_bin6', 'Z_disp_bin7', 'Z_disp_bin8', 'Z_disp_bin9',
                  'Z_disp_bin10', 'Z_disp_bin11', 'Z_disp_bin12', 'Z_disp_bin13',
                  'Z_disp_bin14', 'Z_disp_bin15', 'Z_disp_bin16', 'Z_disp_bin17',
-                 'Z_disp_bin18', 'Z_disp_bin19', 'Z_disp_bin20', 'Z_disp_bin21',
-                 'Z_disp_bin22', 'Z_disp_bin23', 'Z_disp_bin24', 'Z_disp_bin25']
+                 'Z_disp_bin18', 'Z_disp_bin19', 'Z_disp_bin20']
     
 acc_cols = ['E_acc_bin1', 'E_acc_bin2', 'E_acc_bin3', 'E_acc_bin4',
             'E_acc_bin5', 'E_acc_bin6', 'E_acc_bin7', 'E_acc_bin8',
             'E_acc_bin9', 'E_acc_bin10', 'E_acc_bin11', 'E_acc_bin12',
             'E_acc_bin13', 'E_acc_bin14', 'E_acc_bin15', 'E_acc_bin16',
             'E_acc_bin17', 'E_acc_bin18', 'E_acc_bin19', 'E_acc_bin20',
-            'E_acc_bin21', 'E_acc_bin22', 'E_acc_bin23', 'E_acc_bin24',
-            'E_acc_bin25', 'N_acc_bin1', 'N_acc_bin2', 'N_acc_bin3',
+            'N_acc_bin1', 'N_acc_bin2', 'N_acc_bin3',
             'N_acc_bin4', 'N_acc_bin5', 'N_acc_bin6', 'N_acc_bin7',
             'N_acc_bin8', 'N_acc_bin9', 'N_acc_bin10', 'N_acc_bin11',
             'N_acc_bin12', 'N_acc_bin13', 'N_acc_bin14', 'N_acc_bin15',
             'N_acc_bin16', 'N_acc_bin17', 'N_acc_bin18', 'N_acc_bin19',
-            'N_acc_bin20', 'N_acc_bin21', 'N_acc_bin22', 'N_acc_bin23',
-            'N_acc_bin24', 'N_acc_bin25', 'Z_acc_bin1', 'Z_acc_bin2',
+            'N_acc_bin20', 'Z_acc_bin1', 'Z_acc_bin2',
             'Z_acc_bin3', 'Z_acc_bin4', 'Z_acc_bin5', 'Z_acc_bin6',
             'Z_acc_bin7', 'Z_acc_bin8', 'Z_acc_bin9', 'Z_acc_bin10',
             'Z_acc_bin11', 'Z_acc_bin12', 'Z_acc_bin13', 'Z_acc_bin14',
             'Z_acc_bin15', 'Z_acc_bin16', 'Z_acc_bin17', 'Z_acc_bin18',
-            'Z_acc_bin19', 'Z_acc_bin20', 'Z_acc_bin21', 'Z_acc_bin22',
-            'Z_acc_bin23', 'Z_acc_bin24', 'Z_acc_bin25']
+            'Z_acc_bin19', 'Z_acc_bin20']
     
 vel_cols = ['E_vel_bin1', 'E_vel_bin2', 'E_vel_bin3', 'E_vel_bin4',
             'E_vel_bin5', 'E_vel_bin6', 'E_vel_bin7', 'E_vel_bin8',
             'E_vel_bin9', 'E_vel_bin10', 'E_vel_bin11', 'E_vel_bin12',
             'E_vel_bin13', 'E_vel_bin14', 'E_vel_bin15', 'E_vel_bin16',
             'E_vel_bin17', 'E_vel_bin18', 'E_vel_bin19', 'E_vel_bin20',
-            'E_vel_bin21', 'E_vel_bin22', 'E_vel_bin23', 'E_vel_bin24',
-            'E_vel_bin25', 'N_vel_bin1', 'N_vel_bin2', 'N_vel_bin3',
+            'N_vel_bin1', 'N_vel_bin2', 'N_vel_bin3',
             'N_vel_bin4', 'N_vel_bin5', 'N_vel_bin6', 'N_vel_bin7',
             'N_vel_bin8', 'N_vel_bin9', 'N_vel_bin10', 'N_vel_bin11',
             'N_vel_bin12', 'N_vel_bin13', 'N_vel_bin14', 'N_vel_bin15',
             'N_vel_bin16', 'N_vel_bin17', 'N_vel_bin18', 'N_vel_bin19',
-            'N_vel_bin20', 'N_vel_bin21', 'N_vel_bin22', 'N_vel_bin23',
-            'N_vel_bin24', 'N_vel_bin25', 'Z_vel_bin1', 'Z_vel_bin2',
+            'N_vel_bin20', 'Z_vel_bin1', 'Z_vel_bin2',
             'Z_vel_bin3', 'Z_vel_bin4', 'Z_vel_bin5', 'Z_vel_bin6',
             'Z_vel_bin7', 'Z_vel_bin8', 'Z_vel_bin9', 'Z_vel_bin10',
             'Z_vel_bin11', 'Z_vel_bin12', 'Z_vel_bin13', 'Z_vel_bin14',
             'Z_vel_bin15', 'Z_vel_bin16', 'Z_vel_bin17', 'Z_vel_bin18',
-            'Z_vel_bin19', 'Z_vel_bin20', 'Z_vel_bin21', 'Z_vel_bin22',
-            'Z_vel_bin23', 'Z_vel_bin24', 'Z_vel_bin25']
+            'Z_vel_bin19', 'Z_vel_bin20']
 
 disp_spec_df = pd.DataFrame(disp_speclist, columns=disp_cols)
 acc_spec_df = pd.DataFrame(acc_speclist, columns=acc_cols)
