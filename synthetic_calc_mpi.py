@@ -36,7 +36,6 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-# ncpus = 4
 ncpus = size
 
 # parameter = 'stress_drop_runs'
@@ -46,10 +45,11 @@ ncpus = size
 parameter = sys.argv[1]
 project = sys.argv[2]
 
-home = '/Users/tnye'
-param_dir = f'{home}/FakeQuakes/parameters/{parameter}/{project}' 
+home = '/Users/tnye/FakeQuakes'
+param_dir = f'{home}/parameters/{parameter}/{project}'                      
+data_dir = f'{home}/tsuquakes/data'
 
-rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
+rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
 
 data_types = ['disp','sm']
 
@@ -104,11 +104,8 @@ print('Rank: '+str(rank)+' received data='+str(subdata))
 
 ### Set paths and parameters #### 
 
-# Data directory                          
-data_dir = '/Users/tnye/tsuquakes/data'
-
 # Table of earthquake data
-eq_table_path = '/Users/tnye/tsuquakes/data/misc/events.csv'   
+eq_table_path = f'{data_dir}/misc/events.csv'   
 eq_table = pd.read_csv(eq_table_path)
 
 ### Get event data ###
