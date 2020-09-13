@@ -478,7 +478,7 @@ for index in subdata:
                 # Plot spectra
                 freqs = [freqE,freqN,freqZ]
                 amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'acc', parameter=parameter, project=project, run=run)
+                IM_fns.plot_spectra(E_record, freqs, amps, 'acc', home, parameter=parameter, project=project, run=run)
     
                 # print(cs(f'Rank {rank}', rc), cs(f'beginning vel IMs for {run}', 'DodgerBlue'), cs(f'({station})', 'Khaki'))
                 print(f'....Processor {rank} working on vel IMs for {run} {station}')
@@ -501,7 +501,7 @@ for index in subdata:
                 # Plot spectra
                 freqs_v = [freqE_v,freqN_v,freqZ_v]
                 amps_v = [ampE_v,ampN_v,ampZ_v]
-                IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', parameter=parameter, project=project, run=run)
+                IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', home, parameter=parameter, project=project, run=run)
     
             else:
                 pga_list = np.append(pga_list,np.nan)
