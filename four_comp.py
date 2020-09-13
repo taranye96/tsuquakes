@@ -9,33 +9,31 @@ Created on Sat Jun 13 22:15:48 2020
 # Imports
 from glob import glob
 import numpy as np
+from numpy import genfromtxt
 import pandas as pd
+from os import path,makedirs
 from obspy import read
 import tsueqs_main_fns as tmf
 import IM_fns
 import matplotlib.pyplot as plt
 
-parameter = 'stress_drop_runs'
-
-projects = ['sd0.3_etal_standard', 'sd1.0_etal_standard', 'sd2.0_etal_standard']
-            
-# runs = ['run.000000', 'run.000001', 'run.000002', 'run.000003', 'run.000004',
-#         'run.000005', 'run.000006', 'run.000007']
-runs = ['run.000000', 'run.000001', 'run.000002', 'run.000003', 'run.000004',
-        'run.000005', 'run.000006', 'run.000007', 'run.000008', 'run.000009',
-        'run.000010', 'run.000011', 'run.000012', 'run.000013', 'run.000014',
-        'run.000015']
-
+# Parameters
+parameter = 'rise_time'
+projects = ['rt1.5x']
 data_types = ['disp', 'acc', 'vel']
-# data_types = ['acc', 'vel']
 
+# Loop through projects
 for project in projects:
+    
+    rupture_list = genfromtxt(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/disp/data/ruptures.list',dtype='U')
 
-    for run in runs:
+    for rupture in rupture_list:
+        
+        run = rupture.rsplit('.', 1)[0]
         
         for data in data_types:
     
-            param_dir = f'/Users/tnye/FakeQuakes/{parameter}/{project}/' 
+            param_dir = f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/' 
             
             ### Set paths and parameters #### 
             
@@ -300,14 +298,14 @@ for project in projects:
             if data == 'disp':
                    units = 'm*s'
                    channel = 'LX' 
-                   ylim = 10**-4, 6*10**-1
+                   ylim = 10**-4, 7*10**-1
                    xlim = 2*10**-3, 5*10**-1
                    dim = 5,3
                    figsize = 10,20
             elif data == 'acc':
                    units = 'm/s'
                    channel = 'HN'
-                   ylim = 6*10**-15, 6*10**-1
+                   ylim = 7*10**-15, 6*10**-1
                    xlim = .002, 10
                    dim = 6,3
                    figsize = 10,30
@@ -325,12 +323,10 @@ for project in projects:
             
             # Sort freq and amps based off hypdist
             def sort_list(list1, list2): 
-              
                 zipped_pairs = zip(list2, list1) 
-              
                 z = [x for _, x in sorted(zipped_pairs)] 
-                  
-                return z 
+                return z
+            
             sort_syn_freqs = sort_list(syn_freqs, sort_id)
             sort_syn_amps = sort_list(syn_amps, sort_id)
             sort_obs_freqs = sort_list(obs_freqs, sort_id)
@@ -379,12 +375,15 @@ for project in projects:
                 fig.text(0.45, 0.075, (r'$\bf{' + 'DataType:' '}$' + '' + data))
                 plt.tight_layout()
         
-                plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_comp/{project}/{run}/{data}.png', dpi=300)
+                if not path.exists(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}'):
+                    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}')
+                    
+                plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}/{run}_{data}.png', dpi=300)
                 plt.close()
                 
             else:
                 # Set up figure
-                fig, axs = plt.subplots(dim[0],dim[1],figsize=(10,15))
+                fig, axs = plt.subplots(dim[0],dim[1],figsize=figsize)
                 k = 0
                 for i in range(dim[0]):
                     for j in range(dim[1]):
@@ -422,6 +421,9 @@ for project in projects:
                 fig.text(0.45, 0.09, (r'$\bf{' + 'Run:' + '}$' + '' + run))
                 fig.text(0.45, 0.065, (r'$\bf{' + 'DataType:' '}$' + '' + data))
                 plt.tight_layout()
+                
+                if not path.exists(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}'):
+                    makedirs(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}')
         
-                plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_comp/{parameter}/{project}/{run}/{data}.png', dpi=300)
+                plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_comp/parameters/{parameter}/{project}/{run}_{data}.png', dpi=300)
                 plt.close()

@@ -24,7 +24,7 @@ from os import makedirs, path
 
 # Parameters
 parameter = 'stress_drop'
-projects = ['sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']
+projects = ['rt1.5x']
 data_types = ['disp', 'acc', 'vel']
 
 # Loop through projects
