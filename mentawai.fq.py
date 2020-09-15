@@ -6,37 +6,31 @@ Parameter file for fakequakes run, with Christine's Hayward discretization
 from mudpy import fakequakes,runslip,forward
 import numpy as np
 from obspy.core import UTCDateTime
-import time
-
-start_time = time.time()
-
 
 
 ########                            GLOBALS                             ########
-home='/Users/tnye/FakeQuakes/error_test/'
-# home='/home/tnye/fakequake_tests/fakequakes/'
-project_name='sm'
-#run_name='OT_testing_A'
-run_name='run'
+home='/Users/tnye/FakeQuakes/parameters/stress_drop/sd5.0/'
+project_name='disp'
+run_name='sd5.0'
 ################################################################################
 
 
 ##############             What do you want to do??           ##################
 init=0
 make_ruptures=0
-make_GFs=1
+make_GFs=0
 make_synthetics=0
 make_waveforms=0
 make_hf_waveforms=0
 match_filter=0
 # Things that only need to be done once
-load_distances=1
-G_from_file=1
+load_distances=0
+G_from_file=0
 ###############################################################################
 
 
 #############                 Run-time parameters            ##################
-ncpus=1
+ncpus=16
 hot_start=0
 model_name='mentawai.mod'   # Velocity model
 #velmod_file=home+project_name+'/structure/iquique'
@@ -46,34 +40,35 @@ fault_name='mentawai_fine.fault'
 slab_name=None    # Slab 1.0 Ascii file, set to None for simple geometry
 mesh_name=None    # GMSH output file, set to None for simple geometry
 distances_name='Mentawai' # Name of dist matrix
-rupture_list='ruptures.list'
+rupture_list='ruptures.sublist'
 #rupture_list='testruptures.list'
 UTM_zone='47M'
 scaling_law='T' # T for thrust, S for strike-slip, N for normal
 
 #Station information
-GF_list='sm.gflist'
-G_name='sm'
+GF_list='gnss.gflist'
+G_name='gnss'
 
-Nrealizations=1 # Number of fake ruptures to generate per magnitude bin
+Nrealizations=16 # Number of fake ruptures to generate per magnitude bin
 target_Mw=np.array([7.8])#,7.7]) # Of what approximate magnitudes
 max_slip=40 #Maximum sip (m) allowed in the model
+max_slip_rule=False
 
 # Displacement and velocity waveform parameters
-NFFT=512 ; dt=0.25    # is this the delta in tr.stats  ### NFFT has to be in powers of 
+NFFT=1024 ; dt=0.5    # is this the delta in tr.stats  ### NFFT has to be in powers of 
 #fk-parameters
 dk=0.1 ; pmin=0 ; pmax=1 ; kmax=20
 custom_stf=None
 
 #High frequency waveform parameters
 hf_dt=0.01
-duration=120
+duration=500
 Pwave=True
 
 #Match filter parameters
 zero_phase=True
 order=4
-fcorner=1.0
+fcorner=0.998
 
 # Correlation function parameters
 hurst=0.75 # Melgar and Hayes 2019 found Hurst exponent is probably closer to 0.4?
@@ -91,7 +86,7 @@ hypocenter=[100.14, -3.49, 11.82] #closest subfault in the finer .rupt to USGS h
 source_time_function='dreger' # options are 'triangle' or 'cosine' or 'dreger'
 stf_falloff_rate=4 #Only affects Dreger STF, choose 4-8 are reasonable values
 num_modes=2000 # The more modes, the better you can model the high frequency stuff
-stress_parameter=11.5 #measured in bars
+stress_parameter=50 #measured in bars
 high_stress_depth=30 # SMGA must be below this depth (measured in km)
 rake=90 # average rake
 rise_time_depths=[10,15] #Transition depths for rise time scaling (if slip shallower than first index, rise times are twice as long as calculated)
@@ -119,7 +114,7 @@ if make_ruptures==1:
             rise_time_depths,time_epi,max_slip,source_time_function,lognormal,
             slip_standard_deviation,scaling_law,ncpus,mean_slip_name=mean_slip_name,
             force_magnitude=force_magnitude,force_area=force_area,hypocenter=hypocenter,
-            force_hypocenter=force_hypocenter,shear_wave_fraction=shear_wave_fraction)
+            force_hypocenter=force_hypocenter,shear_wave_fraction=shear_wave_fraction,max_slip_rule=max_slip_rule)
 #    fakequakes.generate_ruptures(home,project_name,run_name,fault_name,slab_name,
 #            mesh_name,load_distances,distances_name,UTM_zone,target_Mw,model_name,
 #            hurst,Ldip,Lstrike,num_modes,Nrealizations,rake,buffer_factor,
@@ -171,4 +166,4 @@ elif total_time >= 3600 and total_time < 86400:
     print(f"--- ~{round(total_time/3600)} hours ---")
 else:
     print(f"--- ~{round(total_time/86400)} days ---")
-                                                                                                                
+                                                                                                               

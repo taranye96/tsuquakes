@@ -6,6 +6,12 @@ Created on Thu Oct 31 09:26:02 2019
 @author: tnye
 """
 
+###############################################################################
+# Script used to make plots of the binned Fourier spectra to determine the best
+# number of bins. 
+###############################################################################
+
+
 # Standard Library Imports 
 import numpy as np
 import pandas as pd

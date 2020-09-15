@@ -6,6 +6,12 @@ Created on Fri Jan 31 09:43:30 2020
 @author: tnye
 """
 
+###############################################################################
+# Script used to make a few example waveform plots comparing synthetic
+# to observed waveforms. 
+###############################################################################
+
+
 # Standard Library Imports 
 import numpy as np
 import pandas as pd

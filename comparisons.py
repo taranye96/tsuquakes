@@ -6,6 +6,12 @@ Created on Thu Nov  7 10:07:20 2019
 @author: tnye
 """
 
+###############################################################################
+# Script that makes comparison plots between IMs (PGA, PGV, PGD) and hypocentral
+# distance. 
+##############################################################################
+
+
 # Standard Library Imports 
 import numpy as np
 import pandas as pd

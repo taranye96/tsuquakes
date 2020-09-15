@@ -6,6 +6,11 @@ Created on Thu May 21 12:12:35 2020
 @author: tnye
 """
 
+###############################################################################
+# Script that determines the outlier stations when calcualting IMs. 
+###############################################################################
+
+
 import numpy as np
 import pandas as pd
 from glob import glob

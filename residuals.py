@@ -24,11 +24,11 @@ import residual_fns as res
 
 # Set parameters
 parameter = 'stress_drop'      # parameter being varied
-projects = ['sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
-param_vals = ['0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
+projects = ['sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
+param_vals = ['0.1', '0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
 
 # Set to true if you want the natural log of the residuals 
-ln=False
+ln=True
 
 # Flatfile with observed data
 obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs.csv')
@@ -179,11 +179,12 @@ for project in projects:
     
     # Plot spectra residuals 
     res.plot_spec_res(parameter, project, ln=ln, outliers=True, default=False)
+    res.plot_spec_res(parameter, project, ln=ln, outliers=False, default=False)
 
 
 # Plot IM residuals 
-res.plot_IM_res_full(parameter, projects, param_vals, outliers=True, default=False)
-res.plot_IM_res_full(parameter, projects, param_vals, outliers=False, default=False)
+res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=True, default=False)
+res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=False, default=False)
 
 
 ############################## Individual Res Plots ###########################

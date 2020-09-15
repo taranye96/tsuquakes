@@ -460,14 +460,9 @@ for index in subdata:
 
 ############################### End Parallelization ###########################
 
-# print(f'Rank: {rank}, sendbuf: {subdata}')
-
 #Set up empty array to gather data on
 recvbuf=None
 if rank == 0:
-    # recvbuf = np.empty(count*size, dtype='d')
     recvbuf = np.empty(count*size, dtype=int)
 
 comm.Gather(subdata, recvbuf, root=0)
-# print(cs(f"After Gather, I'm {rank} and my data is: {recvbuf}", "Pink5"))
-

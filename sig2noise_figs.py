@@ -6,6 +6,12 @@ Created on Mon Apr  6 12:17:28 2020
 @author: tnye
 """
 
+###############################################################################
+# Script that makes signal to noise ratio plots for PGA, PGV, and PGD at
+# each station.  
+###############################################################################
+
+
 # Imports
 import numpy as np
 import pandas as pd

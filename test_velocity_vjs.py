@@ -6,6 +6,13 @@ Created on Tue Aug 11 12:51:52 2020
 @author: vjs
 """
 
+###############################################################################
+# Script used to to help determine why the velocity spectra were taking so long
+# to compute.  This is Valerie's code, and it ran much faster.  I compared this
+# with my code in test_velocity_tan. 
+###############################################################################
+
+# Imports
 import numpy as np
 import mtspec as mtspec
 import pandas as pd

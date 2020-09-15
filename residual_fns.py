@@ -624,13 +624,17 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
 
     ######################### Plot IMs Individually ###########################
     
+    if ln:
+        label = 'ln Residual'
+    else:
+        label = 'Residual'
     # PGD boxplot
     pgd_res_list = [val for sublist in pgd_res_list for val in sublist]
-    pgd_data = {'Parameter': disp_project_list, 'Residual(m)':pgd_res_list}
+    pgd_data = {'Parameter': disp_project_list, f'{label} (m)':pgd_res_list}
     pgd_df = pd.DataFrame(data=pgd_data)       
             
     # ax = sns.catplot(x='Parameter', y='Residual(m)', data=pgd_df)
-    ax = sns.boxplot(x='Parameter', y='Residual(m)', data=pgd_df, showfliers=outliers, boxprops=dict(alpha=.3))
+    ax = sns.boxplot(x='Parameter', y=f'{label} (m)', data=pgd_df, showfliers=outliers, boxprops=dict(alpha=.3))
     ax.set_title('PGD')
     ax.axhline(0, ls='--')
     ax.set(ylim=(-0.8, 0.8))
@@ -641,11 +645,11 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     
     # PGA boxplot
     pga_res_list = [val for sublist in pga_res_list for val in sublist]
-    pga_data = {'Parameter':sm_project_list, 'Residual(m/s/s)':pga_res_list}
+    pga_data = {'Parameter':sm_project_list, f'{label} (m/s/s)':pga_res_list}
     pga_df = pd.DataFrame(data=pga_data)
                        
     # ax = sns.catplot(x='Parameter', y='Residual(m/s/s)', data=pga_df)
-    ax = sns.boxplot(x='Parameter', y='Residual(m/s/s)', data=pga_df, showfliers=outliers, boxprops=dict(alpha=.3))
+    ax = sns.boxplot(x='Parameter', y=f'{label} (m/s/s)', data=pga_df, showfliers=outliers, boxprops=dict(alpha=.3))
     ax.set_title('PGA')
     ax.axhline(0, ls='--')
     ax.set(ylim=(-.8, .8))
@@ -656,11 +660,11 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     
     # PGV boxplot
     pgv_res_list = [val for sublist in pgv_res_list for val in sublist]
-    pgv_data = {'Parameter':sm_project_list, 'Residual(m/s)':pgv_res_list}
+    pgv_data = {'Parameter':sm_project_list, f'{label} (m/s)':pgv_res_list}
     pgv_df = pd.DataFrame(data=pgv_data)
                        
     # ax = sns.catplot(x='Parameter', y='Residual(m/s)', data=pgv_df)
-    ax = sns.boxplot(x='Parameter', y='Residual(m/s)', data=pgv_df, showfliers=outliers, boxprops=dict(alpha=.3))
+    ax = sns.boxplot(x='Parameter', y=f'{label} (m/s)', data=pgv_df, showfliers=outliers, boxprops=dict(alpha=.3))
     ax.set_title('PGV')
     ax.axhline(0, ls='--')
     ax.set(ylim=(-.8, .8))
@@ -671,11 +675,11 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     
     # tPGD boxplot
     tPGD_res_list = [val for sublist in tPGD_res_list for val in sublist]
-    tPGD_data = {'Parameter':disp_project_list, 'Residual(s)':tPGD_res_list}
+    tPGD_data = {'Parameter':disp_project_list, f'{label} (s)':tPGD_res_list}
     tPGD_df = pd.DataFrame(data=tPGD_data)
                        
     # ax = sns.catplot(x='Parameter', y='Residual(s)', data=tPGD_df)
-    ax = sns.boxplot(x='Parameter', y='Residual(s)', data=tPGD_df, showfliers=outliers, boxprops=dict(alpha=.3))
+    ax = sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGD_df, showfliers=outliers, boxprops=dict(alpha=.3))
     ax.set_title('tPGD')
     ax.axhline(0, ls='--')
     # ax.set(ylim=(-.8, .8))
@@ -686,11 +690,11 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     
     # tPGA boxplot
     tPGA_res_list = [val for sublist in tPGA_res_list for val in sublist]
-    tPGA_data = {'Parameter':sm_project_list, 'Residual(s)':tPGA_res_list}
+    tPGA_data = {'Parameter':sm_project_list, f'{label} (s)':tPGA_res_list}
     tPGA_df = pd.DataFrame(data=tPGA_data)
                        
     # ax = sns.catplot(x='Parameter', y='Residual(s)', data=tPGA_df)
-    ax = sns.boxplot(x='Parameter', y='Residual(s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3))
+    ax = sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3))
     ax.set_title('tPGA')
     ax.axhline(0, ls='--')
     # ax.set(ylim=(-.8, .8))
@@ -723,10 +727,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
         title = 'Rupture IM Velocity Residuals'
     
     # PGD subplot
-    pgd_data = {'Parameter':disp_project_list, 'Residual (m)':pgd_res_list}
+    pgd_data = {'Parameter':disp_project_list, f'{label} (m)':pgd_res_list}
     pgd_df = pd.DataFrame(data=pgd_data)       
             
-    sns.boxplot(x='Parameter', y='Residual (m)', data=pgd_df, showfliers=outliers, boxprops=dict(alpha=.3),
+    sns.boxplot(x='Parameter', y=f'{label} (m)', data=pgd_df, showfliers=outliers, boxprops=dict(alpha=.3),
                 ax=ax1).set(xticklabels=[], xlabel=None)
     yabs_max = abs(max(ax1.get_ylim(), key=abs))
     ax1.set_ylim(ymin=-yabs_max, ymax=yabs_max)
@@ -734,10 +738,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax1.axhline(0, ls='--')
     
     # PGA subplot
-    pga_data = {'Parameter':sm_project_list, 'Residual (m/s/s)':pga_res_list}
+    pga_data = {'Parameter':sm_project_list, f'{label} (m/s/s)':pga_res_list}
     pga_df = pd.DataFrame(data=pga_data)
                        
-    sns.boxplot(x='Parameter', y='Residual (m/s/s)', data=pga_df, showfliers=outliers, boxprops=dict(alpha=.3),
+    sns.boxplot(x='Parameter', y=f'{label} (m/s/s)', data=pga_df, showfliers=outliers, boxprops=dict(alpha=.3),
                 ax=ax2).set(xticklabels=[], xlabel=None)
     yabs_max = abs(max(ax2.get_ylim(), key=abs))
     ax2.set_ylim(ymin=-yabs_max, ymax=yabs_max)
@@ -745,10 +749,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax2.axhline(0, ls='--')
     
     # PGV subplot
-    pgv_data = {'Parameter':sm_project_list, 'Residual (m/s)':pgv_res_list}
+    pgv_data = {'Parameter':sm_project_list, f'{label} (m/s)':pgv_res_list}
     pgv_df = pd.DataFrame(data=pgv_data)
                        
-    sns.boxplot(x='Parameter', y='Residual (m/s)', data=pgv_df, showfliers=outliers, boxprops=dict(alpha=.3),
+    sns.boxplot(x='Parameter', y=f'{label} (m/s)', data=pgv_df, showfliers=outliers, boxprops=dict(alpha=.3),
                 ax=ax3).set(xlabel=None)
     yabs_max = abs(max(ax3.get_ylim(), key=abs))
     ax3.set_ylim(ymin=-yabs_max, ymax=yabs_max)
@@ -756,10 +760,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax3.axhline(0, ls='--')
     
     # tPGD subplot
-    tPGD_data = {'Parameter':disp_project_list, 'Residual (s)':tPGD_res_list}
+    tPGD_data = {'Parameter':disp_project_list, f'{label} (s)':tPGD_res_list}
     tPGD_df = pd.DataFrame(data=tPGD_data)
                        
-    sns.boxplot(x='Parameter', y='Residual (s)', data=tPGD_df, showfliers=outliers, boxprops=dict(alpha=.3),
+    sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGD_df, showfliers=outliers, boxprops=dict(alpha=.3),
                 ax=ax4).set(xlabel=None)
     yabs_max = abs(max(ax4.get_ylim(), key=abs))
     ax4.set_ylim(ymin=-yabs_max, ymax=yabs_max)
@@ -767,10 +771,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax4.axhline(0, ls='--')
     
     # tPGA subplot
-    tPGA_data = {'Parameter':sm_project_list, 'Residual (s)':tPGA_res_list}
+    tPGA_data = {'Parameter':sm_project_list, f'{label})':tPGA_res_list}
     tPGA_df = pd.DataFrame(data=tPGA_data)
                        
-    sns.boxplot(x='Parameter', y='Residual (s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3),
+    sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3),
                 ax=ax5).set(xlabel=None)
     yabs_max = abs(max(ax5.get_ylim(), key=abs))
     ax5.set_ylim(ymin=-yabs_max, ymax=yabs_max)

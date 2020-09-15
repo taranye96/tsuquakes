@@ -5,6 +5,14 @@ Created on Thu Aug 27 01:03:14 2020
 
 @author: tnye
 """
+
+###############################################################################
+# Script used to to help determine why the velocity spectra were taking so long
+# to compute.  This is my code that I compared to Valerie's in test_velocity_vjs. 
+###############################################################################
+
+
+# Imports
 import numpy as np
 from mtspec import mtspec
 import pandas as pd
