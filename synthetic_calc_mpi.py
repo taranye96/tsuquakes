@@ -431,7 +431,6 @@ for index in subdata:
             # Append trace data, times, and hypocentral distance to lists
             syn_times.append(tr.times('matplotlib').tolist())
             syn_amps.append(tr.data.tolist())
-            hypdists.append(hypdist)
                 
             if data == 'sm':
                 
@@ -443,7 +442,6 @@ for index in subdata:
                 # Append trace data, times, and hypocentral distance to lists
                 syn_times.append(tr_v.times('matplotlib').tolist())
                 syn_amps.append(tr_v.data.tolist())
-                hypdists.append(hypdist)
     
     
             ######################## Intensity Measures #######################
