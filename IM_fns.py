@@ -200,6 +200,10 @@ def plot_spectra(stream, freqs, amps, data_type, plot_dir, synthetic=True, param
                           directory where the different runs will be store. 
             run(str): Synthetics run number.  This will be the directory where the
                       plots are stored.
+        
+        Output:
+            Just saves the plots to ther respective directories. 
+            
     """
     
     import matplotlib.pyplot as plt

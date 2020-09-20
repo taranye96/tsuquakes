@@ -93,7 +93,7 @@ rise_time_depths=[10,15] #Transition depths for rise time scaling (if slip shall
 buffer_factor=0.5 # I don't think this does anything anymore-- remove?
 mean_slip_name=home+project_name+'/forward_models/mentawai_fine.rupt'
 #mean_slip_name=None
-shear_wave_fraction=0.65
+shear_wave_fraction=0.8
 
 force_area=True
 force_magnitude=False
