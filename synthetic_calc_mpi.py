@@ -20,13 +20,13 @@ from os import makedirs, path
 import numpy as np
 from numpy import genfromtxt
 import pandas as pd
-from math import ceil
 from obspy import read
 
 # Local imports
 import tsueqs_main_fns as tmf
 import signal_average_fns as avg
 import IM_fns
+import comparison_fns as comp
 
 ###################### Set up parallelization parameters ######################
 
@@ -176,8 +176,9 @@ for index in subdata:
     acc_speclist = []
     vel_speclist = []
     
-    ##################### Data Processing and Calculations ####################
     
+    ##################### Data Processing and Calculations ####################
+
     for data in data_types:
 
         if data == 'disp':
@@ -213,6 +214,13 @@ for index in subdata:
         N = 3
         stn_files = [files[n:n+N] for n in range(0, len(files), N)]
         
+        # Lists to make spectra and wf comparison plots
+        syn_freqs = []
+        syn_spec = []
+        syn_times = []
+        syn_amps = []
+        hypdists = []
+        
         # Loop over files to get the list of station names, channels, and mseed files 
         for station in stn_files:
             components = []
@@ -238,7 +246,6 @@ for index in subdata:
             color = 'DeepPink6'
         elif data =='sm':
             color = 'Chartreuse3'
-#        print(cs(f'Rank {rank} looping through {run} {data} stations...', color))
         
         for i, station in enumerate(stn_name_list):
             
@@ -410,13 +417,42 @@ for index in subdata:
             # Get the duration to be the time between these
             ENZ_Td = ENZ_end - ENZ_start
             comp3_Td_list = np.append(comp3_Td_list,ENZ_Td)
+            
+            
+            ############################ Waveforms ############################
+
+            ## Append tr data to lists to make wf comparison plots
+            
+            # Displacement and acceleration waveforms
+                # Get trace (just using E component)
+            tr = E_record[0]
+            station = tr.stats.station 
+            
+            # Append trace data, times, and hypocentral distance to lists
+            syn_times.append(tr.times('matplotlib').tolist())
+            syn_amps.append(tr.data.tolist())
+            hypdists.append(hypdist)
+                
+            if data == 'sm':
+                
+                # Velocity waveforms
+                    # Get trace (just using E component)
+                tr_v = E_vel[0]
+                station = tr.stats.station 
+                
+                # Append trace data, times, and hypocentral distance to lists
+                syn_times.append(tr_v.times('matplotlib').tolist())
+                syn_amps.append(tr_v.data.tolist())
+                hypdists.append(hypdist)
     
     
-            ######################## Intensity Measures ######################
+            ######################## Intensity Measures #######################
             if data == 'disp':
-                # print(cs(f'Rank {rank}', rc), cs(f'beginning disp IMs for {run}', 'Pink'), cs(f'({station})', 'Khaki'))
+                
+                ######################### Displacement ########################
+                
                 print(f'....Processor {rank} working on disp IMs for {run} {station}')
-                ## PGD
+                
                 # Get euclidean norm of displacement components 
                 euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
                                                     N_record[0].data,
@@ -424,20 +460,28 @@ for index in subdata:
                 # Calculate PGD
                 pgd = np.max(np.abs(euc_norm))
                 pgd_list = np.append(pgd_list,pgd)
-                # Calcualte tPGD from origin and p-arrival
+                
+                # Calculate tPGD from origin and p-arrival
                 tPGD_orig, tPGD_parriv = IM_fns.calc_tPGD(pgd, E_record[0],
                                                                 np.abs(euc_norm),
                                                                 origin, hypdist)
                 tPGD_orig_list = np.append(tPGD_orig_list,tPGD_orig)
                 tPGD_parriv_list = np.append(tPGD_parriv_list,tPGD_parriv)
     
-                ## Disp Spectra
+                # Disp Spectra
                 E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, data)
                 N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, data)
                 Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs.append(freqE.tolist())
+                syn_spec.append(ampE.tolist())
+                hypdists.append(hypdist)
+                
                 # Combine into one array and append to main list
                 disp_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
                 disp_speclist.append(disp_spec.tolist())
+                
                 # Plot spectra
                 freqs = [freqE,freqN,freqZ]
                 amps = [ampE,ampN,ampZ]
@@ -451,16 +495,20 @@ for index in subdata:
                 disp_speclist.append(disp_spec)
                 
             if data == 'sm':
-                # print(cs(f'Rank {rank}', rc), cs(f'beginning acc IMs for {run}', 'SpringGreen3'), cs(f'({station})', 'Khaki'))
+                
+                ######################### Acceleration ########################
+                
                 print(f'....Processor {rank} working on acc IMs for {run} {station}')
-                ## PGA         
+                
                 # Get euclidean norm of acceleration components 
                 acc_euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
                                                     N_record[0].data,
                                                     Z_record[0].data)
+               
                 # Calculate PGA
                 pga = np.max(np.abs(acc_euc_norm))
                 pga_list = np.append(pga_list,pga)
+                
                 # Calcualte tPGD from origin and p-arrival
                 tPGA_orig, tPGA_parriv = IM_fns.calc_tPGD(pga, E_record[0],
                                                                 np.abs(acc_euc_norm),
@@ -468,25 +516,34 @@ for index in subdata:
                 tPGA_orig_list = np.append(tPGA_orig_list,tPGA_orig)
                 tPGA_parriv_list = np.append(tPGA_parriv_list,tPGA_parriv)
     
-                ## Acc Spectra
+                # Acc Spectra
                 E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, data)                
                 N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, data)
                 Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs.append(freqE.tolist())
+                syn_spec.append(ampE.tolist())
+                hypdists.append(hypdist)
+               
                 # Combine into one array and append to main list
                 acc_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
                 acc_speclist.append(acc_spec.tolist())
+                
                 # Plot spectra
                 freqs = [freqE,freqN,freqZ]
                 amps = [ampE,ampN,ampZ]
                 IM_fns.plot_spectra(E_record, freqs, amps, 'acc', home, parameter=parameter, project=project, run=run)
     
-                # print(cs(f'Rank {rank}', rc), cs(f'beginning vel IMs for {run}', 'DodgerBlue'), cs(f'({station})', 'Khaki'))
+                ########################### Velocity ##########################
+                
                 print(f'....Processor {rank} working on vel IMs for {run} {station}')
-                ## PGV
+                
                 # Get euclidean norm of velocity components 
                 vel_euc_norm = avg.get_eucl_norm_3comp(E_vel[0].data,
                                                     N_vel[0].data,
                                                     Z_vel[0].data)
+                
                 # Calculate PGV
                 pgv = np.max(np.abs(vel_euc_norm))
                 pgv_list = np.append(pgv_list,pgv)
@@ -495,9 +552,16 @@ for index in subdata:
                 E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, data)
                 N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, data)
                 Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs.append(freqE_v.tolist())
+                syn_spec.append(ampE_v.tolist())
+                hypdists.append(hypdist)
+                
                 # Combine into one array and append to main list
                 vel_spec = np.concatenate([E_spec_vel,N_spec_vel,Z_spec_vel])
                 vel_speclist.append(vel_spec.tolist())
+                
                 # Plot spectra
                 freqs_v = [freqE_v,freqN_v,freqZ_v]
                 amps_v = [ampE_v,ampN_v,ampZ_v]
@@ -513,8 +577,24 @@ for index in subdata:
                 acc_speclist.append(acc_spec)
                 vel_spec = [np.nan] * 60
                 vel_speclist.append(vel_spec)
+        
+        
+        ########################### Comparison Plots ##########################
+        obs_spec_df = pd.read_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/{data}_spec.csv')
+        obs_freqs = np.array(obs_spec_df.iloc[:,:obs_spec_df.shape[1]])
+        obs_spec = np.array(obs_spec_df.iloc[:,obs_spec_df.shape[1]:])
+        
+        obs_wf_df = pd.read_csv(f'/Users/tnye/tsuquakes/data/obs_wf/{data}_wf.csv')
+        obs_times = np.array(obs_wf_df.iloc[:,:obs_wf_df.shape[1]])
+        obs_amps = np.array(obs_wf_df.iloc[:,:obs_wf_df.shape[1]])
+                
+        # Make spectra comparison plots
+        comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,data,home,parameter,project,run)
+        
+        # Make wf comparison plots
+        comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,data,home,parameter,project,run)
                             
-
+            
     
     ## Now, put all the final arrays together into a pandas dataframe. First mak a dict:
     dataset_dict = {'eventname':eventnames,'country':countries, 'origintime':origintimes,
@@ -608,7 +688,6 @@ if rank == 0:
     recvbuf = np.empty(count*size, dtype=int)
 
 comm.Gather(subdata, recvbuf, root=0)
-# print(cs(f"After Gather, I'm {rank} and my data is: {recvbuf}", "Pink5"))
 
 total_time = (time.time() - start_time)
 # if total_time < 60:
