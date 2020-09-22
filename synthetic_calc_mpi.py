@@ -47,9 +47,9 @@ project = sys.argv[2]
 
 home = '/Users/tnye/FakeQuakes'
 param_dir = f'{home}/parameters/{parameter}/{project}'                      
-data_dir = f'{home}/tsuquakes/data'
+data_dir = '/Users/tnye/tsuquakes/data'
 
-rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
+rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.sublist',dtype='U')
 
 data_types = ['disp','sm']
 
@@ -158,7 +158,7 @@ for index in subdata:
     stlons = np.array([])
     stlats = np.array([])
     stelevs = np.array([])
-    hypdists = np.array([])
+    hypdist_list = np.array([])
     instrument_codes = np.array([])
     E_Td_list = np.array([])
     N_Td_list = np.array([])
@@ -187,15 +187,11 @@ for index in subdata:
             IMs = ['pgd']
             filtering = False
             
-#            print(cs(f'Rank {rank} beginning {run} {data} processing...', 'DeepPink6'))
-            
         elif data == 'sm':
             metadata_file = data_dir + '/' + eventname + '/' + eventname + '_sm.chan'
             files = sm_files
             IMs = ['pga', 'pgv']
             filtering = True
-            
-#            print(cs(f'Rank {rank} beginning {run} {data} processing...', 'Chartreuse3'))
 
         metadata = pd.read_csv(metadata_file, sep='\t', header=0,
                               names=['net', 'sta', 'loc', 'chan', 'lat',
@@ -221,6 +217,13 @@ for index in subdata:
         syn_amps = []
         hypdists = []
         
+        # Lists for velocity if doing sm
+        syn_freqs_v = []
+        syn_spec_v = []
+        syn_times_v = []
+        syn_amps_v = []
+        
+        
         # Loop over files to get the list of station names, channels, and mseed files 
         for station in stn_files:
             components = []
@@ -241,12 +244,7 @@ for index in subdata:
             channel_list.append(components)
             mseed_list.append(mseeds)
         
-        # Loop over the stations for this earthquake, and start to run the computations:
-        if data == 'disp':
-            color = 'DeepPink6'
-        elif data =='sm':
-            color = 'Chartreuse3'
-        
+        # Loop over the stations for this earthquake, and start to run the computations:        
         for i, station in enumerate(stn_name_list):
             
             # Get the instrument (HN or LX) and component (E,N,Z) for this station
@@ -276,7 +274,7 @@ for index in subdata:
   
     
             ##################### Start computations ######################        
-#            print(cs(f'Rank {rank} beginning {run} computations...', 'SlateBlue2'))
+            
             # Compute the hypocentral distance
             hypdist = tmf.compute_rhyp(stlon,stlat,stelev,hyplon,hyplat,hypdepth)
     
@@ -295,7 +293,7 @@ for index in subdata:
             stlons = np.append(stlons,stlon)
             stlats = np.append(stlats,stlat)
             stelevs = np.append(stelevs,stelev)
-            hypdists = np.append(hypdists,hypdist)
+            hypdist_list = np.append(hypdist_list,hypdist)
             if data == 'disp':
                 stn_type_list = np.append(stn_type_list, 'GNSS')
             elif data == 'sm':
@@ -440,8 +438,8 @@ for index in subdata:
                 station = tr.stats.station 
                 
                 # Append trace data, times, and hypocentral distance to lists
-                syn_times.append(tr_v.times('matplotlib').tolist())
-                syn_amps.append(tr_v.data.tolist())
+                syn_times_v.append(tr_v.times('matplotlib').tolist())
+                syn_amps_v.append(tr_v.data.tolist())
     
     
             ######################## Intensity Measures #######################
@@ -481,9 +479,9 @@ for index in subdata:
                 disp_speclist.append(disp_spec.tolist())
                 
                 # Plot spectra
-                freqs = [freqE,freqN,freqZ]
-                amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'disp', home, parameter=parameter, project=project, run=run)
+                # freqs = [freqE,freqN,freqZ]
+                # amps = [ampE,ampN,ampZ]
+                # IM_fns.plot_spectra(E_record, freqs, amps, 'disp', home, parameter=parameter, project=project, run=run)
     
             else:
                 pgd_list = np.append(pgd_list,np.nan)
@@ -529,9 +527,9 @@ for index in subdata:
                 acc_speclist.append(acc_spec.tolist())
                 
                 # Plot spectra
-                freqs = [freqE,freqN,freqZ]
-                amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'acc', home, parameter=parameter, project=project, run=run)
+                # freqs = [freqE,freqN,freqZ]
+                # amps = [ampE,ampN,ampZ]
+                # IM_fns.plot_spectra(E_record, freqs, amps, 'acc', home, parameter=parameter, project=project, run=run)
     
                 ########################### Velocity ##########################
                 
@@ -552,18 +550,17 @@ for index in subdata:
                 Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, data)
                 
                 # Append spectra to lists to make spectra comparison plots
-                syn_freqs.append(freqE_v.tolist())
-                syn_spec.append(ampE_v.tolist())
-                hypdists.append(hypdist)
+                syn_freqs_v.append(freqE_v.tolist())
+                syn_spec_v.append(ampE_v.tolist())
                 
                 # Combine into one array and append to main list
                 vel_spec = np.concatenate([E_spec_vel,N_spec_vel,Z_spec_vel])
                 vel_speclist.append(vel_spec.tolist())
                 
                 # Plot spectra
-                freqs_v = [freqE_v,freqN_v,freqZ_v]
-                amps_v = [ampE_v,ampN_v,ampZ_v]
-                IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', home, parameter=parameter, project=project, run=run)
+                # freqs_v = [freqE_v,freqN_v,freqZ_v]
+                # amps_v = [ampE_v,ampN_v,ampZ_v]
+                # IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', home, parameter=parameter, project=project, run=run)
     
             else:
                 pga_list = np.append(pga_list,np.nan)
@@ -576,22 +573,57 @@ for index in subdata:
                 vel_spec = [np.nan] * 60
                 vel_speclist.append(vel_spec)
         
-        
+
         ########################### Comparison Plots ##########################
-        obs_spec_df = pd.read_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/{data}_spec.csv')
-        obs_freqs = np.array(obs_spec_df.iloc[:,:obs_spec_df.shape[1]])
-        obs_spec = np.array(obs_spec_df.iloc[:,obs_spec_df.shape[1]:])
+
+        print(f'....Processor {rank} making comparison plots')
         
-        obs_wf_df = pd.read_csv(f'/Users/tnye/tsuquakes/data/obs_wf/{data}_wf.csv')
-        obs_times = np.array(obs_wf_df.iloc[:,:obs_wf_df.shape[1]])
-        obs_amps = np.array(obs_wf_df.iloc[:,:obs_wf_df.shape[1]])
+        if data == 'disp':
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/disp_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/disp_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
                 
-        # Make spectra comparison plots
-        comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,data,home,parameter,project,run)
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,'disp',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,'disp',home,parameter,project,run)
         
-        # Make wf comparison plots
-        comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,data,home,parameter,project,run)
-                            
+        # Make comparison plots for velocity 
+        if data == 'sm':
+            ## Acceleration 
+            
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/acc_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/acc_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
+                
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,'acc',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,'acc',home,parameter,project,run)
+            
+            ## Velocity 
+            
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/vel_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/vel_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
+                
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs_v,syn_spec_v,obs_freqs,obs_spec,stn_name_list,hypdists,'vel',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times_v,syn_amps_v,obs_times,obs_amps,stn_name_list,hypdists,'vel',home,parameter,project,run)
+        
             
     
     ## Now, put all the final arrays together into a pandas dataframe. First mak a dict:
@@ -599,7 +631,7 @@ for index in subdata:
                     'hyplon':hyplons, 'hyplat':hyplats, 'hypdepth (km)':hypdepths,
                     'mw':mws, 'm0':m0s, 'network':networks, 'station':stations,
                     'station_type':stn_type_list, 'stlon':stlons, 'stlat':stlats, 'stelev':stelevs,
-                    'mechanism':mechanisms, 'hypdist':hypdists, 'duration_e':E_Td_list,
+                    'mechanism':mechanisms, 'hypdist':hypdist_list, 'duration_e':E_Td_list,
                     'duration_n':N_Td_list, 'duration_z':Z_Td_list, 'duration_horiz':horiz_Td_list,
                     'duration_3comp':comp3_Td_list, 'pgd':pgd_list, 'pga':pga_list, 'pgv':pgv_list,
                     'tPGD_origin':tPGD_orig_list, 'tPGD_parriv':tPGD_parriv_list,
