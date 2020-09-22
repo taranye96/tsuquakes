@@ -73,12 +73,10 @@ for data in data_types:
     metadata.sta = metadata.sta.astype(str)
     metadata.sta = metadata.sta.str.replace(' ','')
     
+    # Lists to store stream data in
     obs_times = []
     obs_amps = []
     hypdists = []
-    
-    
-    ################################### Observed ###########3######################
     
     # Create lists to add station names, channels, and miniseed files to 
     stn_name_list = []
@@ -151,7 +149,6 @@ for data in data_types:
             
         # Get trace (just using E component)
         tr = E_record[0]
-        station = tr.stats.station 
         
         # Append trace data and times to lists
         obs_times.append(tr.times('matplotlib').tolist())
