@@ -94,7 +94,7 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
                     axs[i][j].set_xlim(xlim)
                     axs[i][j].set_ylim(ylim)
                     axs[i][j].set_title(sort_stn_name[k],fontsize=10)
-                    axs[i][j].text(0.025,5E-2,'E',transform=axs[i][j].transAxes,size=7)
+                    axs[i][j].text(0.025,5E-2,'LXE',transform=axs[i][j].transAxes,size=7)
                     axs[i][j].text(0.65,5E-2,f'Hypdist={int(sort_hypdists[k])}km',
                                    transform=axs[i][j].transAxes,size=7)
                     if i < dim[0]-2:
@@ -139,7 +139,7 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
                     axs[i][j].loglog(sort_syn_freqs[k],sort_syn_spec[k],lw=1,c='C1',ls='-',label='synthetic')
                     axs[i][j].loglog(sort_obs_freqs[k],sort_obs_spec[k],lw=1,c='steelblue',ls='-',label='observed')
                     axs[i][j].grid(linestyle='--')
-                    axs[i][j].text(0.025,5E-2,'E',transform=axs[i][j].transAxes,size=7)
+                    axs[i][j].text(0.025,5E-2,'HNE',transform=axs[i][j].transAxes,size=7)
                     axs[i][j].text(0.6,5E-2,f'Hypdist={int(sort_hypdists[k])}km',
                                    transform=axs[i][j].transAxes,size=7)
                     axs[i][j].set_xlim(xlim)
@@ -256,7 +256,7 @@ def plot_wf_comp(syn_times, syn_amps, obs_times, obs_amps, stn_list, hypdists, d
                     axs[i][j].set_title(sort_stn_name[k],fontsize=10)
                     axs[i][j].text(0.625,5E-2,f'Hypdist={int(sort_hypdists[k])}km',
                                     transform=axs[i][j].transAxes,size=7)
-                    axs[i][j].text(0.025,5E-2,'E',transform=axs[i][j].transAxes,size=7)
+                    axs[i][j].text(0.025,5E-2,'LXE',transform=axs[i][j].transAxes,size=7)
                     if i < dim[0]-2:
                         axs[i][j].set_xticklabels([])
                     if i == dim[0]-2 and j == 0:
@@ -300,7 +300,7 @@ def plot_wf_comp(syn_times, syn_amps, obs_times, obs_amps, stn_list, hypdists, d
                                      color='C1',lw=0.4,label='synthetic')
                     axs[i][j].plot(sort_obs_times[k],sort_obs_amps[k],
                                     'k-',lw=0.4,label='observed')
-                    axs[i][j].text(0.025,5E-2,'E',transform=axs[i][j].transAxes,size=7)
+                    axs[i][j].text(0.025,5E-2,'HNE',transform=axs[i][j].transAxes,size=7)
                     axs[i][j].text(0.6,5E-2,f'Hypdist={int(sort_hypdists[k])}km',
                                    transform=axs[i][j].transAxes,size=7)
                     axs[i][j].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
