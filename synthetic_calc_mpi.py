@@ -49,7 +49,7 @@ home = '/Users/tnye/FakeQuakes'
 param_dir = f'{home}/parameters/{parameter}/{project}'                      
 data_dir = '/Users/tnye/tsuquakes/data'
 
-rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.sublist',dtype='U')
+rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
 
 data_types = ['disp','sm']
 
@@ -65,19 +65,19 @@ if not path.exists(f'{param_dir}/flatfiles'):
 if not path.exists(f'{param_dir}/flatfiles/IMs'):
     makedirs(f'{param_dir}/flatfiles/IMs')
 
-# Set up folders for fourier plots
-for rupture in rupture_list:
-    run = rupture.rsplit('.', 1)[0]
-    if not path.exists(f'{param_dir}/plots/fourier_spec'):
-        makedirs(f'{param_dir}/plots/fourier_spec')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/acc'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/acc')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/vel'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/vel')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/disp'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/disp')
+# # Set up folders for fourier plots
+# for rupture in rupture_list:
+#     run = rupture.rsplit('.', 1)[0]
+#     if not path.exists(f'{param_dir}/plots/fourier_spec'):
+#         makedirs(f'{param_dir}/plots/fourier_spec')
+#     if not path.exists(f'{param_dir}/plots/fourier_spec/{run}'):
+#         makedirs(f'{param_dir}/plots/fourier_spec/{run}')
+#     if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/acc'):
+#         makedirs(f'{param_dir}/plots/fourier_spec/{run}/acc')
+#     if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/vel'):
+#         makedirs(f'{param_dir}/plots/fourier_spec/{run}/vel')
+#     if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/disp'):
+#         makedirs(f'{param_dir}/plots/fourier_spec/{run}/disp')
 
 ############################# Start Parallelization ###########################
 

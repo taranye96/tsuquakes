@@ -240,6 +240,7 @@ def plot_wf_comp(syn_times, syn_amps, obs_times, obs_amps, stn_list, hypdists, d
     # Make figure and subplots
     if data_type == 'disp':
         # Set up figure
+        print(f'min syn times={np.min(sort_syn_times)} and max syn times={np.max(sort_syn_times)}')
         fig, axs = plt.subplots(dim[0],dim[1],figsize=(10,10))
         k = 0     # subplot index
         # Loop rhough rows
@@ -288,6 +289,7 @@ def plot_wf_comp(syn_times, syn_amps, obs_times, obs_amps, stn_list, hypdists, d
         
     else:
         # Set up figure
+        print(f'min syn times={np.min(sort_syn_times)} and max syn times={np.max(sort_syn_times)}')
         fig, axs = plt.subplots(dim[0],dim[1],figsize=(10,10))
         k = 0     # subplot index
         # Loop through rows
