@@ -6,6 +6,12 @@ Created on Thu Apr  2 13:07:18 2020
 @author: tnye
 """
 
+###############################################################################
+# Module with functions used to calculate the signal to noise ratio of records.
+# These functions are imported and used in sig2noise.py.  
+###############################################################################
+
+
 def get_P_arrival(epi_lon, epi_lat, hypdepth, st_lon, st_lat, p_vel, origintime):
     """
     Calculates the P-wave arrival time at a station.
