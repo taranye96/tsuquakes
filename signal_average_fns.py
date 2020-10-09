@@ -6,24 +6,31 @@ Created on Thu Apr  2 16:24:50 2020
 @author: tnye
 """
 
+###############################################################################
+# Module with functions used to calculate various averages of record components.
+# These functions are imported and used in synthetic_calc_mpi.py and 
+# synthetic_calc.py.   
+###############################################################################
+
+
 def get_geom_avg_3comp(E_record, N_record, Z_record):
     """
     Get the geometric average of the three components of a record.
 
     Inputs:
-        E_record(array): Full record of East-West component.
-        N_record(array): Full record of North-South component
-        Z_record(array): Full record of vertical component 
+        E_record(array): Record of East-West component data.
+        N_record(array): Record of North-South component data.
+        Z_record(array): Record of vertical component data.
     
     Return:
-        geom_avg(array): Full record of geometric average.
+        geom_avg(array): Record of geometric average.
     """
 
     import numpy as np
 
     geom_avg = np.cbrt(E_record * N_record * Z_record)
 
-    return geom_avg
+    return (geom_avg)
 
 
 def get_geom_avg_2comp(E_record, N_record):
@@ -32,18 +39,18 @@ def get_geom_avg_2comp(E_record, N_record):
     horizontal components).
 
     Inputs:
-        E_record(array): Full record of East-West component.
-        N_record(array): Full record of North-South component
+        E_record(array): Record of East-West component data.
+        N_record(array): Record of North-South component data.
     
     Return:
-        geom_avg(array): Full record of geometric average.
+        geom_avg(array): Record of geometric average.
     """
 
     import numpy as np
 
     geom_avg = np.sqrt(E_record * N_record)
 
-    return geom_avg
+    return (geom_avg)
 
 
 def get_eucl_norm_3comp(E_record, N_record, Z_record):
@@ -57,14 +64,14 @@ def get_eucl_norm_3comp(E_record, N_record, Z_record):
         Z_record(array): Record of vertical component data.
     
     Return:
-        eucl_norm(array): Full record of euclidian norm.
+        eucl_norm(array): Record of euclidian norm.
     """
 
     import numpy as np
 
     eucl_norm = np.sqrt(E_record**2 + N_record**2 + Z_record**2)
 
-    return eucl_norm
+    return (eucl_norm)
 
 
 def get_eucl_norm_2comp(E_record, N_record):
@@ -74,8 +81,8 @@ def get_eucl_norm_2comp(E_record, N_record):
     a vector. 
 
     Inputs:
-        E_record(array): Full record of East-West component.
-        N_record(array): Full record of North-South component
+        E_record(array): Record of East-West component data.
+        N_record(array): Record of North-South component data.
     
     Return:
         eucl_norm(array): Full record of euclidian norm.
@@ -85,4 +92,4 @@ def get_eucl_norm_2comp(E_record, N_record):
 
     eucl_norm = np.sqrt(E_record**2 + N_record**2)
 
-    return eucl_norm
+    return (eucl_norm)
