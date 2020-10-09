@@ -23,6 +23,7 @@ from obspy import read
 import tsueqs_main_fns as tmf
 import signal_average_fns as avg
 import IM_fns
+import comparison_fns as comp
 
 ########################## Set up initial parameters ##########################
 parameter = 'stress_drop'
@@ -30,7 +31,7 @@ project = 'sd0.3'
 
 home = '/Users/tnye/FakeQuakes'
 param_dir = f'{home}/parameters/{parameter}/{project}'                      
-data_dir = f'{home}/tsuquakes/data'
+data_dir = '/Users/tnye/tsuquakes/data'
 
 rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
 
@@ -47,20 +48,6 @@ if not path.exists(f'{param_dir}/flatfiles'):
     makedirs(f'{param_dir}/flatfiles')
 if not path.exists(f'{param_dir}/flatfiles/IMs'):
     makedirs(f'{param_dir}/flatfiles/IMs')
-
-# Set up folders for fourier plots
-for rupture in rupture_list:
-    run = rupture.rsplit('.', 1)[0]
-    if not path.exists(f'{param_dir}/plots/fourier_spec'):
-        makedirs(f'{param_dir}/plots/fourier_spec')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/acc'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/acc')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/vel'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/vel')
-    if not path.exists(f'{param_dir}/plots/fourier_spec/{run}/disp'):
-        makedirs(f'{param_dir}/plots/fourier_spec/{run}/disp')
 
 
 ############################### Do Calculations ###############################
@@ -86,7 +73,7 @@ mechanism = eq_table['Mechanism'][11]
 for rupture in rupture_list:
     run = rupture.rsplit('.', 1)[0]
         
-    # Synthetic miniseed dir
+    # Synthetic miniseed dirs
     disp_dir = f'{param_dir}/disp/output/waveforms/{run}/'
     sm_dir = f'{param_dir}/sm/output/waveforms/{run}/'
     
@@ -118,7 +105,7 @@ for rupture in rupture_list:
     stlons = np.array([])
     stlats = np.array([])
     stelevs = np.array([])
-    hypdists = np.array([])
+    hypdist_list = np.array([])
     instrument_codes = np.array([])
     E_Td_list = np.array([])
     N_Td_list = np.array([])
@@ -135,6 +122,7 @@ for rupture in rupture_list:
     disp_speclist = []
     acc_speclist = []
     vel_speclist = []
+    
     
     ##################### Data Processing and Calculations ####################
     
@@ -168,6 +156,19 @@ for rupture in rupture_list:
         # Group all files by station
         N = 3
         stn_files = [files[n:n+N] for n in range(0, len(files), N)]
+        
+        # Lists to make spectra and wf comparison plots
+        syn_freqs = []
+        syn_spec = []
+        syn_times = []
+        syn_amps = []
+        hypdists = []
+        
+        # Lists for velocity if doing sm
+        syn_freqs_v = []
+        syn_spec_v = []
+        syn_times_v = []
+        syn_amps_v = []
         
         # Loop over files to get the list of station names, channels, and mseed files 
         for station in stn_files:
@@ -206,8 +207,6 @@ for rupture in rupture_list:
             else:
                 station_metadata = metadata[metadata.sta == station].reset_index(drop=True)       # what is going on here
     
-                  
-      
             # Pull out the data. Take the first row of the subset dataframe, 
             #    assuming that the gain, etc. is always the same:
             stnetwork = station_metadata.loc[0].net
@@ -301,7 +300,7 @@ for rupture in rupture_list:
             Z_Td, Z_start, Z_end = tmf.determine_Td(threshold,Z_record)  
             Z_Td_list = np.append(Z_Td_list,Z_Td)    
             
-            ## Velocity 
+            ############### Velocity ############### 
             
             if data == 'sm':
                 # # Convert acceleration record to velocity (no HP filter)
@@ -362,10 +361,34 @@ for rupture in rupture_list:
             comp3_Td_list = np.append(comp3_Td_list,ENZ_Td)
     
     
-            ######################## Intensity Measures ######################
-            if data == 'disp':
+            ############################ Waveforms ############################
 
-                ## PGD
+            ## Append tr data to lists to make wf comparison plots
+            
+            # Displacement and acceleration waveforms
+                # Get trace (just using E component)
+            tr = E_record[0]
+            
+            # Append trace data, times, and hypocentral distance to lists
+            syn_times.append(tr.times('matplotlib').tolist())
+            syn_amps.append(tr.data.tolist())
+                
+            if data == 'sm':
+                
+                # Velocity waveforms
+                    # Get trace (just using E component)
+                tr_v = E_vel[0]
+                
+                # Append trace data, times, and hypocentral distance to lists
+                syn_times_v.append(tr_v.times('matplotlib').tolist())
+                syn_amps_v.append(tr_v.data.tolist())
+    
+    
+            ######################## Intensity Measures #######################
+            if data == 'disp':
+                
+                ######################### Displacement ########################
+                
                 # Get euclidean norm of displacement components 
                 euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
                                                     N_record[0].data,
@@ -373,25 +396,28 @@ for rupture in rupture_list:
                 # Calculate PGD
                 pgd = np.max(np.abs(euc_norm))
                 pgd_list = np.append(pgd_list,pgd)
-                # Calcualte tPGD from origin and p-arrival
-                tPGD_orig, tPGD_parriv = IM_fns.calc_tPGD(pgd, E_record[0],
+                
+                # Calculate tPGD from origin and p-arrival
+                tPGD_orig, tPGD_parriv = IM_fns.calc_time_to_peak(pgd, E_record[0],
                                                                 np.abs(euc_norm),
                                                                 origin, hypdist)
                 tPGD_orig_list = np.append(tPGD_orig_list,tPGD_orig)
                 tPGD_parriv_list = np.append(tPGD_parriv_list,tPGD_parriv)
     
-                ## Disp Spectra
+                # Disp Spectra
                 E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, data)
                 N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, data)
                 Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs.append(freqE.tolist())
+                syn_spec.append(ampE.tolist())
+                hypdists.append(hypdist)
+                
                 # Combine into one array and append to main list
                 disp_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
                 disp_speclist.append(disp_spec.tolist())
-                # Plot spectra
-                freqs = [freqE,freqN,freqZ]
-                amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'disp', home, parameter=parameter, project=project, run=run)
-    
+                
             else:
                 pgd_list = np.append(pgd_list,np.nan)
                 tPGD_orig_list = np.append(tPGD_orig_list,np.nan)
@@ -400,39 +426,47 @@ for rupture in rupture_list:
                 disp_speclist.append(disp_spec)
                 
             if data == 'sm':
-
-                ## PGA         
+                
+                ######################### Acceleration ########################
+                
                 # Get euclidean norm of acceleration components 
                 acc_euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
                                                     N_record[0].data,
                                                     Z_record[0].data)
+               
                 # Calculate PGA
                 pga = np.max(np.abs(acc_euc_norm))
                 pga_list = np.append(pga_list,pga)
-                # Calcualte tPGD from origin and p-arrival
-                tPGA_orig, tPGA_parriv = IM_fns.calc_tPGD(pga, E_record[0],
+                
+                # Calcualte tPGA from origin and p-arrival
+                tPGA_orig, tPGA_parriv = IM_fns.calc_time_to_peak(pga, E_record[0],
                                                                 np.abs(acc_euc_norm),
                                                                 origin, hypdist)
                 tPGA_orig_list = np.append(tPGA_orig_list,tPGA_orig)
                 tPGA_parriv_list = np.append(tPGA_parriv_list,tPGA_parriv)
     
-                ## Acc Spectra
+                # Acc Spectra
                 E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, data)                
                 N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, data)
                 Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs.append(freqE.tolist())
+                syn_spec.append(ampE.tolist())
+                hypdists.append(hypdist)
+               
                 # Combine into one array and append to main list
                 acc_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
                 acc_speclist.append(acc_spec.tolist())
-                # Plot spectra
-                freqs = [freqE,freqN,freqZ]
-                amps = [ampE,ampN,ampZ]
-                IM_fns.plot_spectra(E_record, freqs, amps, 'acc', home, parameter=parameter, project=project, run=run)
+
     
-                ## PGV
+                ########################### Velocity ##########################
+                
                 # Get euclidean norm of velocity components 
                 vel_euc_norm = avg.get_eucl_norm_3comp(E_vel[0].data,
                                                     N_vel[0].data,
                                                     Z_vel[0].data)
+                
                 # Calculate PGV
                 pgv = np.max(np.abs(vel_euc_norm))
                 pgv_list = np.append(pgv_list,pgv)
@@ -441,13 +475,14 @@ for rupture in rupture_list:
                 E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, data)
                 N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, data)
                 Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, data)
+                
+                # Append spectra to lists to make spectra comparison plots
+                syn_freqs_v.append(freqE_v.tolist())
+                syn_spec_v.append(ampE_v.tolist())
+                
                 # Combine into one array and append to main list
                 vel_spec = np.concatenate([E_spec_vel,N_spec_vel,Z_spec_vel])
                 vel_speclist.append(vel_spec.tolist())
-                # Plot spectra
-                freqs_v = [freqE_v,freqN_v,freqZ_v]
-                amps_v = [ampE_v,ampN_v,ampZ_v]
-                IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', home, parameter=parameter, project=project, run=run)
     
             else:
                 pga_list = np.append(pga_list,np.nan)
@@ -459,21 +494,74 @@ for rupture in rupture_list:
                 acc_speclist.append(acc_spec)
                 vel_spec = [np.nan] * 60
                 vel_speclist.append(vel_spec)
+                
+
+        ########################### Comparison Plots ##########################
+        
+        if data == 'disp':
+            
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/disp_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/disp_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
+                
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,'disp',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,'disp',home,parameter,project,run)
+        
+        # Make comparison plots for velocity 
+        if data == 'sm':
+            
+            ## Acceleration 
+            
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/acc_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/acc_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
+                
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs,syn_spec,obs_freqs,obs_spec,stn_name_list,hypdists,'acc',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times,syn_amps,obs_times,obs_amps,stn_name_list,hypdists,'acc',home,parameter,project,run)
+            
+            ## Velocity 
+            
+            # Observed data
+            obs_spec_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_spectra/vel_spec.csv')
+            obs_freqs = np.array(obs_spec_df.iloc[:,:int(obs_spec_df.shape[1]/2)])
+            obs_spec = np.array(obs_spec_df.iloc[:,int(obs_spec_df.shape[1]/2):])
+            
+            obs_wf_df = pd.read_csv('/Users/tnye/tsuquakes/data/obs_wf/vel_wf.csv')
+            obs_times = np.array(obs_wf_df.iloc[:,:int(obs_wf_df.shape[1]/2)])
+            obs_amps = np.array(obs_wf_df.iloc[:,int(obs_wf_df.shape[1]/2):])
+                
+            # Make spectra and wf comparison plots
+            comp.plot_spec_comp(syn_freqs_v,syn_spec_v,obs_freqs,obs_spec,stn_name_list,hypdists,'vel',home,parameter,project,run)
+            comp.plot_wf_comp(syn_times_v,syn_amps_v,obs_times,obs_amps,stn_name_list,hypdists,'vel',home,parameter,project,run)
                             
 
     
-    ## Now, put all the final arrays together into a pandas dataframe. First mak a dict:
+    ################################ Dataframe ################################
+    
+    # Crete dictionary 
     dataset_dict = {'eventname':eventnames,'country':countries, 'origintime':origintimes,
                     'hyplon':hyplons, 'hyplat':hyplats, 'hypdepth (km)':hypdepths,
                     'mw':mws, 'm0':m0s, 'network':networks, 'station':stations,
                     'station_type':stn_type_list, 'stlon':stlons, 'stlat':stlats, 'stelev':stelevs,
-                    'mechanism':mechanisms, 'hypdist':hypdists, 'duration_e':E_Td_list,
+                    'mechanism':mechanisms, 'hypdist':hypdist_list, 'duration_e':E_Td_list,
                     'duration_n':N_Td_list, 'duration_z':Z_Td_list, 'duration_horiz':horiz_Td_list,
                     'duration_3comp':comp3_Td_list, 'pgd':pgd_list, 'pga':pga_list, 'pgv':pgv_list,
                     'tPGD_origin':tPGD_orig_list, 'tPGD_parriv':tPGD_parriv_list,
                     'tPGA_origin':tPGA_orig_list, 'tPGA_parriv':tPGA_parriv_list}
     
-
+    # List displacement spectra columns 
     disp_cols = ['E_disp_bin1', 'E_disp_bin2', 'E_disp_bin3', 'E_disp_bin4',
                   'E_disp_bin5', 'E_disp_bin6', 'E_disp_bin7',
                   'E_disp_bin8', 'E_disp_bin9', 'E_disp_bin10', 'E_disp_bin11',
@@ -491,6 +579,7 @@ for rupture in rupture_list:
                   'Z_disp_bin14', 'Z_disp_bin15', 'Z_disp_bin16', 'Z_disp_bin17',
                   'Z_disp_bin18', 'Z_disp_bin19', 'Z_disp_bin20']
     
+    # List acceleration spectra columns
     acc_cols = ['E_acc_bin1', 'E_acc_bin2', 'E_acc_bin3', 'E_acc_bin4',
                 'E_acc_bin5', 'E_acc_bin6', 'E_acc_bin7', 'E_acc_bin8',
                 'E_acc_bin9', 'E_acc_bin10', 'E_acc_bin11', 'E_acc_bin12',
@@ -508,6 +597,7 @@ for rupture in rupture_list:
                 'Z_acc_bin15', 'Z_acc_bin16', 'Z_acc_bin17', 'Z_acc_bin18',
                 'Z_acc_bin19', 'Z_acc_bin20']
     
+    # List velocity spectra columns 
     vel_cols = ['E_vel_bin1', 'E_vel_bin2', 'E_vel_bin3', 'E_vel_bin4',
                 'E_vel_bin5', 'E_vel_bin6', 'E_vel_bin7', 'E_vel_bin8',
                 'E_vel_bin9', 'E_vel_bin10', 'E_vel_bin11', 'E_vel_bin12',
@@ -525,19 +615,19 @@ for rupture in rupture_list:
                 'Z_vel_bin15', 'Z_vel_bin16', 'Z_vel_bin17', 'Z_vel_bin18',
                 'Z_vel_bin19', 'Z_vel_bin20']
 
-    
+    # Create dataframes for the spectra
     disp_spec_df = pd.DataFrame(disp_speclist, columns=disp_cols)
     acc_spec_df = pd.DataFrame(acc_speclist, columns=acc_cols)
     vel_spec_df = pd.DataFrame(vel_speclist, columns=vel_cols)
     
-    # Make main dataframe
+    # Make main dataframe using dictionary 
     main_df = pd.DataFrame(data=dataset_dict)
-    
     
     # Combine dataframes 
     flatfile_df = pd.concat([main_df, disp_spec_df.reindex(main_df.index),
                             acc_spec_df.reindex(main_df.index),
                             vel_spec_df.reindex(main_df.index)], axis=1)
     
-    ## Save to file:
+    # Save to flatfile:
     flatfile_df.to_csv(flatfile_path,index=False)
+
