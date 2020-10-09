@@ -14,7 +14,6 @@ Created on Sun Jul 26 21:14:44 2020
 # Green's functions. 
 ###############################################################################
 
-
 # Imports
 import numpy as np
 from numpy import genfromtxt
@@ -42,7 +41,7 @@ if not path.exists(rupt_dir):
 rupt_files = np.array(sorted(glob(f'{orig_rupt_dir}/*.rupt')))
 
 # Loop through rupture files and multiple rise time (dura column) by 
-# multiplication factor
+    # multiplication factor
 for r in rupt_files:
     
     f = open(r, 'r')
@@ -64,6 +63,3 @@ for r in rupt_files:
     rupt_name = r.split('/')[-1]
     np.savetxt(f'{rupt_dir}/{rupt_name}', rupt, delimiter='\t',
                header=header, comments='', fmt='%s')
-
-    # np.savetxt(f'/Users/tnye/FakeQuakes/{rupt_name}',rupt,delimiter='\t',
-    #            header=header,comments='',fmt='%s')    
