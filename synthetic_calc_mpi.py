@@ -200,7 +200,7 @@ for index in subdata:
         syn_amps = []
         hypdists = []
         
-        # Lists for velocity if doing sm
+        # Lists to make spectra and wf compaison plots for velocity if doing sm
         syn_freqs_v = []
         syn_spec_v = []
         syn_times_v = []

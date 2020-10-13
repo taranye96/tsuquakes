@@ -11,7 +11,6 @@ Created on Thu Nov  7 10:07:20 2019
 # distance. 
 ##############################################################################
 
-
 # Standard Library Imports 
 import numpy as np
 import pandas as pd

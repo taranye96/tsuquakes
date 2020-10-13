@@ -12,13 +12,13 @@ Created on Wed May 13 13:49:52 2020
 ###############################################################################
 
 
-def calc_tPGD(pgd, trace, IMarray, origintime, hypdist,):
+def calc_time_to_peak(pgm, trace, IMarray, origintime, hypdist):
     """
     Calculates time to peak intensity measure (IM) from origin time and from
     estimated p-arrival.
     
     Inputs:
-        pgd(float): Peak ground displacement (m).
+        pgm(float): Peak ground motion.
         trace: Trace object with times for this station. 
         IMarray: Array pgd was calculated on.  Could be the same as stream
                         if peak IM was calculated on one component. 
@@ -32,51 +32,16 @@ def calc_tPGD(pgd, trace, IMarray, origintime, hypdist,):
     import datetime
     
     # Calculate time from origin 
-    pgd_index = np.where(IMarray==pgd)
-    tPGD_orig = trace.times(reftime=UTCDateTime(origintime))[pgd_index]
+    pgm_index = np.where(IMarray==pgm)
+    tPGM_orig = trace.times(reftime=UTCDateTime(origintime))[pgm_index]
     
     # Calculate time from p-arrival
     p_time = hypdist/6.5
     dp = datetime.timedelta(seconds=p_time)
     p_arrival = origintime+dp
-    tPGD_parriv = trace.times(reftime=UTCDateTime(p_arrival))[pgd_index]
+    tPGM_parriv = trace.times(reftime=UTCDateTime(p_arrival))[pgm_index]
     
-    return(tPGD_orig, tPGD_parriv)
-
-
-def calc_tPGA(E_trace, N_trace, pga_E, pga_N, origintime, hypdist,):
-    """
-    Calculates time to peak intensity measure (IM) from origin time and from
-    estimated p-arrival.
-    
-    Inputs:
-        pgd(float): Peak ground displacement (m).
-        trace: Trace object with times for this station. 
-        origintime(datetime): Origin time of event.
-        hypdist(float): Hypocentral distance (km). 
-        
-    """
-    
-    import numpy as np
-    from obspy.core import UTCDateTime
-    import datetime
-    
-    # Get pga index for both horizontal components
-    pgaE_index = np.where(np.abs(E_trace)==pga_E)
-    pgaN_index = np.where(np.abs(N_trace)==pga_N)
-    # Calculuate geometric average of indexes 
-    pga_index = np.sqrt(pgaE_index[0][0] * pgaN_index[0][0])
-    
-    # Calculate time from origin 
-    tPGA_orig = E_trace.times(reftime=UTCDateTime(origintime))[pga_index]
-    
-    # Calculate time from p-arrival
-    p_time = hypdist/6.5
-    dp = datetime.timedelta(seconds=p_time)
-    p_arrival = origintime+dp
-    tPGA_parriv = E_trace.times(reftime=UTCDateTime(p_arrival))[pga_index]
-    
-    return(tPGA_orig, tPGA_parriv)
+    return(tPGM_orig, tPGM_parriv)
 
 
 def calc_spectra(stream, data_type):

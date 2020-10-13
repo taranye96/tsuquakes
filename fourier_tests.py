@@ -11,7 +11,6 @@ Created on Thu Oct 31 09:26:02 2019
 # number of bins. 
 ###############################################################################
 
-
 # Standard Library Imports 
 import numpy as np
 import pandas as pd
@@ -40,7 +39,6 @@ gps_files = np.array(sorted((glob(gps_dir + '/*'))))
 
 
 # Using station LASI.HNE for testing
-
 
 # i = 0
 file = acc_files[0]

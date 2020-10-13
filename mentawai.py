@@ -6,6 +6,11 @@ Created on Thu Oct 10 12:16:28 2019
 @author: tnye
 """
 
+###############################################################################
+# Script that goes through observed waveforms from the 2010 M7.8 Mentawai event,
+# calculates IMs and spectra, and stores it all in a flatefile. 
+###############################################################################
+
 # Imports
 import numpy as np
 import pandas as pd
@@ -14,7 +19,6 @@ from glob import glob
 import tsueqs_main_fns as tmf
 import signal_average_fns as avg
 import IM_fns
-
 
 earthquake_name = 'Mentawai2010'
 

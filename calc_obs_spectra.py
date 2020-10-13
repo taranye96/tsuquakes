@@ -12,7 +12,6 @@ Created on Fri Sep 18 19:31:02 2020
 # synthetic_calc_mpi.py to make spectra comparison plots. 
 ###############################################################################
 
-
 # Imports
 from glob import glob
 import numpy as np

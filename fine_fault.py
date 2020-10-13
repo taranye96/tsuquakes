@@ -6,6 +6,10 @@ Created on Tue Nov 19 10:58:11 2019
 @author: tnye
 """
 
+###############################################################################
+# Script used to  
+###############################################################################
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import genfromtxt

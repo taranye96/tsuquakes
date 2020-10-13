@@ -8,7 +8,8 @@ Created on Fri Sep 18 19:52:17 2020
 
 ###############################################################################
 # Module with functions used to make comparison plots between observed and 
-# synthetic data. 
+# synthetic data. These functions are imported and used in synthetic_calc_mpi.py
+# and synthetic_calc.py. 
 ###############################################################################
 
 

@@ -6,6 +6,11 @@ Created on Fri Mar 27 20:06:41 2020
 @author: tnye
 """
 
+###############################################################################
+# Script used to create horizontal-averaged accerlation waveforms.  These
+# averaged waveforms were used to calcualte signal to noise (SNR) ratios. 
+###############################################################################
+
 # Imports
 import numpy as np
 import pandas as pd
@@ -275,7 +280,4 @@ for i, station in enumerate(stn_name_list):
             filename = '/Users/tnye/tsuquakes/data/Mentawai2010/avg_acc/' + tr.stats.station + '.avg' 
             tr.write(filename, format='MSEED')
             
-            
-           
-
 

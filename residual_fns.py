@@ -359,15 +359,17 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
     # Residual type to be used in figure name
     if ln:
         res='lnres'
+        label = 'ln Residual'
     else:
         res='res'
+        label = 'Residual'
 
     # Residual dataframe for specified project
     res_df = pd.read_csv( f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/flatfiles/residuals/{project}_{res}.csv')
    
     if default:
-        # Residual dataframe for default (aka unaltered) parameters
-        unal_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/stress_drop/sd5.0/flatfiles/residuals/sd5.0_{res}.csv')
+        # Residual dataframe for default (aka standard) parameters
+        std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/standard/std/flatfiles/residuals/std_{res}.csv')
     
     # Make sure path to safe plots exists
     if not path.exists(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals'):
@@ -387,7 +389,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
                          0.30852, 0.39276, 0.50000]
             spec_res = res_df.iloc[:,24:44]
             if default:
-                unal_spec_res = unal_df.iloc[:,24:44]
+                std_spec_res = std_df.iloc[:,24:44]
             res_units = 'm*s'
             title = f'{project} Displacement Spectra Residuals'
             
@@ -398,7 +400,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
                          4.57305, 6.76243, 10.00000]
             spec_res = res_df.iloc[:,84:104]
             if default:
-                unal_spec_res = unal_df.iloc[:,84:104]
+                std_spec_res = std_df.iloc[:,84:104]
             res_units = 'm/s'
             title = f'{project} Acceleration Spectra Residuals'
         
@@ -409,7 +411,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
                          4.57305, 6.76243, 10.00000]
             spec_res = res_df.iloc[:,144:164]
             if default:
-                unal_spec_res = unal_df.iloc[:,144:164]
+                std_spec_res = std_df.iloc[:,144:164]
             res_units = 'm'
             title = f'{project} Velocity Spectra Residuals'
         
@@ -438,9 +440,9 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
                 bin_means[i] = round_sig(b,2)
         
         bin_list = []
-        unal_bin_list = []
+        std_bin_list = []
         spec_res_list = []
-        unal_spec_res_list = []
+        std_spec_res_list = []
         
         for i in range(len(bin_edges)-1):
             
@@ -450,30 +452,30 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
             bin_list.extend(repeat(bin_means[i],len(bin_res)))
             spec_res_list.append(bin_res)
             
-            # Unaltered parameters
+            # Standard parameters
             if default:
-                unal_res = np.array(unal_spec_res.iloc[:,i])
-                unal_res = [x for x in unal_res if str(x) != 'nan']
-                unal_bin_list.extend(repeat(bin_means[i],len(unal_res)))
-                unal_spec_res_list.append(unal_res)
+                std_res = np.array(std_spec_res.iloc[:,i])
+                std_res = [x for x in std_res if str(x) != 'nan']
+                std_bin_list.extend(repeat(bin_means[i],len(std_res)))
+                std_spec_res_list.append(std_res)
         
         # Create dataframe for current parameter
         spec_res_list = [val for sublist in spec_res_list for val in sublist]
-        spec_data = {'Frequency(Hz)': bin_list, f'Residual({res_units})':spec_res_list}
+        spec_data = {'Frequency (Hz)': bin_list, f'{label} ({res_units})':spec_res_list}
         spec_df = pd.DataFrame(data=spec_data)    
         
         if default:
-            # Create dataframe for unaltered parameters
-            unal_spec_res_list = [val for sublist in unal_spec_res_list for val in sublist]
-            unal_spec_data = {'Frequency(Hz)': unal_bin_list, 'Residual(m*s)':unal_spec_res_list}
-            unal_spec_df = pd.DataFrame(data=unal_spec_data)    
+            # Create dataframe for standard parameters
+            std_spec_res_list = [val for sublist in std_spec_res_list for val in sublist]
+            std_spec_data = {'Frequency (Hz)': std_bin_list, f'{label} ({res_units})':std_spec_res_list}
+            std_spec_df = pd.DataFrame(data=std_spec_data)    
         
         # Make figure
         plt.figure(figsize=(10, 10))
-        ax = sns.boxplot(x='Frequency(Hz)', y=f'Residual({res_units})', data=spec_df,
+        ax = sns.boxplot(x='Frequency (Hz)', y=f'{label} ({res_units})', data=spec_df,
                          color='orange', showfliers=outliers, boxprops=dict(alpha=.5))
         if default:
-            ax = sns.boxplot(x='Frequency(Hz)', y='Residual(m*s)', data=unal_spec_df,
+            ax = sns.boxplot(x='Frequency (Hz)', y=f'{label} ({res_units})', data=std_spec_df,
                              showfliers=False, boxprops=dict(fc=(1,0,0,0), ls='--'))
         ax.set_xticklabels(ax.get_xticklabels(),rotation=30)
         ax.set_title(title)
@@ -482,7 +484,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
         legend_elements = [Patch(facecolor='orange', alpha=0.5, edgecolor='gray',
                                  label='Varied Parameter'),
                            Patch(facecolor='white', edgecolor='gray', ls='--',
-                                 label='Default Parameters')]
+                                 label='Standard Parameters')]
         
         ax.legend(handles=legend_elements, loc='upper left')
 
@@ -490,7 +492,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
         if outliers == True:
             plt.savefig(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals/{data}_spec_{res}.png', dpi=300)
         else:
-            plt.savefig(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals/{data}_spec_xout{res}.png', dpi=300)
+            plt.savefig(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals/{data}_spec_xout_{res}.png', dpi=300)
         plt.close()
 
 
@@ -521,23 +523,13 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     import seaborn as sns
     
     # Directory for plots using all the runs
-    figdir = f'/Users/tnye/tsuquakes/plots/residuals/{parameter}/all_runs'
+    figdir = f'/Users/tnye/tsuquakes/plots/residuals/{parameter}'
     # Make deirectory if it does not already exist
     if not path.exists(figdir):
         makedirs(figdir)
     
-    # Make directories for the spectra plots if they don't already exist
-    if not path.exists(f'{figdir}/spectra'):
-        makedirs(f'{figdir}/spectra')
-    if not path.exists(f'{figdir}/spectra/acc'):
-        makedirs(f'{figdir}/spectra/acc')
-    if not path.exists(f'{figdir}/spectra/vel'):
-        makedirs(f'{figdir}/spectra/vel')
-    if not path.exists(f'{figdir}/spectra/disp'):
-        makedirs(f'{figdir}/spectra/disp')
-    
     # Set up empty lists to store the project names in for the disp IMs, the sm
-        # IMs, and the unaltered parameter IMs
+        # IMs, and the standard parameter IMs
     disp_project_list = []
     sm_project_list = []
     
@@ -548,14 +540,49 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     tPGD_res_list = []
     tPGA_res_list = []
     
+    # Residual type to be used in figure name
+    if ln:
+        res='lnres'
+    else:
+        res='res'
+    
+    # Add default parameter first if risetime or vrupt
+    if parameter == 'rise_time':
+        val = '1'
+    
+        # Residual dataframe for default (aka stdtered) parameters
+        std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/standard/std/flatfiles/residuals/std_{res}.csv')
+        
+        # Select out residuals 
+        std_pgd_res = np.array(std_df['pgd_res'])
+        std_pga_res = np.array(std_df['pga_res'])
+        std_pgv_res = np.array(std_df['pgv_res'])
+        std_tPGD_res = np.array(std_df['tPGD_origin_res'])
+        std_tPGA_res = np.array(std_df['tPGA_origin_res'])
+        
+        # Get rid of NaNs if there are any
+        std_pgd_res = [x for x in std_pgd_res if str(x) != 'nan']
+        std_pga_res = [x for x in std_pga_res if str(x) != 'nan']
+        std_pgv_res = [x for x in std_pgv_res if str(x) != 'nan']
+        std_tPGD_res = [x for x in std_tPGD_res if str(x) != 'nan']
+        std_tPGA_res = [x for x in std_tPGA_res if str(x) != 'nan']
+        
+        # Append residuals from this project to main lists
+        pgd_res_list.append(std_pgd_res)
+        pga_res_list.append(std_pga_res)
+        pgv_res_list.append(std_pgv_res)
+        tPGD_res_list.append(std_tPGD_res)
+        tPGA_res_list.append(std_tPGA_res)
+
+        # Get parameter value.  Need different lists for disp and sm runs because 
+            # there are a different number of stations. 
+        for j in range(len(std_pgd_res)):
+            disp_project_list.append(val)
+        for j in range(len(std_pga_res)):
+            sm_project_list.append(val)
+    
     # Loop through projects and put residuals into lists
     for i, project in enumerate(projects):
-        
-        # Residual type to be used in figure name
-        if ln:
-            res='lnres'
-        else:
-            res='res'
         
         # Residual dataframe
         res_df = pd.read_csv( f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/flatfiles/residuals/{project}_{res}.csv')
@@ -588,124 +615,52 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
         for j in range(len(pga_res)):
             sm_project_list.append(param_vals[i])
 
-    if default == True:
+    # Add default parameter last if stress drop
+    if parameter == 'stress_drop' or parameter == 'vrupt':
+        if parameter == 'stress_drop':
+            val = '5.0'
+        elif parameter == 'vrupt':
+            val = '0.8'
         
-        # Residual dataframe for default (aka unaltered) parameters
-        unal_df = pd.read_csv('/Users/tnye/FakeQuakes/parameters/stress_drop/sd5.0/flatfiles/residuals/sd5.0_{res}.csv')
+        # Residual dataframe for default (aka stdtered) parameters
+        std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/standard/std/flatfiles/residuals/std_{res}.csv')
         
         # Select out residuals 
-        unal_pgd_res = np.array(unal_df['pgd_res'])
-        unal_pga_res = np.array(unal_df['pga_res'])
-        unal_pgv_res = np.array(unal_df['pgv_res'])
-        unal_tPGD_res = np.array(unal_df['tPGD_origin_res'])
-        unal_tPGA_res = np.array(unal_df['tPGA_origin_res'])
+        std_pgd_res = np.array(std_df['pgd_res'])
+        std_pga_res = np.array(std_df['pga_res'])
+        std_pgv_res = np.array(std_df['pgv_res'])
+        std_tPGD_res = np.array(std_df['tPGD_origin_res'])
+        std_tPGA_res = np.array(std_df['tPGA_origin_res'])
         
         # Get rid of NaNs if there are any
-        unal_pgd_res = [x for x in unal_pgd_res if str(x) != 'nan']
-        unal_pga_res = [x for x in unal_pga_res if str(x) != 'nan']
-        unal_pgv_res = [x for x in unal_pgv_res if str(x) != 'nan']
-        unal_tPGD_res = [x for x in unal_tPGD_res if str(x) != 'nan']
-        unal_tPGA_res = [x for x in unal_tPGA_res if str(x) != 'nan']
+        std_pgd_res = [x for x in std_pgd_res if str(x) != 'nan']
+        std_pga_res = [x for x in std_pga_res if str(x) != 'nan']
+        std_pgv_res = [x for x in std_pgv_res if str(x) != 'nan']
+        std_tPGD_res = [x for x in std_tPGD_res if str(x) != 'nan']
+        std_tPGA_res = [x for x in std_tPGA_res if str(x) != 'nan']
         
         # Append residuals from this project to main lists
-        pgd_res_list.append(unal_pgd_res)
-        pga_res_list.append(unal_pga_res)
-        pgv_res_list.append(unal_pgv_res)
-        tPGD_res_list.append(unal_tPGD_res)
-        tPGA_res_list.append(unal_tPGA_res)
+        pgd_res_list.append(std_pgd_res)
+        pga_res_list.append(std_pga_res)
+        pgv_res_list.append(std_pgv_res)
+        tPGD_res_list.append(std_tPGD_res)
+        tPGA_res_list.append(std_tPGA_res)
 
         # Get parameter value.  Need different lists for disp and sm runs because 
             # there are a different number of stations. 
-        for j in range(len(unal_pgd_res)):
-            disp_project_list.append('unaltered params')
-        for j in range(len(pga_res)):
-            sm_project_list.append('unaltered params')
+        for j in range(len(std_pgd_res)):
+            disp_project_list.append(val)
+        for j in range(len(std_pga_res)):
+            sm_project_list.append(val)
 
-
-    ######################### Plot IMs Individually ###########################
+    
+    ######################## Plot IMs on one figure ###########################
     
     if ln:
         label = 'ln Residual'
     else:
         label = 'Residual'
-    # PGD boxplot
-    pgd_res_list = [val for sublist in pgd_res_list for val in sublist]
-    pgd_data = {'Parameter': disp_project_list, f'{label} (m)':pgd_res_list}
-    pgd_df = pd.DataFrame(data=pgd_data)       
-            
-    # ax = sns.catplot(x='Parameter', y='Residual(m)', data=pgd_df)
-    ax = sns.boxplot(x='Parameter', y=f'{label} (m)', data=pgd_df, showfliers=outliers, boxprops=dict(alpha=.3))
-    ax.set_title('PGD')
-    ax.axhline(0, ls='--')
-    ax.set(ylim=(-0.8, 0.8))
-    
-    figpath = f'{figdir}/pgd_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
-    plt.close()
-    
-    # PGA boxplot
-    pga_res_list = [val for sublist in pga_res_list for val in sublist]
-    pga_data = {'Parameter':sm_project_list, f'{label} (m/s/s)':pga_res_list}
-    pga_df = pd.DataFrame(data=pga_data)
-                       
-    # ax = sns.catplot(x='Parameter', y='Residual(m/s/s)', data=pga_df)
-    ax = sns.boxplot(x='Parameter', y=f'{label} (m/s/s)', data=pga_df, showfliers=outliers, boxprops=dict(alpha=.3))
-    ax.set_title('PGA')
-    ax.axhline(0, ls='--')
-    ax.set(ylim=(-.8, .8))
-    
-    figpath = f'{figdir}/pga_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
-    plt.close()
-    
-    # PGV boxplot
-    pgv_res_list = [val for sublist in pgv_res_list for val in sublist]
-    pgv_data = {'Parameter':sm_project_list, f'{label} (m/s)':pgv_res_list}
-    pgv_df = pd.DataFrame(data=pgv_data)
-                       
-    # ax = sns.catplot(x='Parameter', y='Residual(m/s)', data=pgv_df)
-    ax = sns.boxplot(x='Parameter', y=f'{label} (m/s)', data=pgv_df, showfliers=outliers, boxprops=dict(alpha=.3))
-    ax.set_title('PGV')
-    ax.axhline(0, ls='--')
-    ax.set(ylim=(-.8, .8))
-    
-    figpath = f'{figdir}/pgv_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
-    plt.close()
-    
-    # tPGD boxplot
-    tPGD_res_list = [val for sublist in tPGD_res_list for val in sublist]
-    tPGD_data = {'Parameter':disp_project_list, f'{label} (s)':tPGD_res_list}
-    tPGD_df = pd.DataFrame(data=tPGD_data)
-                       
-    # ax = sns.catplot(x='Parameter', y='Residual(s)', data=tPGD_df)
-    ax = sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGD_df, showfliers=outliers, boxprops=dict(alpha=.3))
-    ax.set_title('tPGD')
-    ax.axhline(0, ls='--')
-    # ax.set(ylim=(-.8, .8))
-    
-    figpath = f'{figdir}/tPGD_orig_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
-    plt.close()
-    
-    # tPGA boxplot
-    tPGA_res_list = [val for sublist in tPGA_res_list for val in sublist]
-    tPGA_data = {'Parameter':sm_project_list, f'{label} (s)':tPGA_res_list}
-    tPGA_df = pd.DataFrame(data=tPGA_data)
-                       
-    # ax = sns.catplot(x='Parameter', y='Residual(s)', data=tPGA_df)
-    ax = sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3))
-    ax.set_title('tPGA')
-    ax.axhline(0, ls='--')
-    # ax.set(ylim=(-.8, .8))
-    
-    figpath = f'{figdir}/tPGA_orig_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
-    plt.close()
-    
-    
-    ######################## Plot IMs on one figure ###########################
-    
+        
     # Set up Figure
     fig, axs = plt.subplots(2, 3, figsize=(8, 10))
     fig.delaxes(axs[1][2])
@@ -720,13 +675,14 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
         xlabel = 'Stress Drop (Mpa)'
         title = 'Stress Drop IM Residuals'
     elif parameter == 'rise_time':
-        xlabel = 'Rise Time'
+        xlabel = 'Rise Time Factor'
         title = 'Rise Time IM Residuals'
     elif parameter == 'vrupt':
-        xlabel = 'Rupture Velocity (m/s)'
-        title = 'Rupture IM Velocity Residuals'
+        xlabel = 'Shear Wave Fraction'
+        title = 'Vrupt IM Residuals'
     
     # PGD subplot
+    pgd_res_list = [val for sublist in pgd_res_list for val in sublist]
     pgd_data = {'Parameter':disp_project_list, f'{label} (m)':pgd_res_list}
     pgd_df = pd.DataFrame(data=pgd_data)       
             
@@ -738,6 +694,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax1.axhline(0, ls='--')
     
     # PGA subplot
+    pga_res_list = [val for sublist in pga_res_list for val in sublist]
     pga_data = {'Parameter':sm_project_list, f'{label} (m/s/s)':pga_res_list}
     pga_df = pd.DataFrame(data=pga_data)
                        
@@ -749,6 +706,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax2.axhline(0, ls='--')
     
     # PGV subplot
+    pgv_res_list = [val for sublist in pgv_res_list for val in sublist]
     pgv_data = {'Parameter':sm_project_list, f'{label} (m/s)':pgv_res_list}
     pgv_df = pd.DataFrame(data=pgv_data)
                        
@@ -760,6 +718,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax3.axhline(0, ls='--')
     
     # tPGD subplot
+    tPGD_res_list = [val for sublist in tPGD_res_list for val in sublist]
     tPGD_data = {'Parameter':disp_project_list, f'{label} (s)':tPGD_res_list}
     tPGD_df = pd.DataFrame(data=tPGD_data)
                        
@@ -771,7 +730,8 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     ax4.axhline(0, ls='--')
     
     # tPGA subplot
-    tPGA_data = {'Parameter':sm_project_list, f'{label})':tPGA_res_list}
+    tPGA_res_list = [val for sublist in tPGA_res_list for val in sublist]
+    tPGA_data = {'Parameter':sm_project_list, f'{label} (s)':tPGA_res_list}
     tPGA_df = pd.DataFrame(data=tPGA_data)
                        
     sns.boxplot(x='Parameter', y=f'{label} (s)', data=tPGA_df, showfliers=outliers, boxprops=dict(alpha=.3),
@@ -785,8 +745,10 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     fig.suptitle(title, fontsize=12, x=.54)
     fig.tight_layout()
     
-    figpath = f'{figdir}/IMs_{res}.png'
-    plt.savefig(figpath, bbox_inches='tight', dpi=300)
+    if outliers == True:
+        plt.savefig(f'{figdir}/IMs_{res}.png', bbox_inches='tight', dpi=300)
+    else:
+        plt.savefig(f'{figdir}/IMs_xout_{res}.png', bbox_inches='tight', dpi=300)
     plt.close()
     
     return()

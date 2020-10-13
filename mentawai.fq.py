@@ -1,8 +1,16 @@
 '''
 Parameter file for fakequakes run, with Christine's Hayward discretization
+
+By Diego Melgar (University of Oregon)
+
 '''
 
+###############################################################################
+# Script that runs through FakeQuakes steps.  Details to fill out the script
+# are found here: https://github.com/taranye96/tsuquakes/wiki/FakeQuakes-Script. 
+###############################################################################
 
+# Imports
 from mudpy import fakequakes,runslip,forward
 import numpy as np
 from obspy.core import UTCDateTime
