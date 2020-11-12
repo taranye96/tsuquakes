@@ -8,7 +8,7 @@ Created on Fri Mar 27 20:06:41 2020
 
 ###############################################################################
 # Script used to create horizontal-averaged accerlation waveforms.  These
-# averaged waveforms were used to calcualte signal to noise (SNR) ratios. 
+# averaged waveforms were used to calculate signal to noise (SNR) ratios. 
 ###############################################################################
 
 # Imports
@@ -245,31 +245,11 @@ for i, station in enumerate(stn_name_list):
             
             # High pass filter at fcorner specified above
             N_acc_filt = tmf.highpass(N_acc_basecorr,fcorner,stsamprate,order,zerophase=True)
-            
-
-            ## Z component:
-            
-            # Get the values for the N component
-            Z_index = np.where(components=='Z')[0][0]
-            # Read file into a stream object
-            Z_acc_raw = obspy.read(mseed_list[i][Z_index])
-            
-            # Correct by gain, so everything is in meters
-            Z_acc_gaincorr = tmf.correct_for_gain(Z_acc_raw,stgain)
-            
-            # Get the pre-event baseline
-            Z_acc_baseline = tmf.compute_baseline(Z_acc_gaincorr)
-            
-            # Get the baseline corrected stream object
-            Z_acc_basecorr = tmf.correct_for_baseline(Z_acc_gaincorr,Z_acc_baseline)
-            
-            # High pass filter at fcorner specified above
-            Z_acc_filt = tmf.highpass(Z_acc_basecorr,fcorner,stsamprate,order,zerophase=True)
 
 
             ## Average horizontal components together
-            geom_avg = tmf.get_geom_avg(E_acc_filt[0].data,
-                                        N_acc_filt[0].data,Z_acc_filt[0].data)
+            geom_avg = tmf.get_geom_avg_2comp(E_acc_filt[0].data,
+                                        N_acc_filt[0].data)
 
             # Turn averaged record into a stream object
             avg_st = E_acc_filt.copy()

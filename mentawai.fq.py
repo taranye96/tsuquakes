@@ -2,6 +2,7 @@
 Parameter file for fakequakes run, with Christine's Hayward discretization
 
 By Diego Melgar (University of Oregon)
+Revised by Tara Nye (PhD student at UO)
 
 '''
 
@@ -20,6 +21,7 @@ from obspy.core import UTCDateTime
 home='/Users/tnye/FakeQuakes/parameters/stress_drop/sd5.0/'
 project_name='disp'
 run_name='sd5.0'
+previous_runs=0
 ################################################################################
 
 
@@ -122,14 +124,8 @@ if make_ruptures==1:
             rise_time_depths,time_epi,max_slip,source_time_function,lognormal,
             slip_standard_deviation,scaling_law,ncpus,mean_slip_name=mean_slip_name,
             force_magnitude=force_magnitude,force_area=force_area,hypocenter=hypocenter,
-            force_hypocenter=force_hypocenter,shear_wave_fraction=shear_wave_fraction,max_slip_rule=max_slip_rule)
-#    fakequakes.generate_ruptures(home,project_name,run_name,fault_name,slab_name,
-#            mesh_name,load_distances,distances_name,UTM_zone,target_Mw,model_name,
-#            hurst,Ldip,Lstrike,num_modes,Nrealizations,rake,buffer_factor,
-#            rise_time_depths,time_epi,max_slip,source_time_function,lognormal,
-#            slip_standard_deviation,scaling_law,mean_slip_name=mean_slip_name,
-#            force_magnitude=force_magnitude,force_area=force_area,hypocenter=hypocenter,
-#            force_hypocenter=force_hypocenter)
+            force_hypocenter=force_hypocenter,shear_wave_fraction=shear_wave_fraction,
+            max_slip_rule=max_slip_rule,previous_runs=previous_runs)
                 
 # Prepare waveforms and synthetics       
 if make_GFs==1 or make_synthetics==1:
@@ -144,13 +140,6 @@ if make_waveforms==1:
                 stf_falloff_rate,hot_start=hot_start)
 
 #Make semistochastic HF waveforms         
-#if make_hf_waveforms==1:
-#    forward.run_hf_waveforms(home,project_name,fault_name,rupture_list,GF_list,
-#                model_name,run_name,dt,NFFT,G_from_file,G_name,rise_time_depths,
-#                moho_depth_in_km,source_time_function=source_time_function,
-#                duration=duration,stf_falloff_rate=stf_falloff_rate,hf_dt=hf_dt,
-#                Pwave=Pwave,hot_start=hot_start,stress_parameter=stress_parameter,
-#                high_stress_depth=high_stress_depth)
 if make_hf_waveforms==1:
     forward.hf_waveforms(home,project_name,fault_name,rupture_list,GF_list,
                 model_name,run_name,dt,NFFT,G_from_file,G_name,rise_time_depths,
@@ -163,15 +152,4 @@ if make_hf_waveforms==1:
 if match_filter==1:
     forward.match_filter(home,project_name,fault_name,rupture_list,GF_list,
             zero_phase,order,fcorner)
-                
-
-total_time = (time.time() - start_time)
-if total_time < 60:
-    print(f"--- ~{round(total_time)} seconds ---")
-elif total_time >= 60 and total_time < 3600:
-    print(f"--- ~{round(total_time/60)} minutes ---")
-elif total_time >= 3600 and total_time < 86400:
-    print(f"--- ~{round(total_time/3600)} hours ---")
-else:
-    print(f"--- ~{round(total_time/86400)} days ---")
                                                                                                                

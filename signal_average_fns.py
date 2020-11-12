@@ -18,9 +18,9 @@ def get_geom_avg_3comp(E_record, N_record, Z_record):
     Get the geometric average of the three components of a record.
 
     Inputs:
-        E_record(array): Record of East-West component data.
-        N_record(array): Record of North-South component data.
-        Z_record(array): Record of vertical component data.
+        E_record(array): East-West component trace data.
+        N_record(array): North-South component trace data.
+        Z_record(array): Vertical component trace data.
     
     Return:
         geom_avg(array): Record of geometric average.
@@ -39,8 +39,8 @@ def get_geom_avg_2comp(E_record, N_record):
     horizontal components).
 
     Inputs:
-        E_record(array): Record of East-West component data.
-        N_record(array): Record of North-South component data.
+        E_record(array): East-West component trace data.
+        N_record(array): North-South component trace data.
     
     Return:
         geom_avg(array): Record of geometric average.
@@ -59,9 +59,9 @@ def get_eucl_norm_3comp(E_record, N_record, Z_record):
     equivalent to calculating the magnitude of a vector. 
 
     Inputs:
-        E_record(array): Record of East-West component data.
-        N_record(array): Record of North-South component data.
-        Z_record(array): Record of vertical component data.
+        E_record(array): East-West component trace data.
+        N_record(array): North-South component trace data.
+        Z_record(array): Vertical component trace data.
     
     Return:
         eucl_norm(array): Record of euclidian norm.
@@ -81,8 +81,8 @@ def get_eucl_norm_2comp(E_record, N_record):
     a vector. 
 
     Inputs:
-        E_record(array): Record of East-West component data.
-        N_record(array): Record of North-South component data.
+        E_record(array): East-West component trace data.
+        N_record(array): North-South component trace data.
     
     Return:
         eucl_norm(array): Full record of euclidian norm.

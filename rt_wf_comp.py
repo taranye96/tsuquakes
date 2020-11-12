@@ -16,21 +16,21 @@ from obspy import read
 import matplotlib.pyplot as plt
 
 # Read in waveforms 
-disp_1x_st = read('/Users/tnye/FakeQuakes/parameters/standard/std/disp/output/waveforms/std.000004/BSAT.LYE.sac')
-disp_15x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt1.5x/disp/output/waveforms/rt1.5x.000004/BSAT.LYE.sac')
-disp_2x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt2x/disp/output/waveforms/rt2x.000004/BSAT.LYE.sac')
+disp_2x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt2x/disp/output/waveforms/mentawai.000004/BSAT.LYE.sac')
+disp_3x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt3x/disp/output/waveforms/mentawai.000004/BSAT.LYE.sac')
+disp_4x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt4x/disp/output/waveforms/mentawai.000004/BSAT.LYE.sac')
 disp_obs_st = read('/Users/tnye/tsuquakes/data/Mentawai2010/disp_corr/BSAT.LXE.corr.mseed')
 
-acc_1x_st = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/std.000004/CGJI.bb.HNE.sac')
-acc_15x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt1.5x/sm/output/waveforms/rt1.5x.000004/CGJI.bb.HNE.sac')
-acc_2x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt2x/sm/output/waveforms/rt2x.000004/CGJI.bb.HNE.sac')
+acc_2x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt2x/sm/output/waveforms/mentawai.000004/CGJI.bb.HNE.sac')
+acc_3x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt3x/sm/output/waveforms/mentawai.000004/CGJI.bb.HNE.sac')
+acc_4x_st = read('/Users/tnye/FakeQuakes/parameters/rise_time/rt4x/sm/output/waveforms/mentawai.000004/CGJI.bb.HNE.sac')
 acc_obs_st = read('/Users/tnye/tsuquakes/data/Mentawai2010/accel_corr/CGJI.HNE.corr.mseed')
 
 # Make displacement figure
 plt.plot(disp_obs_st[0].times(), disp_obs_st[0].data, linewidth=.8, color='black', label='obs')
-plt.plot(disp_1x_st[0].times(), disp_1x_st[0].data, linewidth=.8, color='orange', label='1x')
-plt.plot(disp_15x_st[0].times(), disp_15x_st[0].data, linewidth=.8, color='green', label='1.5x')
-plt.plot(disp_2x_st[0].times(), disp_2x_st[0].data, linewidth=.8, color='blue', label='2x')
+plt.plot(disp_2x_st[0].times(), disp_2x_st[0].data, linewidth=.8, color='orange', label='2x')
+plt.plot(disp_3x_st[0].times(), disp_3x_st[0].data, linewidth=.8, color='green', label='3x')
+plt.plot(disp_4x_st[0].times(), disp_4x_st[0].data, linewidth=.8, color='blue', label='4x')
 plt.legend()
 plt.title('Rise Time Disp Waveforms: BSAT')
 plt.xlabel('time (s)')
@@ -40,9 +40,9 @@ plt.close()
 
 # Make acceleration figure
 # plt.plot(acc_obs_st[0].times(), acc_obs_st[0].data, linewidth=.8, color='black', label='obs')
-plt.plot(acc_1x_st[0].times(), acc_1x_st[0].data, linewidth=.8, color='orange', label='1x')
-plt.plot(acc_15x_st[0].times(), acc_15x_st[0].data, linewidth=.8, color='green', label='1.5x')
-plt.plot(acc_2x_st[0].times(), acc_2x_st[0].data, linewidth=.8, color='blue', label='2x')
+plt.plot(acc_2x_st[0].times(), acc_2x_st[0].data, linewidth=.8, color='orange', label='2x')
+plt.plot(acc_3x_st[0].times(), acc_3x_st[0].data, linewidth=.8, color='green', label='3x')
+plt.plot(acc_4x_st[0].times(), acc_4x_st[0].data, linewidth=.8, color='blue', label='4x')
 plt.plot(acc_obs_st[0].times(), acc_obs_st[0].data, linewidth=.8, color='black', label='obs')
 plt.legend()
 plt.title('Rise Time Acc Waveforms: CGJI')

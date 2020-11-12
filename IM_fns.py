@@ -137,8 +137,9 @@ def calc_spectra(stream, data_type):
                                                        statistic='mean',
                                                        bins=bins)
     
-    for i in range(len(bin_means)):
-        bin_means[i] = 10**bin_means[i]
+    # for i in range(len(bin_means)):
+    #     bin_means[i] = 10**bin_means[i]
+        
         
     return(bin_means, freq, amp)
 
