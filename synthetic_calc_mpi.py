@@ -114,7 +114,7 @@ for index in subdata:
     sm_dir = f'{param_dir}/sm/output/waveforms/{run}/'
     
     # Gather displacement and strong motion files
-    disp_files = np.array(sorted(glob(disp_dir + '*.sac')))
+    disp_files = '*.sac'(disp_dir + '*.sac')))
     sm_files = np.array(sorted(glob(sm_dir + '*.bb*.sac')))
     
     # Path to send flatfile

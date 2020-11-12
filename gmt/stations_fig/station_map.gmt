@@ -1,0 +1,102 @@
+#!/bin/bash
+
+## Make a map of the Mentawai, Indonesia region
+
+# Set map height
+gmt gmtset MAP_SCALE_HEIGHT 20p
+
+# Define range variable with lon/lat coordinates for my region
+range="94/107/-6/5"
+# Define J variable with map projection
+J="M5i"
+# Define out variable to be name of map
+out="mentawai"
+
+# Convert topography img to grd file with specified range
+gmt img2grd /Users/tnye/Classes/Geol610/Nye_week2/topo_19.1.img -Gmentawai.grd -R$range -V
+
+# Define zmin and zmax variables to be min and max elevations of topography
+zmin=-6384.66308594
+zmax=3269.9855957
+
+# Make bathymetry color palette using zmin to 0 range in increments of 10
+gmt makecpt -D -C/Users/tnye/cpt/bath_111.cpt -T$zmin/0/10 > menbath.cpt
+
+# Make topography color palette using 0 to zmax range in increments of 10
+gmt makecpt -D -C/Users/tnye/cpt/tpglarm.cpt -T0/$zmax/10 > mentopo2.cpt
+
+# Make a clipping mask for the bathymetry and set all values above 0m to be NaN
+gmt grdclip mentawai.grd -Sa0/NaN -V -Gmenbath.grd
+
+# Make a clipping mask for the topography and set all values below 0m to be NaN
+gmt grdclip mentawai.grd -Sb0/NaN -V -Gmentopo.grd
+
+# Make a shading map for topo and bath. Illuminate from the North and West and
+    # normalize using a cumulative Laplace distribution
+gmt grdgradient menbath.grd -A0/270 -Gbathgradient.grd -Ne0.4 -V
+gmt grdgradient mentopo.grd -A0/270 -Gtopogradient.grd -Ne0.4 -V
+
+# Start plotting map
+    # Set parallel and meridian line spacing to be 4 degrees
+    # Set to be portrait mode
+    # Define location of image on pdf
+    # Add title
+#gmt psbasemap -J$J -R$range -B4 -V -P -X1.5i -Y5i -B+t"Mentawai Region" -K > ${out}.eps
+gmt psbasemap -J$J -R$range -B4 -V -P -X1.5i -Y5i -K > ${out}.eps
+# Plot bathymetry and topography using their cpt's and gradient's
+    # Make grid nodes transparent
+    # Add axes to all edges but only labels to bottom and left axes
+    # Add grid lines every 4 degrees
+gmt grdimage menbath.grd -R$range -J$J -Cmenbath.cpt -Ibathgradient.grd -Q -BWSne -Bg4 -K -O >> ${out}.eps
+gmt grdimage mentopo.grd -R$range -J$J -Cmentopo2.cpt -Itopogradient.grd -Q -Bg4 -K -O >> ${out}.eps
+
+# Add coastlines
+    # Add border to all boundaries
+    # Use full resolution
+    # Only add coastline to land with an area at >= 25 km^2
+    # Add scalebar length 200 km and scaled at the equator
+    # Add north arrow
+gmt pscoast -R$range -J$J -Na -Df -A25 -Lf96/-4.5/0/200 -W0.25p,black -K -O >> ${out}.eps
+
+# Plot seismic stations
+    # Icon is an red inverted triangle
+    # Add station labels
+gmt psxy sm.txt -R$range -J$J -Dj0.08[0.06] -Si0.3c -G255/50/100 -W.5p,black -B -K -O >> ${out}.eps
+gmt pstext sm_labels.txt -R$range -J$J -Dj0.08[0.06] -F+f7,Arial-Bold,black+jL -B -K -O >> ${out}.eps
+
+# Plot GNSS stations
+    # Icon is a green square
+    # Add station labels
+gmt psxy disp.txt -R$range -J$J -Dj0.08[0.06] -Ss0.3c -G0/100/0 -W.5p,black -B -K -O >> ${out}.eps
+gmt pstext disp_labels.txt -R$range -Dj0.08[0.06] -J$J -F+f7,Arial-Bold,black+jL -B -K -O >> ${out}.eps
+
+# Plot earthquake epicenter
+    # Icon is a yellow star
+gmt psxy mentawai_epi.txt -R$range -J$J -Dj0.08[0.06] -Sa0.5c -G255/255/0 -W.5p,black -B -K -O >> ${out}.eps
+#gmt pstext epi_label.txt -R$range -J$J -F+f7,Arial-Bold,black+jL -B -K -O >> ${out}.eps
+
+# Make legend
+    # Legend box fill is neutral
+    # Define corners of legend box
+gmt psxy -R$range -J$J -W0.05c,black -G255/245/238 -K -O >> ${out}.eps << BOXEND
+103.5 1.0
+106.75 1.0
+106.75 3.5
+103.5 3.5
+BOXEND
+    # Add text to legend
+    echo "103.75 2" | gmt psxy -R$range -J$J -Ss0.3c -G0/100/0 -W.5p,black -K -O >> ${out}.eps
+    echo "103.75 2.6" | gmt psxy -R$range -J$J -Si0.3c -G255/50/100 -W.5p,black -K -O >> ${out}.eps
+    echo "103.75 1.4" | gmt psxy -R$range -J$J -Dj0.08[0.06] -Sa0.3c -G255/255/0 -W.5p,black -B -K -O >> ${out}.eps
+    echo "104 2 GNSS Stations" | gmt pstext -R$range -J$J -F+f8p+jML -K -O >> ${out}.eps
+    echo "104 2.6 Seismic Stations" | gmt pstext -R$range -J$J -F+f8p+jML -K -O >> ${out}.eps
+    echo "104 1.4 2010 M7.8 Mentawai" | gmt pstext -R$range -J$J -F+f8p+jML -K -O >> ${out}.eps
+    echo "104.5 3.1 Legend" | gmt pstext -R$range -J$J -F+f10p+jML -K -O >> ${out}.eps
+
+# Add colorbar for topography
+    # Use topography cpt
+    # Define location of scale on pdf
+    # Add "Elevation (m)" label
+# gmt psscale -R$range -J$J -Cmentopo2.cpt -Dg108/-6.5+w12c/0.5c -Bxaf+l"Elevation (m)" -O >> ${out}.eps
+
+open $out.eps  # shows plot
