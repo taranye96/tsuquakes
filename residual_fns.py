@@ -51,7 +51,6 @@ def calc_res(parameter, project, run, ln=True):
     
     # Synthetic values
     syn_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/flatfiles/IMs/{run}.csv')
-    # syn_df = pd.read_csv(f'/Users/tnye/tsuquakes/flatfiles/spec_test/{project}/{run}.csv')
     syn_pgd = np.array(syn_df['pgd'])
     syn_pga = np.array(syn_df['pga'])
     syn_pgv = np.array(syn_df['pgv'])

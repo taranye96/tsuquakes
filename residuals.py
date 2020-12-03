@@ -22,17 +22,17 @@ import residual_fns as res
 ### Plots residuals for all runs of all projects for one parameter (i.e. stress
  ## drops of 0.3, 1.0, and 2.0 MPa) on one figure
 
+# Set parameters
+parameter = 'stress_drop'      # parameter being varied
+projects = ['sd0.01', 'sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
+param_vals = ['0.01', '0.1', '0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
+
 # # Set parameters
-# parameter = 'stress_drop'      # parameter being varied
-# projects = ['sd0.08', 'sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
-# param_vals = ['0.08', '0.1', '0.1', '1.0', '2.0']        # array of parameter values associated w/ the projects
+# parameter = 'rise_time'      # parameter being varied
+# projects = ['rt2x', 'rt3x', 'rt4x']  # array of projects for the parameter
+# param_vals = ['2', '3', '4']        # array of parameter values associated w/ the projects
 
-# Set parameters
-parameter = 'rise_time'      # parameter being varied
-projects = ['rt2x', 'rt3x', 'rt4x']  # array of projects for the parameter
-param_vals = ['2', '3', '4']        # array of parameter values associated w/ the projects
-
-# Set parameters
+# # Set parameters
 # parameter = 'vrupt'      # parameter being varied
 # projects = ['sf0.25', 'sf0.5']  # array of projects for the parameter
 # param_vals = ['0.25', '0.5']        # array of parameter values associated w/ the projects
