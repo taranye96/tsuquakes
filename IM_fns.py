@@ -174,11 +174,12 @@ def plot_spectra(stream, freqs, amps, data_type, plot_dir, synthetic=True, param
     
     import matplotlib.pyplot as plt
     
-    # Read in file 
-    fig, axs = plt.subplots(3)
-    
+    # Get station info     
     tr = stream[0]
     station = tr.stats.station
+    
+    # Set up plot
+    fig, axs = plt.subplots(3)
     
     # Loop through frequencies and amplitudes 
     for i in range(len(freqs)):

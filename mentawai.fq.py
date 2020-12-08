@@ -104,6 +104,7 @@ buffer_factor=0.5 # I don't think this does anything anymore-- remove?
 mean_slip_name=home+project_name+'/forward_models/mentawai_fine.rupt'
 #mean_slip_name=None
 shear_wave_fraction=0.8
+kappa=GF_list
 
 force_area=True
 force_magnitude=False
@@ -146,7 +147,7 @@ if make_hf_waveforms==1:
                 moho_depth_in_km,ncpus,source_time_function=source_time_function,
                 duration=duration,stf_falloff_rate=stf_falloff_rate,hf_dt=hf_dt,
                 Pwave=Pwave,hot_start=hot_start,stress_parameter=stress_parameter,
-                high_stress_depth=high_stress_depth)
+                high_stress_depth=high_stress_depth,kappa=kappa)
 
 # Combine LF and HF waveforms with match filter                              
 if match_filter==1:

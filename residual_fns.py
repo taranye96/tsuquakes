@@ -679,6 +679,9 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     elif parameter == 'vrupt':
         xlabel = 'Shear Wave Fraction'
         title = 'Vrupt IM Residuals'
+    else:
+        xlabel = ''
+        title = 'IM Residuals'
     
     # PGD subplot
     pgd_res_list = [val for sublist in pgd_res_list for val in sublist]

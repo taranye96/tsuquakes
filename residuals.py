@@ -23,9 +23,9 @@ import residual_fns as res
  ## drops of 0.3, 1.0, and 2.0 MPa) on one figure
 
 # Set parameters
-parameter = 'stress_drop'      # parameter being varied
-projects = ['sd0.01', 'sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
-param_vals = ['0.01', '0.1', '0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
+# parameter = 'stress_drop'      # parameter being varied
+# projects = ['sd0.01', 'sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
+# param_vals = ['0.01', '0.1', '0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
 
 # # Set parameters
 # parameter = 'rise_time'      # parameter being varied
@@ -36,6 +36,10 @@ param_vals = ['0.01', '0.1', '0.3', '1.0', '2.0']        # array of parameter va
 # parameter = 'vrupt'      # parameter being varied
 # projects = ['sf0.25', 'sf0.5']  # array of projects for the parameter
 # param_vals = ['0.25', '0.5']        # array of parameter values associated w/ the projects
+
+parameter = 'test'      # parameter being varied
+projects = ['kappa_test']  # array of projects for the parameter
+param_vals = ['test']        # array of parameter values associated w/ the projects
 
 # Set to true if you want the natural log of the residuals 
 ln=True
