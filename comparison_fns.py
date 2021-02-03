@@ -67,7 +67,7 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
        dim = 6,3
     
     # Sort hypdist and get indices
-    sort_id = np.argsort(hypdists)
+    sort_id = np.argsort(np.argsort(hypdists))
     sort_hypdists = np.sort(hypdists)
     
     # Sort freq and amps based off hypdist
@@ -99,13 +99,10 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
                     axs[i][j].text(0.65,5E-2,f'Hypdist={int(sort_hypdists[k])}km',
                                    transform=axs[i][j].transAxes,size=7)
                     if i < dim[0]-2:
-                        # plt.setp(axs[i][j], xticks=[])
                         axs[i][j].set_xticklabels([])
                     if i == dim[0]-2 and j == 0:
-                        # plt.setp(axs[i][j], xticks=[])
                         axs[i][j].set_xticklabels([])
                     if j > 0:
-                        # plt.setp(axs[i][j], yticks=[])
                         axs[i][j].set_yticklabels([])
                     k += 1
         fig.text(0.5, 0.005, 'Frequency (Hz)', ha='center')
@@ -222,7 +219,7 @@ def plot_wf_comp(syn_times, syn_amps, obs_times, obs_amps, stn_list, hypdists, d
            dim = 6,3
     
     # Sort hypdist and get sorted indices
-    sort_id = np.argsort(hypdists)
+    sort_id = np.argsort(np.argsort(hypdists))
     sort_hypdists = np.sort(hypdists)
     
     # Function to sort list based on list of indices 

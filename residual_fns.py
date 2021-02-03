@@ -418,7 +418,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
         bin_means = []
         for i in range(len(bin_edges)):
             if i != 0:
-                mean = (bin_edges[i]+bin_edges[i-1])/2
+                mean = np.exp((np.log10(bin_edges[i])+np.log10(bin_edges[i-1]))/2)
                 bin_means.append(mean)
             
         # Function to round bin means

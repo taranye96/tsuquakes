@@ -48,7 +48,7 @@ home = '/Users/tnye/FakeQuakes'
 param_dir = f'{home}/parameters/{parameter}/{project}'                      
 data_dir = '/Users/tnye/tsuquakes/data'
 
-rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
+rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.sublist',dtype='U')
 
 data_types = ['disp','sm']
 
@@ -114,7 +114,7 @@ for index in subdata:
     sm_dir = f'{param_dir}/sm/output/waveforms/{run}/'
     
     # Gather displacement and strong motion files
-    disp_files = '*.sac'(disp_dir + '*.sac')))
+    disp_files = np.array(sorted(glob(disp_dir + '*.sac')))
     sm_files = np.array(sorted(glob(sm_dir + '*.bb*.sac')))
     
     # Path to send flatfile
@@ -285,6 +285,10 @@ for index in subdata:
             # Get the components
             components = np.asarray(components)
             
+            # Set up directories for filtered acceleration data 
+            if not path.exists(f'{param_dir}/acc/{run}'):
+                    makedirs(f'{param_dir}/acc/{run}')
+            
             ########## East component ##########
     
             # Find and read in East component
@@ -295,6 +299,10 @@ for index in subdata:
             if filtering == True:
                 E_filt = tmf.highpass(E_raw,fcorner,stsamprate,order,zerophase=True)
                 E_record = E_filt
+                # Save mseed
+                E_record[0].stats.channel = 'HNE'
+                E_record_filename = f'{param_dir}/acc/{run}/{station}.{E_record[0].stats.channel}.mseed' 
+                E_record[0].write(E_record_filename, format='MSEED')
             else:
                 E_record = E_raw
             
@@ -312,6 +320,10 @@ for index in subdata:
             if filtering == True:
                 N_filt = tmf.highpass(N_raw,fcorner,stsamprate,order,zerophase=True)
                 N_record = N_filt
+                # Save mseed
+                N_record[0].stats.channel = 'HNN'
+                N_record_filename = f'{param_dir}/acc/{run}/{station}.{N_record[0].stats.channel}.mseed' 
+                N_record[0].write(N_record_filename, format='MSEED')
             else:
                 N_record = N_raw
             
@@ -329,6 +341,10 @@ for index in subdata:
             if filtering == True:
                 Z_filt = tmf.highpass(Z_raw,fcorner,stsamprate,order,zerophase=True)
                 Z_record = Z_filt
+                # Save mseed
+                Z_record[0].stats.channel = 'HNZ'
+                Z_record_filename = f'{param_dir}/acc/{run}/{station}.{Z_record[0].stats.channel}.mseed' 
+                Z_record[0].write(N_record_filename, format='MSEED')
             else:
                 Z_record = Z_raw
             
@@ -690,10 +706,10 @@ comm.Gather(subdata, recvbuf, root=0)
 
 total_time = (time.time() - start_time)
 
-if total_time < 60:
-    print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time)} seconds ---", 'SandyBrown'))
-elif total_time >= 60 and total_time < 3600:
-    print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time/60)} minutes ---", 'SandyBrown'))
-elif total_time >= 3600 and total_time < 86400:
-    print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time/3600)} hours ---", 'SandyBrown'))
+# if total_time < 60:
+#     print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time)} seconds ---", 'SandyBrown'))
+# elif total_time >= 60 and total_time < 3600:
+#     print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time/60)} minutes ---", 'SandyBrown'))
+# elif total_time >= 3600 and total_time < 86400:
+#     print(cs(f"--- Total duration for {len(fulldata)} runs on {ncpus} CPUS is ~{round(total_time/3600)} hours ---", 'SandyBrown'))
     

@@ -20,8 +20,7 @@ def calc_time_to_peak(pgm, trace, IMarray, origintime, hypdist):
     Inputs:
         pgm(float): Peak ground motion.
         trace: Trace object with times for this station. 
-        IMarray: Array pgd was calculated on.  Could be the same as stream
-                        if peak IM was calculated on one component. 
+        IMarray: Array pgd was calculated on. 
         origintime(datetime): Origin time of event.
         hypdist(float): Hypocentral distance (km). 
         
@@ -46,16 +45,16 @@ def calc_time_to_peak(pgm, trace, IMarray, origintime, hypdist):
 
 def calc_spectra(stream, data_type):
     """
-    Calculates average spectra values in 25 bins for displacement, acceleration,
+    Calculates average spectra values in 20 bins for displacement, acceleration,
     and velocity waveforms.
 
     Inputs:
         stream: Obspy stream. 
-        sm (str): Data type used for determining bin edges.
-                    Options:
-                        disp
-                        acc
-                        vel
+        data_type(str): Data type used for determining bin edges.
+            Options:
+                disp
+                sm
+                vel
 
     Return:
         bin_means(list): Binned spectra for given station
@@ -75,16 +74,17 @@ def calc_spectra(stream, data_type):
     samprate = tr.stats.sampling_rate
     npts = tr.stats.npts
     
+    # Determine nyquist frequency
     nyquist = 0.5 * samprate
-
-    ## Calc spectra amplitudes and frequencies
     
-    # Switched number of tapers from 7 to 5.  Decreases computation time and
+
+    # Calc spectra amplitudes and frequencies 
+        # Switched number of tapers from 7 to 5.  Decreases computation time and
         # results are similar
     amp_squared, freq =  mtspec(data, delta=delta, time_bandwidth=4, 
                               number_of_tapers=5, nfft=npts, quadratic=True)
     
-    # Take square root to get amplitude 
+    # Convert from power spectra to amplitude spectra
     amp = np.sqrt(amp_squared)
     
     # Use scipy interpolate function to fill in data in missing bins
@@ -102,7 +102,7 @@ def calc_spectra(stream, data_type):
             indexes.append(i)
         
         # Remove frequencies above 10 Hz for sm data because of the way it was processed 
-        elif val > 10 and data_type in ('acc', 'vel'):
+        elif val > 10 and data_type == 'sm':
             indexes.append(i)
 
         # Remove frequencies above nyquist frequency for disp data
@@ -112,13 +112,10 @@ def calc_spectra(stream, data_type):
     
     # Remove any duplicate indexes
     indexes = np.unique(indexes)
-
     freq_new = np.delete(freq_new,indexes)
     amp_new = np.delete(amp_new,indexes) 
     
-    if data_type == 'accel':
-        data_type = 'sm'
-    
+    # Set up bins
     if data_type == 'sm':
         # Starting bins at 0.004 Hz (that is about equal to half the length
             # of the record for the synthetic and observed data) and ending at
@@ -136,7 +133,7 @@ def calc_spectra(stream, data_type):
                                                        amp_new,
                                                        statistic='mean',
                                                        bins=bins)
-    
+                
     # for i in range(len(bin_means)):
     #     bin_means[i] = 10**bin_means[i]
         
@@ -227,11 +224,6 @@ def plot_spectra(stream, freqs, amps, data_type, plot_dir, synthetic=True, param
     fig.text(-.03, 0.5, f'Amplitude {units}', va='center', rotation='vertical')
     plt.xlabel('Frequency (Hz)')
     
-    # if synthetic:
-    #     plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_spec/synthetic/{parameter}/{project}/{run}/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
-    # else:
-    #     plt.savefig(f'/Users/tnye/tsuquakes/plots/fourier_spec/obs/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
-        
     if synthetic:
         plt.savefig(f'{plot_dir}/parameters/{parameter}/{project}/plots/fourier_spec/{run}/{data_type}/{station}.{code}.png',bbox_inches='tight',dpi=300)
     else:

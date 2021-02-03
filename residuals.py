@@ -23,9 +23,9 @@ import residual_fns as res
  ## drops of 0.3, 1.0, and 2.0 MPa) on one figure
 
 # Set parameters
-# parameter = 'stress_drop'      # parameter being varied
-# projects = ['sd0.01', 'sd0.1', 'sd0.3', 'sd1.0', 'sd2.0']  # array of projects for the parameter
-# param_vals = ['0.01', '0.1', '0.3', '1.0', '2.0']        # array of parameter values associated w/ the projects
+parameter = 'stress_drop'      # parameter being varied
+projects = ['sd0.1', 'sd1.0']  # array of projects for the parameter
+param_vals = ['0.1', '1.0']        # array of parameter values associated w/ the projects
 
 # # Set parameters
 # parameter = 'rise_time'      # parameter being varied
@@ -37,12 +37,15 @@ import residual_fns as res
 # projects = ['sf0.25', 'sf0.5']  # array of projects for the parameter
 # param_vals = ['0.25', '0.5']        # array of parameter values associated w/ the projects
 
-parameter = 'test'      # parameter being varied
-projects = ['kappa_test']  # array of projects for the parameter
-param_vals = ['test']        # array of parameter values associated w/ the projects
+# parameter = 'test'      # parameter being varied
+# projects = ['kappa_test']  # array of projects for the parameter
+# param_vals = ['test']        # array of parameter values associated w/ the projects
 
 # Set to true if you want the natural log of the residuals 
 ln=True
+
+# Set to true if you want to include the standard values too
+default=True
 
 # Flatfile with observed data
 obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs.csv')
@@ -192,10 +195,10 @@ for project in projects:
         res_df.to_csv(f'{project_dir}/flatfiles/residuals/{project}_res.csv',index=False)
     
     # Plot spectra residuals 
-    res.plot_spec_res(parameter, project, ln=ln, outliers=True, default=True)
-    res.plot_spec_res(parameter, project, ln=ln, outliers=False, default=True)
+    res.plot_spec_res(parameter, project, ln=ln, outliers=True, default=default)
+    res.plot_spec_res(parameter, project, ln=ln, outliers=False, default=default)
 
 
 # Plot IM residuals 
-res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=True, default=True)
-res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=False, default=True)
+res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=True, default=default)
+res.plot_IM_res_full(parameter, projects, param_vals, ln=ln, outliers=False, default=default)
