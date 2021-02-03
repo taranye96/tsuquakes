@@ -8,7 +8,14 @@ Created on Thu Oct 10 12:16:28 2019
 
 ###############################################################################
 # Script that goes through observed waveforms from the 2010 M7.8 Mentawai event,
-# calculates IMs and spectra, and stores it all in a flatefile. 
+# calculates intensity measures, and stores it all in a flatefile.  The IMs
+# this script calculates are:
+    # PGD
+    # PGA
+    # PGV
+    # Displacement spectra bin averages for 20 bins
+    # Acceleration spectra bin averages for 20 bins
+    # Velocity spectra bin averages for 20 bins
 ###############################################################################
 
 # Imports
@@ -16,40 +23,47 @@ import numpy as np
 import pandas as pd
 import obspy
 from glob import glob
+
+# Local Imports
 import tsueqs_main_fns as tmf
 import signal_average_fns as avg
 import IM_fns
 
+################################ Parameters ###################################
+
+# Used for directory paths
 earthquake_name = 'Mentawai2010'
 
+# Data types to loop through.  I have a folder for displacement ('disp') and a 
+    # folder for acceleration ('accel'), so those are my data types. 
 data_types = ['disp', 'accel']
 
-### Set paths and parameters ####
 # Project directory 
-project = 'observed'
 proj_dir = '/Users/tnye/tsuquakes' 
 
 # Table of earthquake data
 eq_table_path = '/Users/tnye/tsuquakes/data/misc/events.csv'   
 eq_table = pd.read_csv(eq_table_path)
 
-# Data directories         
+# Data directories- one for displacement and one for strong motion (acc)     
 data_dir = proj_dir + '/data' 
 disp_dir = data_dir + '/' + earthquake_name + '/disp'
 sm_dir = data_dir + '/' + earthquake_name + '/accel'
 
-# Path to send flatfiles
+# Path to send flatfiles of intensity measures
 flatfile_path = proj_dir + '/flatfiles/obs_IMs.csv'     
 
-# Velocity filtering
+# Parameters for integration to velocity and filtering 
 fcorner = 1/15.                          # Frequency at which to high pass filter
 order = 2                                # Number of poles for filter  
 
- # Gather displacement and strong motion files
+# Gather displacement and strong motion files
 disp_files = np.array(sorted(glob(disp_dir + '/*.mseed')))
 sm_files = np.array(sorted(glob(sm_dir + '/*.mseed')))
 
-### Get event data ###
+
+################################ Event Data ###################################
+
 origin = pd.to_datetime('2010-10-25T14:42:22')
 
 eventname = earthquake_name
@@ -63,7 +77,9 @@ m0 = 10**(mw*(3/2.) + 9.1)
 nostations_i = eq_table['No. Sta'][11]
 mechanism = eq_table['Mechanism'][11]
 
-# Create lists for of the event and station info for the df
+
+########## Initialize lists for the event and station info for the df #########
+
 eventnames = np.array([])
 countries = np.array([])
 origintimes = np.array([])
@@ -100,31 +116,68 @@ acc_speclist = []
 vel_speclist = []
 
 
-##################### Data Processing and Calculations ####################
+###################### Data Processing and Calculations #######################
 
+# Threshold- used to calculate duration 
+threshold = 0.0
+
+# Loop through data types
 for data in data_types:
     
+    ###################### Set parameters for data type #######################
+    
     if data == 'disp':
+        
+        # Get metadata file
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_disp.chan'
+        
+        # Get mseed files
         files = disp_files
+        
+        # Types of IMs associated with this data type
         IMs = ['pgd']
-        threshold = 0.0
+        
+        # Sampling rate
         nsamples = 10
-        filtering = False
+        
+        # Channel code prefix
         code = 'LX'
+        
+        # Filtering
+            # Displacement data don't need to be highpass filtered 
+        filtering = False
+
+    
     elif data == 'accel':
+        
+        # Get metadata file
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_sm.chan'
+        
+        # Get mseed files
         files = sm_files
-        # Remove SISI sm station
+        
+        # Remove SISI sm station (SNR too low)
         for file in files:
             if 'SISI' in file:
                 files = np.delete(files, np.argwhere(files == file))
+        
+        # Types of IMs associated with this data type
         IMs = ['pga', 'pgv']
-        threshold = 0.0
+  
+        # Sampling rate
         nsamples = 100
+        
+        # Channel code prefix
         code = 'HN'
+        
+        # Filtering
+            # Acceleration data need to be highpass fitlered 
         filtering = True
 
+
+    ############################# Get metadata ################################
+    
+    # Read in metadata file
     metadata = pd.read_csv(metadata_file, sep='\t', header=0,
                           names=['net', 'sta', 'loc', 'chan', 'lat',
                                  'lon', 'elev', 'samplerate', 'gain', 'units'])
@@ -133,40 +186,51 @@ for data in data_types:
     metadata.sta = metadata.sta.astype(str)
     metadata.sta = metadata.sta.str.replace(' ','')
 
+    # Obtain gain and units
+    gain = metadata['gain'][0]
+    units = metadata['units'][0]
+    
+    
+    ######################## Get station data and files #######################
+    
     # Create lists to add station names, channels, and miniseed files to 
     stn_name_list = []
     channel_list = []
     mseed_list = []
     
-    # Group all files by station
+    # Group all files by station since there should be 3 components for each 
+        # station
     N = 3
     stn_files = [files[n:n+N] for n in range(0, len(files), N)]
     
-    # Obtain gain and units
-    gain = metadata['gain'][0]
-    units = metadata['units'][0]
-
-    
     # Loop over files to get the list of station names, channels, and mseed files 
     for station in stn_files:
+        
+        # Initialize lists for components and mseed files for this station
         components = []
         mseeds = []
     
+        # Get station name and append to station name list
         stn_name = station[0].split('.')[0].split('/')[-1]
         stn_name_list.append(stn_name)
         
+        # Loop through station mseed files
         for mseed_file in station:
-            if data == 'disp':
-                    channel_code = mseed_file.split('/')[-1].split('.')[1]
-            elif data == 'accel':
-                    channel_code = mseed_file.split('/')[-1].split('.')[1]
-        
+            
+            # Get channel code and append to components list
+            channel_code = mseed_file.split('/')[-1].split('.')[1]
             components.append(channel_code)
+            
+            # Append mseed file to mseed files list
             mseeds.append(mseed_file)
-    
+        
+        # Append station's channel code list to channel list for all stations
         channel_list.append(components)
+        # Append station's mseed files list to mseed files list for all stations
         mseed_list.append(mseeds)
 
+    
+    #################### Begin Processing and Calculations ####################
     
     # Loop over the stations for this earthquake, and start to run the computations:
     for i, station in enumerate(stn_name_list):
@@ -177,16 +241,15 @@ for data in data_types:
             components.append(channel[2])
             
         # Get the metadata for this station from the chan file - put it into
-        #     a new dataframe and reset the index so it starts at 0
+            # a new dataframe and reset the index so it starts at 0
         if country == 'Japan':
             station_metadata = metadata[(metadata.net == station[0:2]) & (metadata.sta == station[2:])].reset_index(drop=True)
             
         else:
-            station_metadata = metadata[metadata.sta == station].reset_index(drop=True)       # what is going on here
+            station_metadata = metadata[metadata.sta == station].reset_index(drop=True)
 
-                    
         # Pull out the data. Take the first row of the subset dataframe, 
-        #    assuming that the gain, etc. is always the same:
+            # assuming that the gain, etc. is always the same:
         stnetwork = station_metadata.loc[0].net
         stlon = station_metadata.loc[0].lon
         stlat = station_metadata.loc[0].lat
@@ -200,7 +263,7 @@ for data in data_types:
         # Compute the hypocentral distance
         hypdist = tmf.compute_rhyp(stlon,stlat,stelev,hyplon,hyplat,hypdepth)
 
-        # Append the earthquake and station info for this station
+        # Append the earthquake and station info for this station to their lists
         eventnames = np.append(eventnames,eventname)
         countries = np.append(countries,country)
         origintimes = np.append(origintimes,origintime)
@@ -221,16 +284,18 @@ for data in data_types:
         elif data == 'accel':
             stn_type_list = np.append(stn_type_list, 'SM')
         
-        # List for all spectra at station
+        # Initialize list for all spectra at this station
         station_spec = []
 
-        # Get the components
+        # Turn the components list into an array 
         components = np.asarray(components)
-            
         
+        # Get the values for the E component 
         if 'E' in components:
+          
             # Get index for E component 
             E_index = np.where(components=='E')[0][0]
+           
             # Read file into a stream object
             E_raw = obspy.read(mseed_list[i][E_index])
             
@@ -263,8 +328,10 @@ for data in data_types:
             
         # Get the values for the N component
         if 'N' in components:
-            # Get index for E component 
+           
+            # Get index for N component 
             N_index = np.where(components=='N')[0][0]
+            
             # Read file into a stream object
             N_raw = obspy.read(mseed_list[i][N_index])
             
@@ -288,7 +355,7 @@ for data in data_types:
             N_Td, N_start, N_end = tmf.determine_Td(threshold,N_record)  
             N_Td_list = np.append(N_Td_list,N_Td)
 
-            # Save corrected acc mseed file
+            # Save corrected mseed file
             tra = N_record[0]
             tra.stats.channel = code + 'N'
             filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.corr.mseed' 
@@ -297,8 +364,10 @@ for data in data_types:
 
         # Get the values for the Z component
         if 'Z' in components:
+         
             # Get index for Z component 
             Z_index = np.where(components=='Z')[0][0]     
+           
             # Read file into a stream object                     
             Z_raw = obspy.read(mseed_list[i][Z_index])
             
@@ -329,7 +398,7 @@ for data in data_types:
             tra.write(filename, format='MSEED')
 
 
-        # Get the values for the horizontal
+        # Get the values for the horizontal components 
         if ('E' in components) and ('N' in components):
             
             # Take the min time of E and N start times to be the start
@@ -343,7 +412,7 @@ for data in data_types:
             horiz_Td_list = np.append(horiz_Td_list,EN_Td)
 
         else:
-            ## Append nan to the overall arrays:
+            # Append nan to the overall arrays if horizontals don't exist:
             horizon_Td_list = np.append(horiz_Td_list,np.nan)
             
             
@@ -361,45 +430,14 @@ for data in data_types:
             comp3_Td_list = np.append(comp3_Td_list,ENZ_Td)
 
         else:
-            ## Append nan to the overall arrays:
+            # Append nan to the overall arrays if all 3 components don't exist:
             comp3_Td_list = np.append(comp3_Td_list,np.nan)
 
 
-        ################### Velocity ###################
+        ############################### Velocity ##############################
 
+        # Integrate acceleration data to velocity 
         if data == 'accel':
-
-        # ### Integrate unfiltered acc data to get velocity data
-        
-        #     ## East component 
-        #     E_vel_unfilt = tmf.accel_to_veloc(E_basecorr)
-        #     E_vel = tmf.highpass(E_vel_unfilt,fcorner,stsamprate,order,zerophase=True)
-            
-        #     # Save filtered velocity mseed file
-        #     trv = E_vel[0]
-        #     trv.stats.channel = 'HNE'
-        #     filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNE.corr' 
-        #     trv.write(filename_vel, format='MSEED')
-
-        #     ## North component 
-        #     N_vel_unfilt = tmf.accel_to_veloc(N_basecorr)
-        #     N_vel = tmf.highpass(N_vel_unfilt,fcorner,stsamprate,order,zerophase=True)
-            
-        #     # Save filtered velocity mseed file
-        #     trv = N_vel[0]
-        #     trv.stats.channel = 'HNN'
-        #     filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNN.corr' 
-        #     trv.write(filename_vel, format='MSEED')
-            
-        #     ## Vertical component 
-        #     Z_vel_unfilt = tmf.accel_to_veloc(Z_basecorr)
-        #     Z_vel = tmf.highpass(Z_vel_unfilt,fcorner,stsamprate,order,zerophase=True)
-            
-        #     # Save filtered velocity mseed file
-        #     trv = Z_vel[0]
-        #     trv.stats.channel = 'HNZ'
-        #     filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNZ.corr' 
-        #     trv.write(filename_vel, format='MSEED')
         
          ### Integrate filtered acc data to get velocity data
         
@@ -435,7 +473,8 @@ for data in data_types:
             
 
         ########################### Intensity Measures ########################
-
+        
+        # Calculate displacement intensity measures
         if data == 'disp':
             ## PGD
             # Get euclidean norm of displacement components 
@@ -464,6 +503,7 @@ for data in data_types:
             amps = [ampE,ampN,ampZ]
             IM_fns.plot_spectra(E_record, freqs, amps, 'disp', synthetic=False)
     
+        # If data type is not displacement, append 'nans'
         else:
             pgd_list = np.append(pgd_list,np.nan)
             tPGD_orig_list = np.append(tPGD_orig_list,np.nan)
@@ -471,7 +511,7 @@ for data in data_types:
             disp_spec = [np.nan] * 60
             disp_speclist.append(disp_spec)
 
-            
+        # Calculate acceleration and velocity intensity measures
         if data == 'accel':
             ## PGA         
             # Get euclidean norm of acceleration components 
@@ -490,9 +530,9 @@ for data in data_types:
             tPGA_parriv_list = np.append(tPGA_parriv_list,tPGA_parriv)
 
             ## Acc Spectra
-            E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, data)
-            N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, data)
-            Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, data)
+            E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, sm)
+            N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, sm)
+            Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, sm)
             # Combine into one array and append to main list
             acc_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
             acc_speclist.append(acc_spec.tolist())
@@ -512,9 +552,9 @@ for data in data_types:
             pgv_list = np.append(pgv_list,pgv)
             
             ## Vel Spectra
-            E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, data)
-            N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, data)
-            Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, data)
+            E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, sm)
+            N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, sm)
+            Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, sm)
             # Combine into one array and append to main list
             vel_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
             vel_speclist.append(vel_spec.tolist())
@@ -523,6 +563,7 @@ for data in data_types:
             amps_v = [ampE_v,ampN_v,ampZ_v]
             IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', synthetic=False)
 
+        # If data type is not acceleration, append 'nans'
         else:
             pga_list = np.append(pga_list,np.nan)
             pgv_list = np.append(pgv_list,np.nan)
@@ -535,7 +576,9 @@ for data in data_types:
             vel_speclist.append(vel_spec)
 
 
-## Now, put all the final arrays together into a pandas dataframe. First mak a dict:
+########################### Put together dataframe ############################
+
+# First, make a dictionary for main part of dataframe:
 dataset_dict = {'eventname':eventnames,'country':countries,'origintime':origintimes,
                     'hyplon':hyplons,'hyplat':hyplats,'hypdepth (km)':hypdepths,
                     'mw':mws,'m0':m0s,'network':networks,'station':stations,
@@ -547,6 +590,7 @@ dataset_dict = {'eventname':eventnames,'country':countries,'origintime':originti
                     'tPGD_parriv':tPGD_parriv_list, 'tPGA_origin':tPGA_orig_list,
                     'tPGA_parriv':tPGA_parriv_list}
 
+# Create list of column names for the displacement spectra bins
 disp_cols = ['E_disp_bin1', 'E_disp_bin2', 'E_disp_bin3', 'E_disp_bin4',
                  'E_disp_bin5', 'E_disp_bin6', 'E_disp_bin7',
                  'E_disp_bin8', 'E_disp_bin9', 'E_disp_bin10', 'E_disp_bin11',
@@ -563,7 +607,8 @@ disp_cols = ['E_disp_bin1', 'E_disp_bin2', 'E_disp_bin3', 'E_disp_bin4',
                  'Z_disp_bin10', 'Z_disp_bin11', 'Z_disp_bin12', 'Z_disp_bin13',
                  'Z_disp_bin14', 'Z_disp_bin15', 'Z_disp_bin16', 'Z_disp_bin17',
                  'Z_disp_bin18', 'Z_disp_bin19', 'Z_disp_bin20']
-    
+
+# Create list of column names for the acceleration spectra bins
 acc_cols = ['E_acc_bin1', 'E_acc_bin2', 'E_acc_bin3', 'E_acc_bin4',
             'E_acc_bin5', 'E_acc_bin6', 'E_acc_bin7', 'E_acc_bin8',
             'E_acc_bin9', 'E_acc_bin10', 'E_acc_bin11', 'E_acc_bin12',
@@ -580,7 +625,8 @@ acc_cols = ['E_acc_bin1', 'E_acc_bin2', 'E_acc_bin3', 'E_acc_bin4',
             'Z_acc_bin11', 'Z_acc_bin12', 'Z_acc_bin13', 'Z_acc_bin14',
             'Z_acc_bin15', 'Z_acc_bin16', 'Z_acc_bin17', 'Z_acc_bin18',
             'Z_acc_bin19', 'Z_acc_bin20']
-    
+
+# Create list of column names for the velocity spectra bins  
 vel_cols = ['E_vel_bin1', 'E_vel_bin2', 'E_vel_bin3', 'E_vel_bin4',
             'E_vel_bin5', 'E_vel_bin6', 'E_vel_bin7', 'E_vel_bin8',
             'E_vel_bin9', 'E_vel_bin10', 'E_vel_bin11', 'E_vel_bin12',
@@ -598,6 +644,7 @@ vel_cols = ['E_vel_bin1', 'E_vel_bin2', 'E_vel_bin3', 'E_vel_bin4',
             'Z_vel_bin15', 'Z_vel_bin16', 'Z_vel_bin17', 'Z_vel_bin18',
             'Z_vel_bin19', 'Z_vel_bin20']
 
+# Create spectra dataframes for each data type
 disp_spec_df = pd.DataFrame(disp_speclist, columns=disp_cols)
 acc_spec_df = pd.DataFrame(acc_speclist, columns=acc_cols)
 vel_spec_df = pd.DataFrame(vel_speclist, columns=vel_cols)
@@ -605,14 +652,10 @@ vel_spec_df = pd.DataFrame(vel_speclist, columns=vel_cols)
 # Make main dataframe
 main_df = pd.DataFrame(data=dataset_dict)
 
-# Combine dataframes 
+# Combine main dataframe with spectra dataframes 
 flatfile_df = pd.concat([main_df, disp_spec_df.reindex(main_df.index),
                         acc_spec_df.reindex(main_df.index),
                         vel_spec_df.reindex(main_df.index)], axis=1)
 
-## Save to file:
-flatfile_df.to_csv(flatfile_path,index=False)
-
-## Save to file:
-flatfile_path = '/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv'
+# Save df to file:
 flatfile_df.to_csv(flatfile_path,index=False)
