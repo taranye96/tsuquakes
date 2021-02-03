@@ -8,8 +8,8 @@ Created on Thu Apr  2 16:24:50 2020
 
 ###############################################################################
 # Module with functions used to calculate various averages of record components.
-# These functions are imported and used in synthetic_calc_mpi.py and 
-# synthetic_calc.py.   
+# These functions are imported and used in mentawai.py, synthetic_calc_mpi.py
+# and synthetic_calc.py.   
 ###############################################################################
 
 
