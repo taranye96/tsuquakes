@@ -153,5 +153,5 @@ if make_hf_waveforms==1:
 # Combine LF and HF waveforms with match filter                              
 if match_filter==1:
     forward.match_filter(home,project_name,fault_name,rupture_list,GF_list,
-            zero_phase,order,fcorner)
+            zero_phase,order,fcorner_low,fcorner_high)
                                                                                                                
