@@ -24,8 +24,8 @@ import residual_fns as res
 
 # Set parameters
 parameter = 'stress_drop'      # parameter being varied
-projects = ['sd0.1', 'sd1.0']  # array of projects for the parameter
-param_vals = ['0.1', '1.0']        # array of parameter values associated w/ the projects
+projects = ['sd0.1', 'sd1.0', 'sd2.0']  # array of projects for the parameter
+param_vals = ['0.1', '1.0', '2.0']        # array of parameter values associated w/ the projects
 
 # # Set parameters
 # parameter = 'rise_time'      # parameter being varied

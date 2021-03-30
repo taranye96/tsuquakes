@@ -41,21 +41,21 @@ syn_amp = np.sqrt(syn_amp_squared)
 
 # Double differentiate disp waveform to get it acc
 lf_wf[0].data = r_[0,diff(lf_wf[0].data)/lf_wf[0].stats.delta]
-acc_data = r_[0,diff(lf_wf[0].data)/lf_wf[0].stats.delta]
+# lf_wf[0].data = r_[0,diff(lf_wf[0].data)/lf_wf[0].stats.delta]
 
-# Low pass filter low frequency data
-lf_wf[0].data = forward.lowpass(acc_data,0.998,lf_wf[0].stats.sampling_rate,4,zerophase=True)
+# # Low pass filter low frequency data
+# lf_wf[0].data = forward.lowpass(lf_wf[0].data,0.998,lf_wf[0].stats.sampling_rate,4,zerophase=True)
 
 # Calculate spectra
-lf_amp_squared, lf_freq =  mtspec(acc_data, delta=lf_wf[0].stats.delta, time_bandwidth=4, 
+lf_amp_squared, lf_freq =  mtspec(lf_wf[0].data, delta=lf_wf[0].stats.delta, time_bandwidth=4, 
                               number_of_tapers=5, nfft=lf_wf[0].stats.npts, quadratic=True)
 lf_amp = np.sqrt(lf_amp_squared)
 
 
 ############################ High frequency spectra #######################
 
-# High pass filter high frequency data
-hf_wf[0].data = forward.highpass(hf_wf[0].data,0.998,hf_wf[0].stats.sampling_rate,4,zerophase=True)
+# # High pass filter high frequency data
+# hf_wf[0].data = forward.highpass(hf_wf[0].data,0.998,hf_wf[0].stats.sampling_rate,4,zerophase=True)
 
 # Calculate spectra
 hf_amp_squared, hf_freq =  mtspec(hf_wf[0].data, delta=hf_wf[0].stats.delta, time_bandwidth=4, 
@@ -66,15 +66,25 @@ hf_amp = np.sqrt(hf_amp_squared)
 ################################ Make figure ##################################
 
 # Plot spectra
-plt.loglog(lf_freq,lf_amp,lw=.8,c='mediumpurple',ls='-',label='low frequency')
-plt.loglog(hf_freq,hf_amp,lw=.8,c='darkturquoise',ls='-',label='high frequency')
+plt.loglog(lf_freq,lf_amp,lw=.8,c='mediumpurple',ls='-',label='low frequency: disp')
+plt.loglog(hf_freq,hf_amp,lw=.8,c='darkturquoise',ls='-',label='high frequency: acc')
 plt.loglog(syn_freq,syn_amp,lw=.8,c='C1',ls='-',label='full synthetic')
 plt.legend()
 plt.xlabel('Frequency (Hz)')
-plt.ylabel('Amplitude (m/s)')
-plt.title('Cascadia, Station 2133')
+plt.ylabel('Amplitude')
+plt.title('Cascadia, Station 2133: Pre-Filtering')
 
 # Save figure
-plt.savefig('/Users/tnye/tsuquakes/plots/split_spectra/cascadia_pwave.000190.2133.png', dpi=300)
+plt.savefig('/Users/tnye/tsuquakes/plots/split_spectra/cascadia_pwave.000190.2133_prefilt.png', dpi=300)
 plt.close()
+
+
+# Plot spectra
+plt.loglog(lf_freq,lf_amp,lw=.8,c='mediumpurple',ls='-',label='low frequency: disp')
+plt.loglog(hf_freq,hf_amp,lw=.8,c='darkturquoise',ls='-',label='high frequency: acc')
+plt.loglog(syn_freq,syn_amp,lw=.8,c='C1',ls='-',label='full synthetic')
+plt.legend()
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Amplitude')
+plt.title('Cascadia, Station 2133: Pre-Filtering')
 

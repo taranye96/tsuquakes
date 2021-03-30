@@ -18,9 +18,9 @@ from obspy.core import UTCDateTime
 
 
 ########                            GLOBALS                             ########
-home='/Users/tnye/FakeQuakes/parameters/stress_drop/sd5.0/'
-project_name='disp'
-run_name='sd5.0'
+home='/Users/tnye/SSW/FakeQuakes_tutorial/'
+project_name='test'
+run_name='mentawai'
 previous_runs=0
 ################################################################################
 
@@ -31,7 +31,7 @@ make_ruptures=0
 make_GFs=0
 make_synthetics=0
 make_waveforms=0
-make_hf_waveforms=0
+make_hf_waveforms=1
 match_filter=0
 # Things that only need to be done once
 load_distances=0
@@ -40,27 +40,27 @@ G_from_file=0
 
 
 #############                 Run-time parameters            ##################
-ncpus=16
+ncpus=4
 hot_start=0
 model_name='mentawai.mod'   # Velocity model
 #velmod_file=home+project_name+'/structure/iquique'
 moho_depth_in_km=30.0    #is it ok to have changed this to 30
 #fault_name='iquique_gfz.fault'    # Fault geometry
-fault_name='mentawai_fine.fault'
+fault_name='mentawai_coarse.fault'
 slab_name=None    # Slab 1.0 Ascii file, set to None for simple geometry
 mesh_name=None    # GMSH output file, set to None for simple geometry
 distances_name='Mentawai' # Name of dist matrix
-rupture_list='ruptures.sublist'
+rupture_list='ruptures.list'
 #rupture_list='testruptures.list'
 UTM_zone='47M'
 scaling_law='T' # T for thrust, S for strike-slip, N for normal
 
 #Station information
-GF_list='gnss.gflist'
-G_name='gnss'
+GF_list='sm_short.gflist'
+G_name='sm'
 
-Nrealizations=16 # Number of fake ruptures to generate per magnitude bin
-target_Mw=np.array([7.8])#,7.7]) # Of what approximate magnitudes
+Nrealizations=2 # Number of fake ruptures to generate per magnitude bin
+target_Mw=np.array([8.5])#,7.7]) # Of what approximate magnitudes
 max_slip=40 #Maximum sip (m) allowed in the model
 max_slip_rule=False
 
@@ -78,7 +78,8 @@ Pwave=True
 #Match filter parameters
 zero_phase=True
 order=4
-fcorner=0.998
+fcorner_low=0.998
+fcorner_high=0.1
 
 # Correlation function parameters
 hurst=0.75 # Melgar and Hayes 2019 found Hurst exponent is probably closer to 0.4?
@@ -95,7 +96,7 @@ time_epi=UTCDateTime('2010-10-25T14:42:12Z')
 hypocenter=[100.14, -3.49, 11.82] #closest subfault in the finer .rupt to USGS hypo (lowest t_rupt in model)
 source_time_function='dreger' # options are 'triangle' or 'cosine' or 'dreger'
 stf_falloff_rate=4 #Only affects Dreger STF, choose 4-8 are reasonable values
-num_modes=2000 # The more modes, the better you can model the high frequency stuff
+num_modes=72 # The more modes, the better you can model the high frequency stuff
 stress_parameter=50 #measured in bars
 high_stress_depth=30 # SMGA must be below this depth (measured in km)
 rake=90 # average rake
@@ -104,7 +105,7 @@ buffer_factor=0.5 # I don't think this does anything anymore-- remove?
 mean_slip_name=home+project_name+'/forward_models/mentawai_fine.rupt'
 #mean_slip_name=None
 shear_wave_fraction=0.8
-kappa=GF_list
+kappa=None
 
 force_area=True
 force_magnitude=False

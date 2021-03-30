@@ -26,9 +26,9 @@ import matplotlib.pyplot as plt
 ################################# One station #################################
 
 # Get waveforms
-syn_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/CGJI.bb.HNE.sac')
-lf_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/CGJI.LYE.sac')
-hf_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/CGJI.HNE.mpi.sac')
+syn_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/LASI.bb.HNE.sac')
+lf_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/LASI.LYE.sac')
+hf_wf = read('/Users/tnye/FakeQuakes/parameters/standard/std/sm/output/waveforms/mentawai.000000/LASI.HNE.mpi.sac')
 
     
                 ############## Synthetic spectra ##############
@@ -74,10 +74,10 @@ plt.loglog(syn_freq,syn_amp,lw=.8,c='C1',ls='-',label='full synthetic')
 plt.legend()
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Amplitude (m/s)')
-plt.title('Mentawai, Station CGJI')
+plt.title('Mentawai, Station LASI')
 
 # Save figure
-plt.savefig('/Users/tnye/tsuquakes/plots/split_spectra/mentawai.000000.CGJI_nofilter.png', dpi=300)
+plt.savefig('/Users/tnye/tsuquakes/plots/split_spectra/mentawai.000000.LASI.png', dpi=300)
 plt.close()
 
 

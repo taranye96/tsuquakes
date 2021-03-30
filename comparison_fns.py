@@ -109,12 +109,8 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
         fig.text(0.005, 0.5, f'Amp ({units})', va='center', rotation='vertical')
         handles, labels = axs[0][0].get_legend_handles_labels()
         fig.legend(handles, labels, loc=(0.72,0.075), framealpha=None)
-        if data_type == 'disp':
-                fig.delaxes(axs[4][1])
-                fig.delaxes(axs[4][2])
-        else:
-                fig.delaxes(axs[5][1])
-                fig.delaxes(axs[5][2])
+        fig.delaxes(axs[4][1])
+        fig.delaxes(axs[4][2])
         fig.suptitle('Fourier Spectra Comparison', fontsize=12, y=1)
         fig.text(0.445, 0.125, (r"$\bf{" + 'Project:' + "}$" + '' + project))
         fig.text(0.445, 0.1, (r'$\bf{' + 'Run:' + '}$' + '' + run))
@@ -154,12 +150,8 @@ def plot_spec_comp(syn_freqs, syn_spec, obs_freqs, obs_spec, stn_list, hypdists,
         fig.text(0.005, 0.5, f'Amp ({units})', va='center', rotation='vertical')
         handles, labels = axs[0][0].get_legend_handles_labels()
         fig.legend(handles, labels, loc=(0.725,0.06), framealpha=None)
-        if data_type == 'disp':
-                fig.delaxes(axs[4][1])
-                fig.delaxes(axs[4][2])
-        else:
-                fig.delaxes(axs[5][1])
-                fig.delaxes(axs[5][2])
+        fig.delaxes(axs[5][1])
+        fig.delaxes(axs[5][2])
         fig.suptitle('Fourier Spectra Comparison', fontsize=12, y=1)
         fig.text(0.445, 0.115, (r"$\bf{" + 'Project:' + "}$" + '' + project))
         fig.text(0.445, 0.09, (r'$\bf{' + 'Run:' + '}$' + '' + run))
