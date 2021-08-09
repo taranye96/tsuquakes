@@ -7,7 +7,7 @@ Created on Tue Nov 19 10:58:11 2019
 """
 
 ###############################################################################
-# Script used to  
+# Script used to create a .fault file to use in FakeQuakes. 
 ###############################################################################
 
 import matplotlib.pyplot as plt
