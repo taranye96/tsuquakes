@@ -37,18 +37,6 @@ def calc_res(parameter, project, run, ln=True):
     import numpy as np
     import pandas as pd
     
-    obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs.csv')
-    
-    # Observed values
-    obs_pgd = np.array(obs_df['pgd'])
-    obs_pga = np.array(obs_df['pga'])
-    obs_pgv = np.array(obs_df['pgv'])
-    obs_tPGD_orig = np.array(obs_df['tPGD_origin'])
-    obs_tPGD_parriv = np.array(obs_df['tPGD_parriv'])
-    obs_tPGA_orig = np.array(obs_df['tPGA_origin'])
-    obs_tPGA_parriv = np.array(obs_df['tPGA_parriv'])
-    obs_spectra = np.array(obs_df.iloc[:,28:250])
-    
     # Synthetic values
     syn_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/flatfiles/IMs/{run}.csv')
     syn_pgd = np.array(syn_df['pgd'])
@@ -59,6 +47,25 @@ def calc_res(parameter, project, run, ln=True):
     syn_tPGA_orig = np.array(syn_df['tPGA_origin'])
     syn_tPGA_parriv = np.array(syn_df['tPGA_parriv'])
     syn_spectra = np.array(syn_df.iloc[:,28:250])
+    
+    # Observed dataframe contains GNSS and strong motion data. Read in only
+        # parts of it if you only have one type of data
+    if len(syn_df) == 29:
+        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')      # full dataframe
+    elif len(syn_df)==16:
+        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')[13:] # strong motion stations only
+    elif len(syn_df)==13:
+        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')[:13] # gnss stations only
+    
+    # Observed values
+    obs_pgd = np.array(obs_df['pgd'])
+    obs_pga = np.array(obs_df['pga'])
+    obs_pgv = np.array(obs_df['pgv'])
+    obs_tPGD_orig = np.array(obs_df['tPGD_origin'])
+    obs_tPGD_parriv = np.array(obs_df['tPGD_parriv'])
+    obs_tPGA_orig = np.array(obs_df['tPGA_origin'])
+    obs_tPGA_parriv = np.array(obs_df['tPGA_parriv'])
+    obs_spectra = np.array(obs_df.iloc[:,28:250])
     
     if ln:
         # calc res
@@ -325,7 +332,7 @@ def plot_res(parameter, project, rupture_list, ln=True):
     return()
 
 
-def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
+def plot_spec_res(parameter, project, data_types, ln=True, outliers=True, default=False):
     """
     Makes residual boxplot figures of the spectra in the IM flatfile created
     using syn_calc_IMs.py. Each plot is created using one project (i.e. stress
@@ -336,6 +343,8 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
             parameter(str): Name of parameter folder.
             project(str): Name of simulation project.  This will be the main
                           directory where the different runs will be store.
+            data_types(array): List of data types to make spectra residual
+                               plots for. Options are 'disp', 'acc', 'vel'.
             ln(T/F): If true, calculates the natural log of the residuals.
             outliers(T/F): True or False if outliers should be shown in plots. 
             default(T/F): True or false if residuals using default parameters are
@@ -373,10 +382,7 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
     # Make sure path to safe plots exists
     if not path.exists(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals'):
         makedirs(f'/Users/tnye/FakeQuakes/parameters/{parameter}/{project}/plots/residuals')
-    
-    # List of data types
-    data_types = ['disp', 'acc', 'vel']
-    
+
     # Loop through data_types
     for data in data_types:
         
@@ -418,14 +424,15 @@ def plot_spec_res(parameter, project, ln=True, outliers=True, default=False):
         bin_means = []
         for i in range(len(bin_edges)):
             if i != 0:
-                mean = np.exp((np.log10(bin_edges[i])+np.log10(bin_edges[i-1]))/2)
+                # mean = np.exp((np.log10(bin_edges[i])+np.log10(bin_edges[i-1]))/2)
+                mean = np.sqrt(bin_edges[i]*bin_edges[i-1])
                 bin_means.append(mean)
             
         # Function to round bin means
         def round_sig(x, sig):
             return round(x, sig-int(floor(log10(abs(x))))-1)
         
-        # Ruond bin means so that they look clean for figure
+        # Round bin means so that they look clean for figure
         for i, b in enumerate(bin_means):
             if b < 0.01:
                 bin_means[i] = round_sig(b,1)
@@ -545,7 +552,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
     else:
         res='res'
     
-    # Add default parameter first if risetime or vrupt
+    # Add default parameter first if risetime 
     if parameter == 'rise_time':
         val = '1'
     
@@ -619,7 +626,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
         if parameter == 'stress_drop':
             val = '5.0'
         elif parameter == 'vrupt':
-            val = '0.8'
+            val = '1.66'
         
         # Residual dataframe for default (aka stdtered) parameters
         std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/standard/std/flatfiles/residuals/std_{res}.csv')
@@ -677,7 +684,7 @@ def plot_IM_res_full(parameter, projects, param_vals, ln=True, outliers=True, de
         xlabel = 'Rise Time Factor'
         title = 'Rise Time IM Residuals'
     elif parameter == 'vrupt':
-        xlabel = 'Shear Wave Fraction'
+        xlabel = 'Rupture Velocity (km/s)'
         title = 'Vrupt IM Residuals'
     else:
         xlabel = ''
