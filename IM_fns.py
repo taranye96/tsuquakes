@@ -55,7 +55,6 @@ def calc_spectra(stream, data_type):
             Options:
                 disp
                 sm
-                vel
 
     Return:
         bin_means(list): Binned spectra for given station
