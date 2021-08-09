@@ -51,7 +51,7 @@ disp_dir = data_dir + '/' + earthquake_name + '/disp'
 sm_dir = data_dir + '/' + earthquake_name + '/accel'
 
 # Path to send flatfiles of intensity measures
-flatfile_path = proj_dir + '/flatfiles/obs_IMs.csv'     
+flatfile_path = proj_dir + '/flatfiles/obs_IMs2.csv'     
 
 # Parameters for integration to velocity and filtering 
 fcorner = 1/15.                          # Frequency at which to high pass filter
@@ -137,7 +137,7 @@ for data in data_types:
         # Types of IMs associated with this data type
         IMs = ['pgd']
         
-        # Sampling rate
+        # Number of samples to use in computing the pre-event baseline
         nsamples = 10
         
         # Channel code prefix
@@ -164,7 +164,7 @@ for data in data_types:
         # Types of IMs associated with this data type
         IMs = ['pga', 'pgv']
   
-        # Sampling rate
+        # Number of samples to use in computing the pre-event baseline
         nsamples = 100
         
         # Channel code prefix
@@ -322,7 +322,7 @@ for data in data_types:
             # Save corrected mseed file
             tra = E_record[0]
             tra.stats.channel = code + 'E'
-            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.corr.mseed' 
+            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.mseed' 
             tra.write(filename, format='MSEED')
 
             
@@ -358,7 +358,7 @@ for data in data_types:
             # Save corrected mseed file
             tra = N_record[0]
             tra.stats.channel = code + 'N'
-            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.corr.mseed' 
+            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.mseed' 
             tra.write(filename, format='MSEED')
 
 
@@ -394,7 +394,7 @@ for data in data_types:
             # Save corrected mseed file
             tra = Z_record[0]
             tra.stats.channel = code + 'Z'
-            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.corr.mseed' 
+            filename = '/Users/tnye/tsuquakes/data/Mentawai2010/' + data + '_corr/' + tra.stats.station + '.' + tra.stats.channel + '.mseed' 
             tra.write(filename, format='MSEED')
 
 
@@ -448,7 +448,7 @@ for data in data_types:
             # Save filtered velocity mseed file
             trv = E_vel[0]
             trv.stats.channel = 'HNE'
-            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNE.corr.mseed' 
+            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNE.mseed' 
             trv.write(filename_vel, format='MSEED')
 
             ## North component 
@@ -458,7 +458,7 @@ for data in data_types:
             # Save filtered velocity mseed file
             trv = N_vel[0]
             trv.stats.channel = 'HNN'
-            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNN.corr.mseed' 
+            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNN.mseed' 
             trv.write(filename_vel, format='MSEED')
             
             ## Vertical component 
@@ -468,7 +468,7 @@ for data in data_types:
             # Save filtered velocity mseed file
             trv = Z_vel[0]
             trv.stats.channel = 'HNZ'
-            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNZ.corr.mseed' 
+            filename_vel = '/Users/tnye/tsuquakes/data/Mentawai2010/vel_corr/' + trv.stats.station + '.HNZ.mseed' 
             trv.write(filename_vel, format='MSEED')
             
 
@@ -485,7 +485,7 @@ for data in data_types:
             pgd = np.max(np.abs(euc_norm))
             pgd_list = np.append(pgd_list,pgd)
             # Calcualte tPGD from origin and p-arrival
-            tPGD_orig, tPGD_parriv = IM_fns.calc_tPGD(pgd, E_record[0],
+            tPGD_orig, tPGD_parriv = IM_fns.calc_time_to_peak(pgd, E_record[0],
                                                             np.abs(euc_norm),
                                                             origin, hypdist)
             tPGD_orig_list = np.append(tPGD_orig_list,tPGD_orig)
@@ -501,7 +501,7 @@ for data in data_types:
             # Plot spectra
             freqs = [freqE,freqN,freqZ]
             amps = [ampE,ampN,ampZ]
-            IM_fns.plot_spectra(E_record, freqs, amps, 'disp', synthetic=False)
+            IM_fns.plot_spectra(E_record, freqs, amps, 'disp', '', synthetic=False)
     
         # If data type is not displacement, append 'nans'
         else:
@@ -523,23 +523,23 @@ for data in data_types:
             pga = np.max(np.abs(acc_euc_norm))
             pga_list = np.append(pga_list,pga)
             # Calcualte tPGD from origin and p-arrival
-            tPGA_orig, tPGA_parriv = IM_fns.calc_tPGD(pga, E_record[0],
+            tPGA_orig, tPGA_parriv = IM_fns.calc_time_to_peak(pga, E_record[0],
                                                             np.abs(acc_euc_norm),
                                                             origin, hypdist)
             tPGA_orig_list = np.append(tPGA_orig_list,tPGA_orig)
             tPGA_parriv_list = np.append(tPGA_parriv_list,tPGA_parriv)
 
             ## Acc Spectra
-            E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, sm)
-            N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, sm)
-            Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, sm)
+            E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, 'sm')
+            N_spec_data, freqN, ampN = IM_fns.calc_spectra(N_record, 'sm')
+            Z_spec_data, freqZ, ampZ = IM_fns.calc_spectra(Z_record, 'sm')
             # Combine into one array and append to main list
             acc_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
             acc_speclist.append(acc_spec.tolist())
             # Plot spectra
             freqs = [freqE,freqN,freqZ]
             amps = [ampE,ampN,ampZ]
-            IM_fns.plot_spectra(E_record, freqs, amps, 'acc', synthetic=False)
+            IM_fns.plot_spectra(E_record, freqs, amps, 'acc', '', synthetic=False)
 
 
             ## PGV      
@@ -552,16 +552,16 @@ for data in data_types:
             pgv_list = np.append(pgv_list,pgv)
             
             ## Vel Spectra
-            E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, sm)
-            N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, sm)
-            Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, sm)
+            E_spec_vel, freqE_v, ampE_v = IM_fns.calc_spectra(E_vel, 'sm')
+            N_spec_vel, freqN_v, ampN_v = IM_fns.calc_spectra(N_vel, 'sm')
+            Z_spec_vel, freqZ_v, ampZ_v = IM_fns.calc_spectra(Z_vel, 'sm')
             # Combine into one array and append to main list
             vel_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
             vel_speclist.append(vel_spec.tolist())
             # Plot spectra
             freqs_v = [freqE_v,freqN_v,freqZ_v]
             amps_v = [ampE_v,ampN_v,ampZ_v]
-            IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', synthetic=False)
+            IM_fns.plot_spectra(E_vel, freqs_v, amps_v, 'vel', '', synthetic=False)
 
         # If data type is not acceleration, append 'nans'
         else:
