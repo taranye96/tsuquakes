@@ -14,12 +14,13 @@ Created on Fri Jul 17 17:27:35 2020
 ###############################################################################
 
 
-def calc_res(parameter, project, run, ln=True):
+def calc_res(obs_file, parameter, project, run, ln=True):
     """
     Calculates residuals between synthetic and observed data, and puts residuals
     into a dataframe.
     
     Inputs:
+        obs_file(str): Path to observed data flatfile.
         parameter(str): Folder name of parameter being varied.
         project(str): Folder name of specific project within parameter folder.
         run(str): Individual run name within certain project. 
@@ -51,11 +52,11 @@ def calc_res(parameter, project, run, ln=True):
     # Observed dataframe contains GNSS and strong motion data. Read in only
         # parts of it if you only have one type of data
     if len(syn_df) == 29:
-        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')      # full dataframe
+        obs_df = pd.read_csv(obs_file)      # full dataframe
     elif len(syn_df)==16:
-        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')[13:] # strong motion stations only
+        obs_df = pd.read_csv(obs_file)[13:] # strong motion stations only
     elif len(syn_df)==13:
-        obs_df = pd.read_csv('/Users/tnye/tsuquakes/flatfiles/obs_IMs2.csv')[:13] # gnss stations only
+        obs_df = pd.read_csv(obs_file)[:13] # gnss stations only
     
     # Observed values
     obs_pgd = np.array(obs_df['pgd'])
@@ -64,7 +65,7 @@ def calc_res(parameter, project, run, ln=True):
     obs_tPGD_orig = np.array(obs_df['tPGD_origin'])
     obs_tPGD_parriv = np.array(obs_df['tPGD_parriv'])
     obs_tPGA_orig = np.array(obs_df['tPGA_origin'])
-    obs_tPGA_parriv = np.array(obs_df['tPGA_parriv'])
+    obs_tPGA_parriv = np.array(['tPGA_parriv'])
     obs_spectra = np.array(obs_df.iloc[:,28:250])
     
     if ln:
