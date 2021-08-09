@@ -23,12 +23,12 @@ from obspy.taup import TauPyModel
 from mudpy import fakequakes
 
 # Parameters
-home = '/Users/tnye/FakeQuakes/parameters/vrupt/sf0.25/'
+home = '/Users/tnye/FakeQuakes/parameters/vrupt/test/'
 project_name = 'disp'
 rupt_dir = f'{home}disp/output/ruptures'
 orig_rupt_dir = f'{home}/disp/output/orig_ruptures'
 
-shear_wave_fraction_shallow = 0.5
+shear_wave_fraction_shallow = 0.4
 
 # Rename original ruptures folder 
 if not path.exists(orig_rupt_dir):
