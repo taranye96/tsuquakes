@@ -21,7 +21,6 @@ from obspy.core import UTCDateTime
 home='/Users/tnye/SSW/FakeQuakes_tutorial/'
 project_name='test'
 run_name='mentawai'
-previous_runs=0
 ################################################################################
 
 
@@ -31,7 +30,7 @@ make_ruptures=0
 make_GFs=0
 make_synthetics=0
 make_waveforms=0
-make_hf_waveforms=1
+make_hf_waveforms=0
 match_filter=0
 # Things that only need to be done once
 load_distances=0
@@ -60,7 +59,7 @@ GF_list='sm_short.gflist'
 G_name='sm'
 
 Nrealizations=2 # Number of fake ruptures to generate per magnitude bin
-target_Mw=np.array([8.5])#,7.7]) # Of what approximate magnitudes
+target_Mw=np.array([7.8])#,7.7]) # Of what approximate magnitudes
 max_slip=40 #Maximum sip (m) allowed in the model
 max_slip_rule=False
 
@@ -90,21 +89,17 @@ slip_standard_deviation=0.9 # Keep this at 0.9
 
 # Rupture parameters
 time_epi=UTCDateTime('2010-10-25T14:42:12Z')
-#hypocenter=[-70.769,-19.610,25.0]
-#hypocenter=[-70.788,-19.613,28.21]
-#hypocenter=[-70.9755,-19.6911,21.8874]
 hypocenter=[100.14, -3.49, 11.82] #closest subfault in the finer .rupt to USGS hypo (lowest t_rupt in model)
 source_time_function='dreger' # options are 'triangle' or 'cosine' or 'dreger'
 stf_falloff_rate=4 #Only affects Dreger STF, choose 4-8 are reasonable values
-num_modes=72 # The more modes, the better you can model the high frequency stuff
+num_modes=2000 # The more modes, the better you can model the high frequency stuff
 stress_parameter=50 #measured in bars
 high_stress_depth=30 # SMGA must be below this depth (measured in km)
 rake=90 # average rake
 rise_time_depths=[10,15] #Transition depths for rise time scaling (if slip shallower than first index, rise times are twice as long as calculated)
-buffer_factor=0.5 # I don't think this does anything anymore-- remove?
 mean_slip_name=home+project_name+'/forward_models/mentawai_fine.rupt'
-#mean_slip_name=None
-shear_wave_fraction=0.8
+shear_wave_fraction_shallow=0.49
+shear_wave_fraction_deep=0.8
 kappa=None
 
 force_area=True
@@ -120,14 +115,12 @@ if init==1:
     
 #Generate rupture models
 if make_ruptures==1: 
-    fakequakes.generate_ruptures(home,project_name,run_name,fault_name,slab_name,
-            mesh_name,load_distances,distances_name,UTM_zone,target_Mw,model_name,
-            hurst,Ldip,Lstrike,num_modes,Nrealizations,rake,buffer_factor,
-            rise_time_depths,time_epi,max_slip,source_time_function,lognormal,
-            slip_standard_deviation,scaling_law,ncpus,mean_slip_name=mean_slip_name,
-            force_magnitude=force_magnitude,force_area=force_area,hypocenter=hypocenter,
-            force_hypocenter=force_hypocenter,shear_wave_fraction=shear_wave_fraction,
-            max_slip_rule=max_slip_rule,previous_runs=previous_runs)
+    fakequakes.generate_ruptures(home,project_name,run_name,fault_name,slab_name,mesh_name,load_distances,
+        distances_name,UTM_zone,target_Mw,model_name,hurst,Ldip,Lstrike,num_modes,Nrealizations,rake,
+        rise_time_depths,time_epi,max_slip,source_time_function,lognormal,slip_standard_deviation,scaling_law,
+        ncpus,mean_slip_name=mean_slip_name,force_magnitude=force_magnitude,force_area=force_area,
+        hypocenter=hypocenter,force_hypocenter=force_hypocenter,shear_wave_fraction_shallow=shear_wave_fraction_shallow,
+        shear_wave_fraction_deep=shear_wave_fraction_deep,max_slip_rule=max_slip_rule)  
                 
 # Prepare waveforms and synthetics       
 if make_GFs==1 or make_synthetics==1:
