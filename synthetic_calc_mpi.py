@@ -23,7 +23,6 @@ import numpy as np
 from numpy import genfromtxt
 import pandas as pd
 from obspy import read
-from stringcolor import * 
 
 # Local Imports
 import tsueqs_main_fns as tmf
@@ -48,9 +47,10 @@ home = '/Users/tnye/FakeQuakes'
 param_dir = f'{home}/parameters/{parameter}/{project}'                      
 data_dir = '/Users/tnye/tsuquakes/data'
 
-rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.sublist',dtype='U')
+rupture_list = genfromtxt(f'{param_dir}/disp/data/ruptures.list',dtype='U')
 
 data_types = ['disp','sm']
+# data_types = ['disp']
 
 ################################ Set up Folders ###############################
 
@@ -107,7 +107,7 @@ mechanism = eq_table['Mechanism'][11]
 for index in subdata:
     rupture = rupture_list[index]
     run = rupture.rsplit('.', 1)[0]
-    print(f"Processor {rank} beginning {run}")
+    # print(f"Processor {rank} beginning {run}")
         
     # Synthetic miniseed dirs
     disp_dir = f'{param_dir}/disp/output/waveforms/{run}/'
@@ -702,7 +702,7 @@ recvbuf=None
 if rank == 0:
     recvbuf = np.empty(count*size, dtype=int)
 
-comm.Gather(subdata, recvbuf, root=0)
+# comm.Gather(subdata, recvbuf, root=0)
 
 total_time = (time.time() - start_time)
 
