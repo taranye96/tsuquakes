@@ -1,0 +1,54 @@
+#!/bin/bash
+
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset FORMAT_GEO_MAP ddd.d
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=16p,Helvetica
+gmt gmtset PS_MEDIA
+
+OUT=mentawai_GNSS
+LOCATION=/Users/tnye/tsuquakes/manuscript/figures
+
+LONMIN=99.5
+LONMAX=100.5
+LATMIN=-3.15
+LATMAX=-2
+
+J="M5i"
+BOUNDS="-BWeSn -B0.5p"
+
+slab2=/Users/tnye/slab2.0/sum_slab2_dep_02.23.18.grd
+SM_STATIONS=/Users/tnye/tsuquakes/GMT/data/sm_finaldataset-corrected.txt
+GNSS_STATIONS=/Users/tnye/tsuquakes/GMT/data/disp_finaldataset.txt
+EPICENTER=/Users/tnye/tsuquakes/GMT/data/mentawai_epi.txt
+bathgradient=/Users/tnye/tsuquakes/GMT/data/bathgradient.grd
+topogradient=/Users/tnye/tsuquakes/GMT/data/topogradient.grd
+menbath=/Users/tnye/tsuquakes/GMT/data/menbath.grd
+mentopo=/Users/tnye/tsuquakes/GMT/data/mentopo.grd
+CPTbath=/Users/tnye/tsuquakes/GMT/stations_fig/menbath.cpt
+CPTtopo=/Users/tnye/tsuquakes/GMT/stations_fig/mentopo2.cpt
+
+##########
+###Plot###
+##########
+
+# Plot basemap
+gmt psbasemap -J$J -R$LONMIN/$LONMAX/$LATMIN/$LATMAX -Bwsne -P -V -X1.5i -Y5i -K > ${OUT}.eps
+
+# Plot topography
+# gmt grdimage $menbath -R -J -C$CPTbath -I$bathgradient -Q -K -O >> ${OUT}.eps
+# gmt grdimage $mentopo -R -J -C$CPTtopo -I$topogradient -Q -K -O >> ${OUT}.eps
+
+# Plot coastline
+# gmt pscoast -R -J -Na -Df -A25 -W0.25p,black -K -O >> ${OUT}.eps
+gmt pscoast -R -J -Df -W0p -S187/242/250@10 -G171/152/128 -O -K >> ${OUT}.eps
+
+# Plot stations and epicenter
+gmt psxy $GNSS_STATIONS -R -J -Ss1c -G0/100/0 -W1.25p,black -K -O >> ${OUT}.eps
+gmt psxy $SM_STATIONS -R -J -Si1c -G255/50/100 -W1.25p,black -K -O >> ${OUT}.eps
+gmt psxy $EPICENTER -R -J -Sa1c -G245/226/22 -W.5p,black -O  >> ${OUT}.eps
+
+# open $OUT.eps  # shows plot
+gmt psconvert $OUT.eps -TG -P -A1c -E300
+mv $OUT.png $LOCATION/.
+rm $OUT.eps

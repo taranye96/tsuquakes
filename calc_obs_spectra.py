@@ -9,7 +9,7 @@ Created on Fri Sep 18 19:31:02 2020
 ###############################################################################
 # Script that calculates the Fourier spectra for the observed Mentawai
 # waveforms and saves them as .csv files.  These files are used in 
-# synthetic_calc_mpi.py to make spectra comparison plots. 
+# parallel_calc_IMs.py to make spectra comparison plots. 
 ###############################################################################
 
 # Imports
@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from obspy import read
 import IM_fns
+from rotd50 import compute_rotd50
 
 data_types = ['disp', 'acc', 'vel']
 
@@ -34,14 +35,6 @@ for data in data_types:
     ### Get event data ###
     eventname = 'Mentawai2010'
     country = eq_table['Country'][11]
-    hyplon = eq_table['Longitude'][11]
-    hyplat = eq_table['Latitude'][11]
-    hypdepth = eq_table['Depth (km)'][11]
-    
-    # Filtering
-    threshold = 0.0
-    fcorner = 1/15.                          # Frequency at which to high pass filter
-    order = 2                                # Number of poles for filter  
             
     ##################### Data Processing and Calculations ####################
     
@@ -53,17 +46,14 @@ for data in data_types:
     if data == 'disp':
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_disp.chan'
         obs_files = np.array(sorted((glob(disp_dir + '/*'))))
-        filtering = False
         dtype = 'disp'
     elif data == 'acc':
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_sm.chan'
         obs_files = np.array(sorted((glob(acc_dir + '/*'))))
-        filtering = True
         dtype = 'sm'
     elif data == 'vel':
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_sm.chan'
         obs_files = np.array(sorted((glob(vel_dir + '/*'))))
-        filtering = True
         dtype = 'sm'
     
     metadata = pd.read_csv(metadata_file, sep='\t', header=0,
@@ -74,14 +64,8 @@ for data in data_types:
     metadata.sta = metadata.sta.astype(str)
     metadata.sta = metadata.sta.str.replace(' ','')
     
-    syn_freqs = []
-    syn_amps = []
     obs_freqs = []
     obs_amps = []
-    hypdists = []
-    
-    
-    ################################### Observed ###########3######################
     
     # Create lists to add station names, channels, and miniseed files to 
     stn_name_list = []
@@ -98,7 +82,7 @@ for data in data_types:
         mseeds = []
     
         stn_name = station[0].split('.')[0].split('/')[-1]
-        if stn_name != 'SISI':
+        if stn_name not in ['PPBI','PSI','CGJI','TSI','CNJI','LASI','MLSI','MKMK','LNNG','LAIS','TRTK','MNNA','BTHL']:
             stn_name_list.append(stn_name)
             
             for mseed_file in station:
@@ -148,20 +132,29 @@ for data in data_types:
         E_index = np.where(components=='E')[0][0]
         # Read file into a stream object
         E_record = read(mseed_list[i][E_index])
+        
+        # Get index for N component 
+        N_index = np.where(components=='N')[0][0]
+        # Read file into a stream object
+        N_record = read(mseed_list[i][N_index])
     
     
         ####################### IMs ########################
     
         # Calc Spectra
-        E_spec_data, freqE, ampE = IM_fns.calc_spectra(E_record, dtype)
+        bins, E_spec_data = IM_fns.calc_spectra(E_record, dtype)
+        bins, N_spec_data = IM_fns.calc_spectra(N_record, dtype)
         
+        # Get avg of horizontals
+        NE_data = (E_spec_data - N_spec_data)/(np.log(E_spec_data)-np.log(N_spec_data))
+                
         # Append spectra to observed list
-        obs_freqs.append(freqE.tolist())
-        obs_amps.append(ampE.tolist())
+        obs_freqs.append(bins)
+        obs_amps.append(NE_data.tolist())
         
     freq_df = pd.DataFrame(obs_freqs)
     amp_df = pd.DataFrame(obs_amps)
     flatfile_df = pd.concat([freq_df, amp_df], axis=1)
     
-    flatfile_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/{data}_spec.csv',index=False)
+    flatfile_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/{data}_binned_spec.csv',index=False)
     

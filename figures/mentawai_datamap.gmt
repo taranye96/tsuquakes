@@ -1,0 +1,88 @@
+#!/bin/bash
+
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset FORMAT_GEO_MAP ddd
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=16p,Helvetica
+
+OUT=mentawai_datamap
+LOCATION=/Users/tnye/tsuquakes/manuscript/figures
+
+LONMIN=94
+LONMAX=107
+LATMIN=-6
+LATMAX=5
+
+J="M5i"
+BOUNDS="-BWeSn -B0.5p"
+MAPSCALE=5.5
+
+slab2=/Users/tnye/slab2.0/sum_slab2_dep_02.23.18.grd
+SM_STATIONS=/Users/tnye/tsuquakes/GMT/data/sm_finaldataset-corrected.txt
+GNSS_STATIONS=/Users/tnye/tsuquakes/GMT/data/disp_finaldataset.txt
+EPICENTER=/Users/tnye/tsuquakes/GMT/data/mentawai_epi.txt
+bathgradient=/Users/tnye/tsuquakes/GMT/data/bathgradient.grd
+topogradient=/Users/tnye/tsuquakes/GMT/data/topogradient.grd
+menbath=/Users/tnye/tsuquakes/GMT/data/menbath.grd
+mentopo=/Users/tnye/tsuquakes/GMT/data/mentopo.grd
+CPTbath=/Users/tnye/tsuquakes/GMT/stations_fig/menbath.cpt
+CPTtopo=/Users/tnye/tsuquakes/GMT/stations_fig/mentopo2.cpt
+trench=/Users/tnye/GoogleEarth/trenches/sumatra.txt
+
+##########
+###Plot###
+##########
+
+# Plot basemap
+gmt psbasemap -J$J -R$LONMIN/$LONMAX/$LATMIN/$LATMAX -B4WSne -P -V -X1.5i -Y5i -K > ${OUT}.eps
+
+# Plot topography
+gmt grdimage $menbath -R -J -C$CPTbath -I$bathgradient -Q -K -O >> ${OUT}.eps
+gmt grdimage $mentopo -R -J -C$CPTtopo -I$topogradient -Q -K -O >> ${OUT}.eps
+
+# Plot coastline
+gmt pscoast -R -J -Na -Df -A25 -L97/-4.5/0/500 -W0.25p,black -K -O >> ${OUT}.eps
+
+# Draw trench
+gmt psxy -J -R -W0.75p,0/0/0 -K -O $trench >> ${OUT}.eps
+
+# Plot stations and epicenter
+gmt psxy $GNSS_STATIONS -R -J -Ss0.35c -G0/100/0 -W.25p,black -B -K -O >> ${OUT}.eps
+gmt psxy $SM_STATIONS -R -J -Si0.35c -G255/50/100 -W.25p,black -B -K -O >> ${OUT}.eps
+gmt psxy $EPICENTER -R -J -Sa0.4c -G245/226/22 -W.5p,black -B -K -O >> ${OUT}.eps
+
+gmt psxy -R -J$J -W0.04c,black -K -O >> ${OUT}.eps << BOXEND
+99.25 -3.75
+100.75 -3.75
+100.75 -1.75
+99.25 -1.75
+99.25 -3.75
+BOXEND
+
+gmt psxy -R -J$J -W0.05c,black -G255/255/255 -K -O >> ${OUT}.eps << BOXEND
+101.95 2
+107 2
+107 5
+101.95 5
+BOXEND
+  echo "102.4 4.65" | gmt psxy -R -J -Si0.35c -G255/50/100 -W.5p,black -K -O >> ${OUT}.eps
+  echo "102.8 4.65 Seismic Stations" | gmt pstext -R -J -F+f12p+jML -K -O >> ${OUT}.eps
+  echo "102.4 3.9" | gmt psxy -R -J -Ss0.35c -G0/100/0 -W.5p,black -K -O >> ${OUT}.eps
+  echo "102.8 3.9 GNSS Stations" | gmt pstext -R -J -F+f12p+jML -K -O >> ${OUT}.eps
+  echo "102.4 3.15" | gmt psxy -R -J -Dj0.08[0.06] -Sa0.4c -G245/226/22 -W.5p,black -B -K -O >> ${OUT}.eps
+  echo "102.8 3.15 2010 M7.8 Mentawai" | gmt pstext -R -J -F+f12p+jML -K -O >> ${OUT}.eps
+  echo "102.8 2.4 Sumatra Trench" | gmt pstext -R -J -F+f12p+jML -O >> ${OUT}.eps
+# gmt psxy -R99.25/100.75/-3.75/-1.75 -J -W1p,black -O << EOF >> ${OUT}.eps
+# >
+# 99.25 -3.75
+# 99.25 -1.75
+# 100.75 -1.75
+# 100.75 -3.75
+# 99.25 -3.75
+# EOF
+
+# open $OUT.eps  # shows plot
+
+gmt psconvert $OUT.eps -TG -P -A1c
+mv $OUT.png $LOCATION/.
+rm $OUT.eps

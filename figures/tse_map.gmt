@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# GMT settings
+gmt gmtset MAP_FRAME_TYPE fancy
+gmt gmtset FORMAT_GEO_MAP ddd
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=12p,Helvetica
+
+# Parameters
+figdir=/Users/tnye/tsuquakes/manuscript/figures/unannotated
+OUT=tse_global_map
+
+RFLAG=-R-170/190/-70/70
+JFLAG=-JM6i
+
+# Files
+trench_dir=/Users/tnye/GoogleEarth/trenches
+accreting=/Users/tnye/tsuquakes/GMT/data/accreting_margins.txt
+erosional=/Users/tnye/tsuquakes/GMT/data/erosional_margins.txt
+historical=/Users/tnye/tsuquakes/GMT/data/tse_historical.txt
+modern=/Users/tnye/tsuquakes/GMT/data/tse_modern.txt
+mentawai=/Users/tnye/tsuquakes/GMT/data/mentawai_epi.txt
+
+# Set up basemap
+gmt psbasemap $JFLAG $RFLAG -Ba60f30 -Bwsne -K > ${figdir}/${OUT}.eps
+gmt pscoast $JFLAG $RFLAG -Ba60f30 -Dc -A5000 -W0.1p -G189/184/166 -Swhite -K -O >> ${figdir}/${OUT}.eps
+
+# Erosional margins
+gmt psxy ${trench_dir}/central_america.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/south_sandwich_islands.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/japan.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/south_america.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/pacific_islands.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/east_australia.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/chile_south.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/luzon.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/mindanao.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/ryukyu.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/new_zealand.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+
+# Accreting margins
+gmt psxy ${trench_dir}/lesser_antilles.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -G0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/italy.txt $JFLAG $RFLAG -Sf0.3c/0.11c+l+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/greece.txt $JFLAG $RFLAG -Sf0.3c/0.11c+l+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/indonesia.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/chile_north.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/cascadia.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/alaska.txt $JFLAG $RFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -G0/0/0 -K -O >> ${figdir}/${OUT}.eps
+gmt psxy ${trench_dir}/japan_south.txt $JFLAG $RFLAG -Sf0.4c/0.15c+l+t,0/0/0 -G0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+
+# Plot tsunami earthquakes
+gmt psxy $historical -R -J -Sa0.4c -G217/11/11 -W.5p,black -t10 -B -K -O >> ${figdir}/${OUT}.eps
+gmt psxy $modern -R -J -Sa0.4c -G164/66/245 -W.5p,black -t10 -B -K -O >> ${figdir}/${OUT}.eps
+gmt psxy $mentawai -R -J -Sa0.4c -G245/226/22 -W.5p,black -t10 -B -O >> ${figdir}/${OUT}.eps
+
+# # Add legend
+# gmt psxy -R -J -K -O >> ${figdir}/${OUT}.eps << BOXEND
+# -170 -70
+# -120 -70
+# -120 -50
+# -170 -50
+# BOXEND
+#   echo "-160 -45" | gmt psxy $RFLAG $JFLAG -Sa0.4c -G252/194/3 -W0.1p,black -t10 -K -O >> ${figdir}/${OUT}.eps
+#   echo "-160 -55" | gmt psxy $RFLAG $JFLAG -Sa0.4c -G164/66/245 -W0.1p,black -t10 -K -O >> ${figdir}/${OUT}.eps
+#   echo "-160 -65" | gmt psxy $RFLAG $JFLAG -Sa0.4c -G217/11/11 -W0p,black -t10 -O >> ${figdir}/${OUT}.eps
+#   # echo "-150 -55" | gmt psxy $RFLAG $JFLAG -Sf0.4c/0.15c+r+t,0/0/0 -W0.1p,0/0/0 -K -O >> ${figdir}/${OUT}.eps
+#   # echo "-150 -60" | gmt psxy $RFLAG $JFLAG -Sf0.4c/0.15c+r+t,0/0/0 -G0/0/0 -W0.1p,0/0/0 -O >> ${figdir}/${OUT}.eps
+
+# Convert to png and save
+# open ${figdir}/${OUT}.eps
+gmt psconvert ${figdir}/${OUT}.eps -TG -P -A1c
+rm ${figdir}/${OUT}.eps
