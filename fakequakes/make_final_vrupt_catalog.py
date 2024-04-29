@@ -92,11 +92,10 @@ def change_vrupt(home, project_name, model_name, sf):
     
     return()
 
-# sf_list = [0.3,0.37,0.4,0.43,0.46,0.49]
-# sf_list = [0.395,0.422,0.41,0.42]
-sf_list = [0.3,0.37,0.4,0.42,0.43,0.46,0.49,0.410,0.447]
+# sf_list = [0.37,0.4,0.43,0.46,0.49]
+sf_list = [0.415,0.447,0.42,0.42]
 
-home = '/Users/tnye/FakeQuakes/simulations/final_runs_m7.8/'
+home = '/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/'
 project_name = 'standard'
 model_name = 'mentawai_v1.mod'
 
