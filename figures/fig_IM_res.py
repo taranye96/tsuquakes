@@ -22,13 +22,13 @@ home_dir = f'/Users/tnye/FakeQuakes/simulations/test_runs_m7.8'
 
 # Set parameters
 
-# parameter = 'stress_drop'      # parameter being varied
-# projects = ['sd0.1','sd1.0','sd2.0']  # array of projects for the parameter
-# param_vals = ['0.1', '1.0', '2.0']
+parameter = 'stress_drop'      # parameter being varied
+projects = ['sd0.1','sd1.0','sd2.0']  # array of projects for the parameter
+param_vals = ['0.1', '1.0', '2.0']
 
-parameter = 'risetime'      # parameter being varied
-projects = ['rt2x','rt3x']  # array of projects for the parameter
-param_vals = ['10.8','16.2']        # array of parameter values associated w/ the projects
+# parameter = 'risetime'      # parameter being varied
+# projects = ['rt2x','rt3x']  # array of projects for the parameter
+# param_vals = ['10.8','16.2']        # array of parameter values associated w/ the projects
 
 # parameter = 'vrupt'      # parameter being varied
 # projects = ['sf0.3', 'sf0.4']  # array of projects for the parameter
@@ -600,7 +600,7 @@ for i, project in enumerate(projects):
     labels = labels + [param_vals[i]]
     ax4.boxplot(grouped_res_std,positions=bins,
                boxprops=dict(lw=1,linestyle='--',color='dimgray'),
-               medianprops=dict(lw=1,color='dimgray',ls='--'),
+               medianprops=dict(lw=1,color='dimgray',ls='-'),
                whiskerprops=dict(lw=1,color='dimgray'),
                capprops=dict(lw=1,color='dimgray'),
                widths=width(bins,w),

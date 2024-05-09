@@ -64,7 +64,8 @@ oneD_X = oneD_x.reshape(-1, 1)
 # )
 
 # Kernel for 1D regression
-oneD_kernel = RBF(1.0, length_scale_bounds =(0.4,2.9))
+# oneD_kernel = RBF(1.0, length_scale_bounds=(0.4,2.9))
+oneD_kernel = RBF(2.9, length_scale_bounds=("fixed"))
 
 oneD_gp = GaussianProcessRegressor(kernel=oneD_kernel,n_restarts_optimizer=9)
 
@@ -81,7 +82,7 @@ def oneD_objective_function(x):
 initial_guess = np.array([1.5])
 x_cross_zero = minimize(oneD_objective_function, initial_guess, method='Nelder-Mead', tol=1e-7).x[0]
 
-
+print(x_cross_zero)
 
 #%%
 
@@ -89,8 +90,8 @@ x_cross_zero = minimize(oneD_objective_function, initial_guess, method='Nelder-M
 # twoD test with risetime and vrupt
 ###############################################################################
 
-# gnss_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/tPGD_parameter_residuals_exNGNG.csv')
-gnss_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/tPGD_event_residuals_exNGNG.csv')
+gnss_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/tPGD_parameter_residuals_exNGNG.csv')
+# gnss_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/tPGD_event_residuals_exNGNG.csv')
 
 kfactor = gnss_df['k-factor'].values
 ssf = gnss_df['ssf'].values
@@ -118,9 +119,8 @@ for pair in combinations(twoD_data, 2):
 min_spacing = np.unique(pairwise_distances)[1]
 max_spacing = np.max(pairwise_distances)
 
-twoD_kernel = RBF(0.7, length_scale_bounds=(0.7,max_spacing))
-# twoD_kernel = RBF(1, length_scale_bounds=("fixed"))
-# twoD_kernel = C(1.0, constant_value_bounds="fixed") * RBF(1.0, length_scale_bounds="fixed")
+# twoD_kernel = RBF(0.7, length_scale_bounds=(0.7,max_spacing))
+twoD_kernel = RBF(max_spacing, length_scale_bounds=("fixed"))
 
 # Run Gaussian process
 twoD_gp = GaussianProcessRegressor(kernel=twoD_kernel,n_restarts_optimizer=10)
@@ -146,27 +146,33 @@ def twoD_objective_function(xy):
     return np.abs(mean_value)
 
 # Initial guess for the minimum (can be any twoD point)
-initial_guess_1 = np.array([1.4,0.39])
+initial_guess_1 = np.array([1.65,0.415])
 result_1 = minimize(twoD_objective_function, initial_guess_1, method='Nelder-Mead',tol=1e-7)
 min_coords_1 = result_1.x
 
-# initial_guess_2 = np.array([1.7,0.42])
-# result_2 = minimize(twoD_objective_function, initial_guess_2, method='Nelder-Mead',tol=1e-7)
-# min_coords_2 = result_2.x
-
-
-initial_guess_2 = np.array([1.8,0.445])
+initial_guess_2 = np.array([2,0.445])
 result_2 = minimize(twoD_objective_function, initial_guess_2, method='Nelder-Mead',tol=1e-7)
 min_coords_2 = result_2.x
+
+initial_guess_3 = np.array([1.2,0.405])
+result_3 = minimize(twoD_objective_function, initial_guess_3, method='Nelder-Mead',tol=1e-7)
+min_coords_3 = result_3.x
+
 
 print(f'Ideal Parameters')
 print(min_coords_1)
 print(min_coords_2)
+print(min_coords_3)
 
 
 #%%
 
 ##### Plot Results #####
+
+line_x = np.array([1,2.3])
+line_y = line_x*0.088 + 0.270
+line_x2 = np.array([5.4,12.42])
+line_y2 = line_y*3.24
 
 # Set up 2D prediction colormap
 pred_cmap = plt.get_cmap('seismic') 
@@ -174,8 +180,8 @@ pred_cNorm  = colors.Normalize(vmin=res_lowerlim, vmax=res_upperlim)
 pred_scalarMap = cmx.ScalarMappable(norm=pred_cNorm, cmap=pred_cmap)
 
 # Set up 2D standard deviation colormap
-std_lowerlim = 9e-7
-std_upperlim = 2.2e-6
+std_lowerlim = 7e-7
+std_upperlim = 1.75e-6
 std_cmap = plt.get_cmap('viridis') 
 std_cNorm  = colors.Normalize(vmin=std_lowerlim, vmax=std_upperlim)
 std_scalarMap = cmx.ScalarMappable(norm=std_cNorm, cmap=std_cmap)
@@ -188,10 +194,7 @@ plt.subplots_adjust(left=0.09,right=0.91,bottom=0.175, top=0.925, wspace=0.5, hs
 
 # 2D prediction
 pred_ax = axs['A']
-
 pred_ax.grid(False)
-
-
 pred_ax.set_xlabel(r'$\bf{Rise}$ $\bf{time}$ $\bf{(s)}$',size=10)
 pred_ax.set_ylabel(r'$\bf{V_{rupt}}$ $\bf{(km/s)}$',size=10)
 pred_ax.set_xlim(5.4,12.4)
@@ -232,7 +235,9 @@ for i in range(70):
     else:
         pred_ax2.scatter(kfactor[i*30],ssf[i*30],edgecolors='k',facecolors=pred_scalarMap.to_rgba(np.mean(tPGD_res[i*30:i*30+30])),lw=0.4,s=40)
 # pred_ax2.scatter([1.422,1.742,1.2,2.0],[0.395,0.422,0.41,0.42],c='k',lw=1,s=40,alpha=1,label='TsE parameters evalauted')
-pred_ax2.scatter([1.358,1.808,1.1,2.0],[0.410,0.447,0.42,0.43],c='k',lw=1,s=40,alpha=1,label='TsE parameters evalauted')
+pred_ax2.scatter([1.954,1.234,1.4,1.75],[0.469,0.410,0.45,0.42],c='k',lw=1,s=40,alpha=1,label='TsE parameters evalauted')
+# pred_ax2.plot(line_x,line_y,c='yellow',lw=2)
+
 temp1.plot([0,0],[0,0],c='yellow',lw=2,label='Linear fit')
 temp1.legend(loc='upper left')
 pred_ax2.set_ylabel('SSF',size=10) 
@@ -270,7 +275,7 @@ std_ax.set_ylabel(r'$\bf{SSF}$',size=10)
 # 1D stress drop
 axs['C'].grid(alpha=0.25)
 axs['C'].scatter(stress,HF_res,facecolors='none',edgecolors='k',lw=0.2,s=40,alpha=0.7)
-axs['C'].scatter([1.0,1.428,2.0],[0,0,0],c='k',lw=1,s=40,alpha=1)
+axs['C'].scatter([1.0,1.419,2.0],[0,0,0],c='k',lw=1,s=40,alpha=1)
 axs['C'].plot(oneD_x, oneD_pred, label=r"GPR $\delta_{HF}$ prediction")
 axs['C'].fill_between(
     oneD_X.ravel(),
@@ -296,8 +301,10 @@ axs['C'].tick_params(axis='both', which='major', labelsize=10)
 axs['C'].legend(loc='upper right',fontsize=10)
 handles, labels = pred_ax2.get_legend_handles_labels()
 handles[2].set_facecolor('none')
-pred_ax2.legend(handles, labels, loc='upper center',bbox_to_anchor=(1.1,-1.95),facecolor='white',
+axs['C'].legend(handles, labels, loc='upper center',bbox_to_anchor=(0.5,-0.275),facecolor='white',
                 frameon=True,fontsize=10,ncol=2)
+# pred_ax2.legend(handles, labels, loc='upper center',bbox_to_anchor=(1.3,-1.95),facecolor='white',
+#                 frameon=True,fontsize=10,ncol=2)
 plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/unannotated/GPR_figure_revised.png',dpi=300)
 # plt.close()
 

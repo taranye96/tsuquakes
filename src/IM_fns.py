@@ -8,8 +8,8 @@ Created on Wed May 13 13:49:52 2020
 
 ###############################################################################
 # Module with functions used to calculate various IMs and plot spectra. These
-# functions are imported and used in mentawai.py, synthetic_calc_mpi.py
-# and synthetic_calc.py.   
+# functions are imported and used in 0_calc_obs_IMs.py and
+# parallel_calc_syn_IMs.py.
 ###############################################################################
 
 

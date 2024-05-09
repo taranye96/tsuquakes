@@ -190,8 +190,8 @@ for i in range(3):
     
 # Acc waveforms
 for i in range(3):
-    axs[layout[1][i]].plot(syn_hf_times[i],syn_acc_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[layout[1][i]].plot(obs_hf_times[i],obs_acc_amps[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
+    # axs[layout[1][i]].plot(syn_hf_times[i],syn_acc_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
+    axs[layout[1][i]].plot(obs_hf_times[i],obs_acc_amps[i],'steelblue',alpha=0.7,lw=0.5,label='observed')
     axs[layout[1][i]].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     axs[layout[1][i]].tick_params(axis='both', which='major', labelsize=10)
     axs[layout[1][i]].text(0.98,5E-2,r'$R_{hyp}$'+f'={int(hf_hypdist[i])}km',horizontalalignment='right',transform=axs[layout[1][i]].transAxes,size=10)
@@ -252,7 +252,7 @@ axs["k"].legend(loc='upper center', bbox_to_anchor=(0.5, -0.6),fancybox=False, s
 fig.supylabel(f'Amplitude',fontsize=10,x=0.01,y=0.575)
 # fig.supxlabel('October 25, 2010 UTC Time(hr:min)',fontsize=11,x=0.545,y=0.115,va='bottom')
 plt.subplots_adjust(left=0.115, bottom=0.15, right=0.975, top=0.95, wspace=0.4, hspace=0.55)
-plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/wf-spectra_comparison_standard.png',dpi=300)
+# plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/wf-spectra_comparison_standard.png',dpi=300)
     
     
 #%%
