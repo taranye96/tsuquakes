@@ -7,7 +7,8 @@ Created on Fri Mar  4 15:40:24 2022
 """
 
 ##############################################################################
-
+# This module contains all the functions called within the other scripts of
+# this project.  
 ##############################################################################
 
 

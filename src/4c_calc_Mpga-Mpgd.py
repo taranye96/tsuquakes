@@ -77,18 +77,18 @@ for param in params:
         Mpgd_list.append(Mpgd[0])
         Mdiff_list.append(Mpga - Mpgd[0])
         
-        # Plot results
-        fig, ax = plt.subplots(1,1,figsize=(5,2.75))
-        ax.semilogy(trial_M,p_val_list)
-        ax.axhline(0.05,c='gray',ls='--',lw=1,label='significance level')
-        ax.axvline(Mpgd,c='goldenrod',lw=0.8,label=r'$M_{PGD}$')
-        ax.axvline(Mpga,c='red',lw=0.8,label=r'$M_{PGA}$')
-        ax.set_xlabel('Magnitude')
-        ax.set_ylabel('P-value')
-        ax.legend()
-        ax.set_xlim(5.5,8.4)
-        plt.subplots_adjust(left=0.15,bottom=0.175,top=0.95,right=0.95,hspace=0.35)
-        plt.savefig(f'/Users/tnye/tsuquakes/realtime_analysis/Mpga_plots/{param}_{run}.png',dpi=300)
+        # # Plot results
+        # fig, ax = plt.subplots(1,1,figsize=(5,2.75))
+        # ax.semilogy(trial_M,p_val_list)
+        # ax.axhline(0.05,c='gray',ls='--',lw=1,label='significance level')
+        # ax.axvline(Mpgd,c='goldenrod',lw=0.8,label=r'$M_{PGD}$')
+        # ax.axvline(Mpga,c='red',lw=0.8,label=r'$M_{PGA}$')
+        # ax.set_xlabel('Magnitude')
+        # ax.set_ylabel('P-value')
+        # ax.legend()
+        # ax.set_xlim(5.5,8.4)
+        # plt.subplots_adjust(left=0.15,bottom=0.175,top=0.95,right=0.95,hspace=0.35)
+        # plt.savefig(f'/Users/tnye/tsuquakes/realtime_analysis/Mpga_plots/{param}_{run}.png',dpi=300)
         # plt.close()
 
 data = {'Parameters':param_list,'Run':run_list,'Mpgd':Mpgd_list,'Mpga':Mpga_list,
@@ -98,8 +98,10 @@ Mdiff_df.to_csv('/Users/tnye/tsuquakes/realtime_analysis/Mpga-Mpgd_results_m7.8.
 
 #%%
 
-sahakian_df1 = pd.read_csv('/Users/tnye/tsuquakes/data/sahakian2019/mag_differences_KStests_finalmag.csv')
-sahakian_df2 = pd.read_csv('/Users/tnye/tsuquakes/data/sahakian2019/mag_differences_KStests_pgdmag.csv')
+# compute the statistical difference between the sets of data
+
+sahakian_df1 = pd.read_csv('/Users/tnye/tsuquakes/files/sahakian2019/mag_differences_KStests_finalmag.csv')
+sahakian_df2 = pd.read_csv('/Users/tnye/tsuquakes/files/sahakian2019/mag_differences_KStests_pgdmag.csv')
 obs_M = sahakian_df1.mw.values
 obs_Mdiff = sahakian_df2.magdiff_KSpvalue.values
 obs_std = np.std(obs_Mdiff)
@@ -137,55 +139,16 @@ statistic, p_value = ks_2samp(obs_Mdiff, std_data, mode='asymp')
 statistic, p_value = ks_2samp(tse_data, mentawai_distribution, mode='asymp')
 
 plt.figure()
-plt.hist(obs_Mdiff,alpha=0.5)
-plt.hist(std_data,alpha=0.5)
-plt.hist(tse_data,alpha=0.5)
+plt.hist(obs_Mdiff,alpha=0.5,label='Observed')
+plt.hist(std_data,alpha=0.5,laebl='Standard Sim')
+plt.hist(tse_data,alpha=0.5,label='TsE Sim')
+plt.legend()
 
 print('d-statistic, p-value')
 print(f"TsE Sim.–Mentawai Dist.: {ks_2samp(tse_data, mentawai_distribution, mode='asymp')}")
 print(f"TsE Sim.–Observed Events: {ks_2samp(tse_data, obs_Mdiff, mode='asymp')}")
 print(f"Standard Sim.–Observed Events: {ks_2samp(std_data, obs_Mdiff, mode='asymp')}")
 print(f"Standard Sim.–TsE Sim.: {ks_2samp(std_data, tse_data, mode='asymp')}")
-
-
-
-# Number of bootstrap samples to create
-num_samples = 1000
-
-bootstrap_pval = np.zeros(num_samples)
- 
-# Perform bootstrap sampling
-for i in range(num_samples):
-    
-    bootstrap_sample = np.random.choice(tse_data, size=len(obs_Mdiff), replace=True)
-    stat, pval = ks_2samp(bootstrap_sample, o)
-    bootstrap_pval[i] = pval
-
-def bootstrap_KS(data1, data2):
-    # Compute the K-S statistic and p-value
-    stat, p_value = ks_2samp(data1, data2)
-    return p_value  # Use the K-S statistic as the test statistic
-
-# Perform bootstrap resampling
-results = []
-for _ in range(num_samples):
-    # Resample with replacement from both datasets
-    resampled_observed = np.random.choice(obs_Mdiff, size=len(obs_Mdiff), replace=True)
-    resampled_simulated = np.random.choice(std_data, size=len(std_data), replace=True)
-    
-    # Compute the test statistic on the resampled data
-    pval = bootstrap_KS(resampled_observed, resampled_simulated)
-    
-    results.append(pval)
-
-# Calculate the p-value
-total_pval = bootstrap_KS(obs_Mdiff, std_data)
-p_value = (np.sum(results >= total_pval) + 1) / (num_samples + 1)
-
-print(f"Observed Test Statistic: {observed_stat}")
-print(f"Bootstrap p-value: {p_value}")
-
-
 
 
 
