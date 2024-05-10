@@ -18,7 +18,7 @@ from matplotlib.lines import Line2D
 
 fig, ax = plt.subplots(1,1,figsize=(5.5,4))
 
-acc_files = sorted(glob('/Users/tnye/tsuquakes/data/Mentawai2010/accel_corr/*.HNE.mseed'))
+acc_files = sorted(glob('/Users/tnye/tsuquakes/data/processed_waveforms/individual/acc/*.HNE*'))
 
 
 for file in acc_files:
@@ -32,7 +32,7 @@ for file in acc_files:
     ax.loglog(freq,amp,c='k',alpha=0.5)
 
 
-disp_files = sorted(glob('/Users/tnye/tsuquakes/data/Mentawai2010/GNSS_data_processed_Dara_SAC/events/*.LXE.mseed'))
+disp_files = sorted(glob('/Users/tnye/tsuquakes/data/processed_waveforms/individual/disp/*.LXE*'))
 
 for file in disp_files:
     st = read(file)

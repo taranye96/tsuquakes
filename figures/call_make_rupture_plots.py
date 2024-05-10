@@ -6,12 +6,15 @@ Created on Mon Jul 25 21:18:18 2022
 @author: tnye
 """
 
+###############################################################################
+# This script calls make_ruputre_plots.gmt which plots the individual rupture
+# models.
+###############################################################################
+
 # Imports
-import numpy as np
 from glob import glob
 from os import chdir, path, makedirs
 import subprocess
-from mudpy import gmttools
 
 # chdir('/Users/tnye/tsuquakes/GMT/scripts')
 
@@ -30,5 +33,3 @@ for slip_file in slip_files:
     rupt_name = slip_file.split('/')[-1].strip('.txt')
     rupt_file = f'/Users/tnye/FakeQuakes/simulations/{parameter}/standard/output/ruptures/{rupt_name}.rupt'
     subprocess.run(['/Users/tnye/tsuquakes/code/figures/call_plot_example_ruptures.gmt',cpt,rupt_name,rupt_file,slip_file,figdir])
-
-    # a.append(np.max(np.genfromtxt(slip_file,delimiter=',')[:,2]))

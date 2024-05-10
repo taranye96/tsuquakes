@@ -14,51 +14,62 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import MultipleLocator
 
-# Read in residual file
-df = pd.read_csv('/Users/tnye/tsuquakes/realtime_analysis/PGA_GMM_residuals_m7.8.csv')
-Mpgd_df = pd.read_csv('/Users/tnye/tsuquakes/realtime_analysis/Mpgd_m7.8.csv')
+# Read in GMM residual flatfile
+df = pd.read_csv('/Users/tnye/tsuquakes/realtime_analysis/PGA_GMM_residuals.csv')
 
+# Read in Mpgd flatfile
+Mpgd_df = pd.read_csv('/Users/tnye/tsuquakes/realtime_analysis/Mpgd.csv')
+
+# Define trial magnitudes
 trial_M = np.arange(5.5,8.5,0.1)
+
+# Get list of parameters and runs
 params = np.unique(df['Parameters'])
 runs = np.unique(df['Run'])
 
 #%%
 
+# Initialize lists
 param_list = []
 run_list = []
 Mpga_list = []
 Mpgd_list = []
 Mdiff_list = []
-
 param_res = []
 
+# Loop over paramter combinations
 for param in params:
     
+    # Loop over runs
     for run in runs:
         
-        # Get Mpgd
+        # Get Mpgd for this parameter and run
         Mpgd = Mpgd_df['Mpgd'].values[np.where(Mpgd_df['Event']==f'{param}_{run}')[0]]        
     
+        # Initialize K-S test lists
         p_val_list = np.array([])
         statistic_list = np.array([])
         
+        # Loop over trial magnitudes
         for M in trial_M:
             
-            # Get residuals for this event
+            # Find indices for the specific parameters, event, and trial magnitude
             ind = np.where((df['Mag']==round(M,1)) & (df['Parameters']==param) & 
                            (df['Run']==run))[0]
+            
+            # Get PGA residuals for this event
             run_res = df['lnZhao06_PGA_Res'].values[ind]
             
             # Define distribution for GMM
             gmm_std = df['Zhao06_PGA_std'].values[ind]
             gmm_distribution = np.random.normal(0, gmm_std[0], 10000)
             
-            # Run K-S test
+            # Run K-S test and append values to lists
             statistic, p_value = ks_2samp(run_res, gmm_distribution)
             p_val_list = np.append(p_val_list,p_value)
             statistic_list = np.append(statistic_list,statistic)
         
-        # Append values
+        # Append values to lists
         param_list.append(param)
         run_list.append(run)
         Mpga = trial_M[np.where(np.abs(p_val_list-0.05) == np.min(np.abs(p_val_list-0.05)))][0]
@@ -80,10 +91,10 @@ for param in params:
         plt.savefig(f'/Users/tnye/tsuquakes/realtime_analysis/Mpga_plots/{param}_{run}.png',dpi=300)
         # plt.close()
 
-# data = {'Parameters':param_list,'Run':run_list,'Mpgd':Mpgd_list,'Mpga':Mpga_list,
-#         'Mpga-Mpgd':Mdiff_list}
-# Mdiff_df = pd.DataFrame(data)
-# Mdiff_df.to_csv('/Users/tnye/tsuquakes/realtime_analysis/Mpga-Mpgd_results_m7.8.csv')
+data = {'Parameters':param_list,'Run':run_list,'Mpgd':Mpgd_list,'Mpga':Mpga_list,
+        'Mpga-Mpgd':Mdiff_list}
+Mdiff_df = pd.DataFrame(data)
+Mdiff_df.to_csv('/Users/tnye/tsuquakes/realtime_analysis/Mpga-Mpgd_results_m7.8.csv')
 
 #%%
 

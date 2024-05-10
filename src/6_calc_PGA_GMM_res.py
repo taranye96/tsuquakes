@@ -16,57 +16,19 @@ Created on Wed Aug 23 22:24:16 2023
 import numpy as np
 import pandas as pd
 from glob import glob
-from pyproj import Geod   
-import gmm_call as gmm
 import scipy.constants as sp
-import valid_fns as valid
+import tsuquakes_main_fns as tmf
 
 # Set up working directory
-# home_dir = '/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/standard'
+home_dir = '/Users/tnye/FakeQuakes/simulations/tse_simulations'
 
-home_dir = '/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8'
+# Gather strong motion intensity measure files
 all_files = sorted(glob(f'{home_dir}/*/flatfiles/IMs/*_sm.csv'))
 
-# # Get intensity measure files
-# TsE_IM_files = sorted(glob(f'{home_dir}/*/flatfiles/IMs/*_sm.csv'))
-# standard_IM_files = sorted(glob(f'{home_dir}/standard/flatfiles/IMs/*_sm.csv'))
-# all_files = TsE_IM_files + standard_IM_files
-
-# Define parameters
-trial_M = np.arange(5.5,8.5,0.1)
-hypdepth = 8.82
+# Define parameters for trial magnitude, hypocenter depth, and Vs30
+trial_M = np.arange(5.5,8.5,0.1)  
+hypdepth = 8.82                   
 vs30 = pd.read_csv('/Users/tnye/tsuquakes/data/vs30/sm_vs30_close.csv').vs30
-
-def compute_rrup(rupt_file, stlon, stlat):
-    
-   
-    #get rupture
-    rupt = np.genfromtxt(rupt_file)
-    Nsubfaults = len(rupt)
-    
-    #keep only those with slip
-    i = np.where(rupt[:,12]>0)[0]
-    rupt = rupt[i,:]
-    
-    #get Rrupt
-    #projection obnject
-    p = Geod(ellps='WGS84')
-    
-    #lon will have as many rows as Vs30 points and as many columns as subfautls in rupture
-    Nsubfaults = len(rupt)
-    lon_surface = np.tile(stlon,(Nsubfaults,1)).T
-    lat_surface = np.tile(stlat,(Nsubfaults,1)).T
-    lon_subfaults = np.tile(rupt[:,1],(len(stlon),1))-360
-    lat_subfaults = np.tile(rupt[:,2],(len(stlon),1))
-    az,baz,dist = p.inv(lon_surface,lat_surface,lon_subfaults,lat_subfaults)
-    dist = dist/1000
-    
-    #get 3D distance
-    z = np.tile(rupt[:,3],(len(stlon),1))
-    xyz_dist = (dist**2 + z**2)**0.5
-    rrup = xyz_dist.min(axis=1)
-    
-    return(rrup)
 
 M_list = np.array([])
 event_list = np.array([])
@@ -88,9 +50,8 @@ for M in trial_M:
         project = file.split('/')[-4]
         run = file.split('/')[-1].split('_')[0]
         rupt_file = f'{home_dir}/{project}/output/ruptures/{run}.rupt'
-        # rupt_file = f'{home_dir}/output/ruptures/{run}.rupt'
         
-        # Read in csv
+        # Read in intensity measure flatfile
         sm_df = pd.read_csv(file)
     
         # Get PGA
@@ -101,11 +62,11 @@ for M in trial_M:
         stlon = sm_df['stlon'].values
         stlat = sm_df['stlat'].values
         
-        # Get Rrup
-        rrup = compute_rrup(rupt_file, stlon, stlat)
+        # Compute Rrup
+        rrup = tmf.compute_rrup(rupt_file, stlon, stlat)
         
         # Compute Zhoa (2006) PGA prediction
-        ln_pga_g, pga_std = gmm.zhao2006(M,hypdepth,rrup,vs30)
+        ln_pga_g, pga_std = tmf.zhao2006(M,hypdepth,rrup,vs30)
         zhao_pga = np.exp(ln_pga_g) * sp.g
         
         # Compute GMM residuals
@@ -125,5 +86,5 @@ data = {'Mag':M_list,'Event ID':event_list,'Parameters':params_list,
         'Run':runs_list,'Station Name':stn_list,'lnZhao06_PGA_Res':pga_res_list,
         'Zhao06_PGA_std':pga_std_list,}
 res_df = pd.DataFrame(data)
-res_df.to_csv('/Users/tnye/tsuquakes/realtime_analysis/PGA_GMM_residuals_m7.8.csv')
+res_df.to_csv('/Users/tnye/tsuquakes/realtime_analysis/PGA_GMM_residuals.csv')
 

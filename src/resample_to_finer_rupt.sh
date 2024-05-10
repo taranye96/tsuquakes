@@ -1,17 +1,11 @@
 #!/bin/bash
 
-#########
-out=Finer_Fault
-#########
+# Paths to finer .fault file and to outpath of finer .rupt file
+fine_fault=$1
+fine_rupt=$2
 
-# Original .rupt file
-rupt_file=/Users/tnye/tsuquakes/data/fault_info/han_yue.rupt
-
-# .fault file with new subfaults
-fine_fault=/Users/tnye/tsuquakes/data/fault_info/mentawai3.fault
-
-# final .rupt file
-final_rupt_file=/Users/tnye/tsuquakes/data/fault_info/mentawai3.rupt
+# Original .rupt file (adjusted for the 3km water layer subtracted)
+rupt_file=/Users/tnye/FakeQuakes/files/model_info/depth_adjusted/han_yue_depth_adjusted.rupt
 
 awk '{print($2,$3,$4)}' ${rupt_file} > depths.tmp #make tmp file of lon,lat,dep
 awk '{print($2,$3,$9)}' ${rupt_file} > strikeslip.tmp #make tmp file of lon,lat,ss
@@ -41,7 +35,7 @@ echo $max_lat
 #
 #### CREATE NEW FINER RUPT FILE:
 # echo "Removing Preexisting version of final rupt file"
-# rm ${final_rupt_file}
+# rm ${fine_rupt}
 T=`wc -l ${fine_fault} | awk '{print($1)}'`
 subfault=0
 for (( N=1; N<=$T; N++ )); do
@@ -60,7 +54,7 @@ for (( N=1; N<=$T; N++ )); do
 	wid=`head -$N ${fine_fault} | tail -1 | awk '{print($10)}' | gmt math -Q STDIN 1 MUL --FORMAT_FLOAT_OUT=%.1f = `
 	timing=0
 	mu=0
-	echo "${subfault}	${lon}	${lat}	${dep}	${strike}	${dip}	${tri}	${rise}	${ss_slip}	${ds_slip}	${len}	${wid} ${timing} ${mu}" >> ${final_rupt_file}
+	echo "${subfault}	${lon}	${lat}	${dep}	${strike}	${dip}	${tri}	${rise}	${ss_slip}	${ds_slip}	${len}	${wid} ${timing} ${mu}" >> ${fine_rupt}
 done
 echo Total subfaults: ${subfault}
-edit ${final_rupt_file}
+edit ${fine_rupt}

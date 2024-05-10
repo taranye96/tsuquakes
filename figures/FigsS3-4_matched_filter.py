@@ -143,19 +143,19 @@ axs[1,1].grid(alpha=0.5)
 axs[1,1].legend(loc='lower right')
 axs[1,1].text(0.025, 0.875, 'Filtered', transform=axs[1,1].transAxes, ha='left')
 
-axs[2,0].plot(bb_1[0].times(),bb_amp_norm_1,lw=1,alpha=0.7,c='mediumseagreen',label='Broadband')
+axs[2,0].plot(bb_1[0].times(),bb_amp_norm_1,lw=1,c='mediumseagreen',label='Broadband')
 axs[2,0].set_xlabel('Time (s)')
 axs[2,0].set_xlim(25,300)
 axs[2,0].grid(alpha=0.5)
 axs[2,0].legend(loc='lower right')
 
-axs[2,1].loglog(bb_freq,bb_amp_1,lw=1,alpha=0.7,c='mediumseagreen',label='Broadband')
+axs[2,1].loglog(bb_freq,bb_amp_1,lw=1,c='mediumseagreen',label='Broadband')
 axs[2,1].set_xlabel('Frequency (Hz)')
 axs[2,1].set_xlim(1/(hf_E[0].stats.npts*hf_E[0].stats.delta),50)
 axs[2,1].grid(alpha=0.5)
 axs[2,1].legend(loc='lower right')
 plt.subplots_adjust(left=0.075,right=0.98,bottom=0.1,top=0.98,hspace=0.225)
-# plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/S_matchedfilt_1fc_{stn}.png',dpi=300)
+plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/unannotated/FigS3_matchedfilt_1fc.png',dpi=300)
 
 
 
@@ -197,18 +197,18 @@ axs[1,1].grid(alpha=0.5)
 axs[1,1].legend(loc='lower right')
 axs[1,1].text(0.025, 0.875, 'Filtered', transform=axs[1,1].transAxes, ha='left')
 
-axs[2,0].plot(bb_01[0].times(),bb_amp_norm_01,lw=1,alpha=0.7,c='mediumseagreen',label='Broadband')
+axs[2,0].plot(bb_01[0].times(),bb_amp_norm_01,lw=1,c='mediumseagreen',label='Broadband')
 axs[2,0].set_xlabel('Time (s)')
 axs[2,0].set_xlim(25,300)
 axs[2,0].grid(alpha=0.5)
 axs[2,0].legend(loc='lower right')
 
-axs[2,1].loglog(bb_freq,bb_amp_01,lw=1,alpha=0.7,c='mediumseagreen',label='Broadband')
+axs[2,1].loglog(bb_freq,bb_amp_01,lw=1,c='mediumseagreen',label='Broadband')
 axs[2,1].set_xlabel('Frequency (Hz)')
 axs[2,1].set_xlim(1/(hf_E[0].stats.npts*hf_E[0].stats.delta),50)
 axs[2,1].grid(alpha=0.5)
 axs[2,1].legend(loc='lower right')
 plt.subplots_adjust(left=0.075,right=0.98,bottom=0.1,top=0.98,hspace=0.225)
-# plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/S_matchedfilt_{stn}.png',dpi=300)
+plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/unannotated/FigS4_matchedfilt_2fc.png',dpi=300)
 
 

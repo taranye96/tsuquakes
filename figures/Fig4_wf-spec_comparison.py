@@ -30,9 +30,9 @@ lf_hypdist = [52,82,161]
 
 ################################ Observed data ################################
 
-all_disp_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/waveforms/average/eucnorm_3comp/disp/*'))
-all_acc_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/waveforms/average/rotd50/acc/*'))
-all_vel_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/waveforms/average/rotd50/vel/*'))
+all_disp_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/processed_waveforms/average/eucnorm_3comp/disp/*'))
+all_acc_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/processed_waveforms/average/rotd50/acc/*'))
+all_vel_obs_files = sorted(glob(f'/Users/tnye/tsuquakes/data/processed_waveforms/average/rotd50/vel/*'))
 
 disp_obs_files = np.array([all_disp_obs_files[0],all_disp_obs_files[5],all_disp_obs_files[2]])
 acc_obs_files = np.array([all_acc_obs_files[7],all_acc_obs_files[2],all_acc_obs_files[8]])

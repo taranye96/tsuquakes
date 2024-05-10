@@ -1,13 +1,13 @@
 #!/bin/bash
 
 gmt gmtset MAP_FRAME_TYPE plain
-gmt gmtset FORMAT_GEO_MAP ddd.d
+# gmt gmtset FORMAT_GEO_MAP ddd.d
 gmt gmtset COLOR_MODEL rgb
 gmt gmtset FONT_ANNOT_PRIMARY=16p,Helvetica
 gmt gmtset PS_MEDIA
 
-OUT=mentawai_GNSS
-LOCATION=/Users/tnye/tsuquakes/manuscript/figures
+OUT=mentawai_GNSS_inset
+LOCATION=/Users/tnye/tsuquakes/manuscript/figures/unannotated
 
 LONMIN=99.5
 LONMAX=100.5

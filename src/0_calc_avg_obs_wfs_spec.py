@@ -7,9 +7,9 @@ Created on Fri Sep 18 20:41:36 2020
 """
 
 ###############################################################################
-# Script that stores the trace data for the observed Mentawai waveforms and 
-# saves them as .csv files.  These files are used in parallel_calc_IMs.py to
-# make waveform comparison plots. 
+# This script computes the euclidean norm and RotD50 of the observed waveforms
+# and saves as new traces. The binned spectra are also computed and stored in 
+# .csv files. These files are used in 3_parallel_calc_syn_IMs.py
 ###############################################################################
 
 # Imports
@@ -19,15 +19,20 @@ import pandas as pd
 from obspy import read
 from os import path, makedirs
 from obspy import UTCDateTime,Stream
-import signal_average_fns as avg
-import IM_fns
-from rotd50 import compute_rotd50
 
+# Local imports
+import tsuquakes_main_fns as tmf
+
+# Data types
 data_types = ['disp', 'acc', 'vel']
-home_dir = '/Users/tnye/tsuquakes/data/waveforms'
 
+# Home dir to store average waveforms
+home_dir = '/Users/tnye/tsuquakes/data/processed_waveforms'
+
+# Loop over data types
 for data in data_types:
     
+    # Make sure new directories exist
     if not path.exists(f'{home_dir}/average/eucnorm_3comp/{data}'):
         makedirs(f'{home_dir}/average/eucnorm_3comp/{data}')
     if not path.exists(f'{home_dir}/average/eucnorm_2comp/{data}'):
@@ -45,7 +50,7 @@ for data in data_types:
     data_dir = '/Users/tnye/tsuquakes/data'
     
     # Table of earthquake data
-    eq_table_path = '/Users/tnye/tsuquakes/data/misc/events.csv'   
+    eq_table_path = '/Users/tnye/tsuquakes/data/events.csv'   
     eq_table = pd.read_csv(eq_table_path)
     
     ### Get event data ###
@@ -58,9 +63,9 @@ for data in data_types:
 
     ##################### Data Processing and Calculations ####################
     
-    disp_dir = '/Users/tnye/tsuquakes/data/waveforms/individual/disp'
-    acc_dir = '/Users/tnye/tsuquakes/data/waveforms/individual/acc'
-    vel_dir = '/Users/tnye/tsuquakes/data/waveforms/individual/vel'
+    disp_dir = '/Users/tnye/tsuquakes/data/processed_waveforms/individual/disp'
+    acc_dir = '/Users/tnye/tsuquakes/data/processed_waveforms/individual/acc'
+    vel_dir = '/Users/tnye/tsuquakes/data/processed_waveforms/individual/vel'
             
     if data == 'disp':
         metadata_file = data_dir + '/' + eventname + '/' + eventname + '_disp.chan'
@@ -174,9 +179,9 @@ for data in data_types:
         tr_Z_short = tr_Z.copy().trim(endtime=UTCDateTime("2010-10-25T14:44:47"))
         
         # Compute averages
-        euc_3comp_amps = avg.get_eucl_norm_3comp(tr_E.data,tr_N.data,tr_Z.data)
-        euc_2comp_amps = avg.get_eucl_norm_2comp(tr_E.data,tr_N.data)
-        rotd50_amps = compute_rotd50(tr_E.data,tr_N.data)
+        euc_3comp_amps = tmf.get_eucl_norm_3comp(tr_E.data,tr_N.data,tr_Z.data)
+        euc_2comp_amps = tmf.get_eucl_norm_2comp(tr_E.data,tr_N.data)
+        rotd50_amps = tmf.compute_rotd50(tr_E.data,tr_N.data)
         
         if data == 'disp':
 
@@ -242,12 +247,12 @@ for data in data_types:
         ########################## Spectra ##########################
         
         # Calc Spectra full waveforms
-        bins, E_spec_data = IM_fns.calc_spectra(Stream(tr_E), dtype)
-        bins, N_spec_data = IM_fns.calc_spectra(Stream(tr_N), dtype)
+        bins, E_spec_data = tmf.calc_spectra(Stream(tr_E), dtype)
+        bins, N_spec_data = tmf.calc_spectra(Stream(tr_N), dtype)
         
         # Calc Spectra trimmed waveforms
-        bins_trim, E_spec_data_trim = IM_fns.calc_spectra(Stream(tr_E_short), dtype)
-        bins_trim, N_spec_data_trim = IM_fns.calc_spectra(Stream(tr_N_short), dtype)
+        bins_trim, E_spec_data_trim = tmf.calc_spectra(Stream(tr_E_short), dtype)
+        bins_trim, N_spec_data_trim = tmf.calc_spectra(Stream(tr_N_short), dtype)
         
         # Get avg of horizontals
         NE_data = np.sqrt(E_spec_data**2 + N_spec_data**2)
@@ -270,34 +275,4 @@ for data in data_types:
     
     flatfile_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_avg_spectra/{data}_binned_spec.csv',index=False)
     flatfile_trim_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_avg_spectra/{data}_binned_spec_trim.csv',index=False)
-    
-    
-    # times_df = pd.DataFrame(obs_times)
-    # euc_3comp_amp_df = pd.DataFrame(obs_amps_euc3comp)
-    # euc_2comp_amp_df = pd.DataFrame(obs_amps_euc2comp)
-    # rotd50_amp_df = pd.DataFrame(obs_amps_rotd50)
-    # Ecomp_amp_df = pd.DataFrame(E_record[0].data.tolist())
-    # Ncomp_amp_df = pd.DataFrame(N_record[0].data.tolist())
-    # Zcomp_amp_df = pd.DataFrame(Z_record[0].data.tolist())
-    
-    # euc3comp_df = pd.concat([times_df, euc_3comp_amp_df], axis=1)
-    # euc2comp_df = pd.concat([times_df, euc_2comp_amp_df], axis=1)
-    # rotd50_df = pd.concat([times_df, rotd50_amp_df], axis=1)
-    # Ecomp_df = pd.concat([times_df, Ecomp_amp_df], axis=1)
-    # Ncomp_df = pd.concat([times_df, Ncomp_amp_df], axis=1)
-    # Zcomp_df = pd.concat([times_df, Zcomp_amp_df], axis=1)
-    
-    # euc3comp_df.to_csv(f'{home_dir}/average/flatfiles/{data}_euc3comp.csv',index=False)
-    # euc2comp_df.to_csv(f'{home_dir}/average/flatfiles/{data}_euc2comp.csv',index=False)
-    # rotd50_df.to_csv(f'{home_dir}/average/flatfiles/{data}_rotd50comp.csv',index=False)
-    # Ecomp_df.to_csv(f'{home_dir}/individual/flatfiles/{data}_Ecomp.csv',index=False)
-    # Ncomp_df.to_csv(f'{home_dir}/individual/flatfiles/{data}_Ncomp.csv',index=False)
-    # Zcomp_df.to_csv(f'{home_dir}/individual/flatfiles/{data}_Zcomp.csv',index=False)
-    
-    
-    
-    
-    
-    
-    
     

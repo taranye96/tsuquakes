@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 
 # Gather .rupt files
 rupt_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/output/ruptures/mentawai*.rupt'))
-# rupt_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/old_final_suite/final_suite_new/rt1.0x_sf0.4/output/ruptures/mentawai*.rupt'))
 max_slip_list = []
+
 # Loop over .rupt files
 for file in rupt_files:
     

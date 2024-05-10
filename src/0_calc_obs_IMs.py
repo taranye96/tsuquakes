@@ -12,10 +12,8 @@ Created on Thu Oct 10 12:16:28 2019
 # this script calculates are:
     # PGD
     # PGA
-    # PGV
-    # Displacement spectra bin averages for 20 bins
-    # Acceleration spectra bin averages for 20 bins
-    # Velocity spectra bin averages for 20 bins
+    # Displacement spectra bin averages for 10 bins
+    # Acceleration spectra bin averages for 10 bins
 ###############################################################################
 
 # Imports
@@ -26,13 +24,11 @@ from glob import glob
 from obspy import UTCDateTime, Stream
 
 # Local Imports
-import tsueqs_main_fns as tmf
-import signal_average_fns as avg
-import IM_fns
-from rotd50 import compute_rotd50
+import tsuquakes_main_fns as tmf
 
 ################################ Parameters ###################################
 
+# Stations not used for analyses because they are too noisy or too far away
 unused_stns = ['PPBI','PSI','CGJI','TSI','CNJI','LASI','MLSI','MKMK','LNNG','LAIS','TRTK','MNNA','BTHL']
 
 # Used for directory paths
@@ -46,19 +42,18 @@ data_types = ['disp', 'accel']
 # Project directory 
 proj_dir = '/Users/tnye/tsuquakes' 
 
-home_dir = f'/Users/tnye/tsuquakes/data/waveforms/individual'
+# Waveforms home directory
+home_dir = '/Users/tnye/tsuquakes/data/processed_waveforms/individual'
 
-# Table of earthquake data
-eq_table_path = '/Users/tnye/tsuquakes/data/misc/events.csv'   
-eq_table = pd.read_csv(eq_table_path)
+# Table of earthquake data  
+eq_table = pd.read_csv('/Users/tnye/tsuquakes/data/events.csv')
 
-# Data directories- one for displacement and one for strong motion (acc)     
-data_dir = proj_dir + '/data' 
-# disp_dir = data_dir + '/' + earthquake_name + '/disp'
-disp_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/GNSS_data_processed_Dara_SAC/events/'
+# Data directories
+disp_dir = '/Users/tnye/tsuquakes/data/GNSS_data_processed_Dara_SAC/events/'
+data_dir = proj_dir + '/data'
 sm_dir = data_dir + '/' + earthquake_name + '/accel'
 
-# Path to send flatfiles of intensity measures
+# Path to save flatfiles of intensity measures
 gnss_flatfile_path = proj_dir + '/flatfiles/obs_IMs_gnss.csv'     
 sm_flatfile_path = proj_dir + '/flatfiles/obs_IMs_sm.csv'  
 
@@ -74,8 +69,8 @@ sm_files = np.array(sorted(glob(sm_dir + '/*.mseed')))
 
 ################################ Event Data ###################################
 
+# Metadata
 origin = pd.to_datetime('2010-10-25T14:42:22')
-
 eventname = earthquake_name
 country = eq_table['Country'][11]
 origintime = eq_table['Origin Time (UTC)*'][11]
@@ -302,9 +297,6 @@ for data in data_types:
             stn_type_list = np.append(stn_type_list, 'GNSS')
         elif data == 'accel':
             stn_type_list = np.append(stn_type_list, 'SM')
-        
-        # Initialize list for all spectra at this station
-        station_spec = []
 
         # Turn the components list into an array 
         components = np.asarray(components)
@@ -343,7 +335,7 @@ for data in data_types:
         # Save corrected mseed file
         tra = E_record[0]
         tra.stats.channel = code + 'E'
-        filename = f'/Users/tnye/tsuquakes/data/waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
+        filename = f'/Users/tnye/tsuquakes/data/processed_waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
         tra.write(filename, format='MSEED')
 
             
@@ -382,7 +374,7 @@ for data in data_types:
         # Save corrected mseed file
         tra = N_record[0]
         tra.stats.channel = code + 'N'
-        filename = f'/Users/tnye/tsuquakes/data/waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
+        filename = f'/Users/tnye/tsuquakes/data/processed_waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
         tra.write(filename, format='MSEED')
 
         ########## Vertical component ##########
@@ -420,7 +412,7 @@ for data in data_types:
         # Save corrected mseed file
         tra = Z_record[0]
         tra.stats.channel = code + 'Z'
-        filename = f'/Users/tnye/tsuquakes/data/waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
+        filename = f'/Users/tnye/tsuquakes/data/processed_waveforms/individual/{dtype}/{tra.stats.station}.{tra.stats.channel}.mseed' 
         tra.write(filename, format='MSEED')
 
 
@@ -439,7 +431,7 @@ for data in data_types:
 
         else:
             # Append nan to the overall arrays if horizontals don't exist:
-            horizon_Td_list = np.append(horiz_Td_list,np.nan)
+            horiz_Td_list = np.append(horiz_Td_list,np.nan)
             
             
         # Get the values for all 3 components
@@ -473,41 +465,26 @@ for data in data_types:
             
             ## PGD
             #Get euclidean norm of displacement components 
-            eucnorm = avg.get_eucl_norm_3comp(tr_E_short.data,
+            eucnorm = tmf.get_eucl_norm_3comp(tr_E_short.data,
                                                 tr_N_short.data,
                                                 tr_Z_short.data)
-            
-            # rotd50 = compute_rotd50(E_record[0].data,N_record[0].data)
-            
-            # # Append trace data and times to lists
-            # obs_times.append(E_record[0].times('matplotlib').tolist())
-            # obs_amps.append(eucnorm)
             
             # Calculate PGD
             pgd = np.max(np.abs(eucnorm))
             pgd_list = np.append(pgd_list,pgd)
             
             # Calculate tPGD from origin and p-arrival
-            tPGD_orig = IM_fns.calc_time_to_peak(pgd, tr_E_short,
+            tPGD_orig = tmf.calc_time_to_peak(pgd, tr_E_short,
                                                             np.abs(eucnorm),
                                                             origin, hypdist)
             tPGD_orig_list = np.append(tPGD_orig_list,tPGD_orig)
             
             ## Disp Spectra
-            bins, E_spec_data = IM_fns.calc_spectra(Stream(tr_E_short), 'gnss')
-            bins, N_spec_data = IM_fns.calc_spectra(Stream(tr_N_short), 'gnss')
-            bins, Z_spec_data = IM_fns.calc_spectra(Stream(tr_Z_short), 'gnss')
+            bins, E_spec_data = tmf.calc_spectra(Stream(tr_E_short), 'gnss')
+            bins, N_spec_data = tmf.calc_spectra(Stream(tr_N_short), 'gnss')
+            bins, Z_spec_data = tmf.calc_spectra(Stream(tr_Z_short), 'gnss')
             
             NE_data = np.sqrt(E_spec_data**2 + N_spec_data**2)
-            
-            # # Combine into one array and append to main list
-            # disp_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
-            # disp_speclist.append(disp_spec.tolist())
-            
-            # # Plot spectra
-            # freqs = [freqE,freqN,freqZ]
-            # amps = [ampE,ampN,ampZ]
-            # IM_fns.plot_spectra(E_record, freqs, amps, 'disp', '', synthetic=False)
             
             # Append spectra to lists to make spectra comparison plots
             disp_freqs.append(bins)
@@ -515,42 +492,27 @@ for data in data_types:
     
         # Calculate acceleration and velocity intensity measures
         if data == 'accel':
+            
             ## PGA         
-            # Get euclidean norm of acceleration components 
-            # acc_euc_norm = avg.get_eucl_norm_3comp(E_record[0].data,
-            #                                    N_record[0].data,
-            #                                    Z_record[0].data)
-            
-            rotd50 = compute_rotd50(E_record[0].data,N_record[0].data)
-            
-            # # Append trace data and times to lists
-            # obs_times.append(E_record[0].times('matplotlib').tolist())
-            # obs_amps.append(rotd50)
+            #Get rotd50 of the acceleration horizontal components 
+            rotd50 = tmf.compute_rotd50(E_record[0].data,N_record[0].data)
             
             # Calculate PGA
             pga = np.max(np.abs(rotd50))
             pga_list = np.append(pga_list,pga)
-            # Calcualte tPGD from origin and p-arrival
-            tPGA_orig = IM_fns.calc_time_to_peak(pga, E_record[0],
+            
+            # Calcualte tPGA from origin and p-arrival
+            tPGA_orig = tmf.calc_time_to_peak(pga, E_record[0],
                                                             np.abs(rotd50),
                                                             origin, hypdist)
             tPGA_orig_list = np.append(tPGA_orig_list,tPGA_orig)
 
             ## Acc Spectra
-            bins, E_spec_data = IM_fns.calc_spectra(Stream(tr_E_short), 'sm')
-            bins, N_spec_data = IM_fns.calc_spectra(Stream(tr_N_short), 'sm')
-            bins, Z_spec_data = IM_fns.calc_spectra(Stream(tr_Z_short), 'sm')
+            bins, E_spec_data = tmf.calc_spectra(Stream(tr_E_short), 'sm')
+            bins, N_spec_data = tmf.calc_spectra(Stream(tr_N_short), 'sm')
+            bins, Z_spec_data = tmf.calc_spectra(Stream(tr_Z_short), 'sm')
             
             NE_data = np.sqrt(E_spec_data**2 + N_spec_data**2)
-            
-            # # Combine into one array and append to main list
-            # acc_spec = np.concatenate([E_spec_data,N_spec_data,Z_spec_data])
-            # acc_speclist.append(acc_spec.tolist())
-            
-            # # Plot spectra
-            # freqs = [freqE,freqN,freqZ]
-            # amps = [ampE,ampN,ampZ]
-            # IM_fns.plot_spectra(E_record, freqs, amps, 'acc', '', synthetic=False)
             
             # Append spectra to lists to make spectra comparison plots
             sm_freqs.append(bins)
@@ -585,18 +547,7 @@ for data in data_types:
         # Save df to file:
         gnss_flatfile_df.to_csv(gnss_flatfile_path,index=False)
         
-        # # Make waveform .csv file
-        # times_df = pd.DataFrame(obs_times)
-        # amp_df = pd.DataFrame(obs_amps)
-        # flatfile_df = pd.concat([times_df, amp_df], axis=1)
-        # flatfile_df.to_csv(f'{home_dir}/disp.csv',index=False)
-        
-        # Make spectra .csv file
-        freq_df = pd.DataFrame(disp_freqs)
-        amp_df = pd.DataFrame(disp_speclist)
-        flatfile_df = pd.concat([freq_df, amp_df], axis=1)
-        flatfile_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/disp_binned_spec.csv',index=False)
-        
+ 
     elif data == 'accel':
         sm_dataset_dict = {'eventname':eventnames,'country':countries,'origintime':origintimes,
                             'hyplon':hyplons,'hyplat':hyplats,'hypdepth (km)':hypdepths,
@@ -617,21 +568,4 @@ for data in data_types:
         
         # Save df to file:
         sm_flatfile_df.to_csv(sm_flatfile_path,index=False)
-        
-        # # Make waveform .csv file
-        # times_df = pd.DataFrame(obs_times)
-        # amp_df = pd.DataFrame(obs_amps)
-        # flatfile_df = pd.concat([times_df, amp_df], axis=1)
-        # flatfile_df.to_csv(f'{home_dir}/acc.csv',index=False)
-        
-        # times_df = pd.DataFrame(obs_times)
-        # amp_v_df = pd.DataFrame(obs_amps_v)
-        # flatfile_df = pd.concat([times_df, amp_v_df], axis=1)
-        # flatfile_df.to_csv(f'{home_dir}/vel.csv',index=False)
-        
-        # Make spectra .csv file
-        freq_df = pd.DataFrame(sm_freqs)
-        amp_df = pd.DataFrame(acc_speclist)
-        flatfile_df = pd.concat([freq_df, amp_df], axis=1)
-        flatfile_df.to_csv(f'/Users/tnye/tsuquakes/data/obs_spectra/acc_binned_spec.csv',index=False)
-        
+

@@ -14,8 +14,9 @@ from glob import glob
 from mtspec import mtspec
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator, MultipleLocator, ScalarFormatter, FormatStrFormatter
-import signal_average_fns as avg
-import IM_fns
+
+# Local imports
+import tsuquakes_main_fns as tmf
 
 
 #%% 
@@ -78,7 +79,7 @@ lf_hypdist = [161,82,98]
 N = 3
 
 ################################ Observed data ################################
-obs_dir = '/Users/tnye/tsuquakes/data/Mentawai2010/GNSS_data_processed_Dara_SAC/events'
+obs_dir = '/Users/tnye/tsuquakes/data/GNSS_data_processed_Dara_SAC/events'
 obs_files = [f'{obs_dir}/PKRT.LXE.mseed',f'{obs_dir}/PKRT.LXN.mseed',f'{obs_dir}/PKRT.LXZ.mseed',
              f'{obs_dir}/SLBU.LXE.mseed',f'{obs_dir}/SLBU.LXN.mseed',f'{obs_dir}/SLBU.LXZ.mseed',
              f'{obs_dir}/SMGY.LXE.mseed',f'{obs_dir}/SMGY.LXN.mseed',f'{obs_dir}/SMGY.LXZ.mseed']
@@ -92,7 +93,7 @@ for i in range(len(obs_grouped)):
     stN_obs = read(obs_grouped[i][1])
     stZ_obs = read(obs_grouped[i][2])
     
-    avg_obs = avg.get_eucl_norm_3comp(stE_obs[0].data, stN_obs[0].data, stZ_obs[0].data)
+    avg_obs = tmf.get_eucl_norm_3comp(stE_obs[0].data, stN_obs[0].data, stZ_obs[0].data)
     
     freq, E_amp = calc_spectra(stE_obs)
     freq, N_amp = calc_spectra(stN_obs)
@@ -142,10 +143,10 @@ for i in range(len(disp_syn_files_soft1)):
     stN_disp_soft3 = read(disp_syn_files_soft3[i][1])
     stZ_disp_soft3 = read(disp_syn_files_soft3[i][2])
     
-    avg_disp_soft0 = avg.get_eucl_norm_3comp(stE_disp_soft0[0].data, stN_disp_soft0[0].data, stZ_disp_soft0[0].data)
-    avg_disp_soft1 = avg.get_eucl_norm_3comp(stE_disp_soft1[0].data, stN_disp_soft1[0].data, stZ_disp_soft1[0].data)
-    avg_disp_soft2 = avg.get_eucl_norm_3comp(stE_disp_soft2[0].data, stN_disp_soft2[0].data, stZ_disp_soft2[0].data)
-    avg_disp_soft3 = avg.get_eucl_norm_3comp(stE_disp_soft3[0].data, stN_disp_soft3[0].data, stZ_disp_soft3[0].data)
+    avg_disp_soft0 = tmf.get_eucl_norm_3comp(stE_disp_soft0[0].data, stN_disp_soft0[0].data, stZ_disp_soft0[0].data)
+    avg_disp_soft1 = tmf.get_eucl_norm_3comp(stE_disp_soft1[0].data, stN_disp_soft1[0].data, stZ_disp_soft1[0].data)
+    avg_disp_soft2 = tmf.get_eucl_norm_3comp(stE_disp_soft2[0].data, stN_disp_soft2[0].data, stZ_disp_soft2[0].data)
+    avg_disp_soft3 = tmf.get_eucl_norm_3comp(stE_disp_soft3[0].data, stN_disp_soft3[0].data, stZ_disp_soft3[0].data)
     
     freq, E_amp = calc_spectra(stE_disp_soft0)
     freq, N_amp = calc_spectra(stN_disp_soft0)

@@ -7,9 +7,10 @@ Created on Tue Nov 19 10:58:11 2019
 """
 
 ###############################################################################
-# Script used to create a more finely discretized .fault file with dimensions
-# based on the Han Yuet et al., 2014 finite fault model for the 2010 Mentawai
-# event. 
+# This script creates a more finely discretized .fault file with dimensions
+# based on the Han Yue et al. (2014) finite fault model for the 2010 Mentawai
+# event. This script also calls resample_to_finer_rupt.sh to interpolate the
+# slip pattern on the finer fault model.
 ###############################################################################
 
 # Imports
@@ -20,12 +21,15 @@ from mudpy import forward
 import pandas as pd
 import numpy as np
 import geopy.distance
+import subprocess
 
 # File path to save new .fault file
-fout = '/Users/tnye/FakeQuakes/files/fault_info/mentawai_2.5km.fault'
+fout = '/Users/tnye/FakeQuakes/files/fault_info/mentawai_fine2.fault'
 
-# Read in Han Yue fault model
+# Read in Han Yue et al. (2014) fault model
 han_yue = pd.read_csv('/Users/tnye/FakeQuakes/files/model_info/han_yue.rupt', delimiter='\t')
+
+# Get the coordinates of each subfault
 han_lon = np.array(han_yue['lon'])
 han_lat = np.array(han_yue['lat'])
 han_depth = np.array(han_yue['z(km)']) - 3  # subtract 3 km because the Han Yue model assumes 3km of water at the top
@@ -60,6 +64,8 @@ num_downdip = round(np.abs((np.max(han_depth)-center[2])/np.cos(np.deg2rad(90-di
 # Make new fault model
 forward.makefault(fout,strike,dip,nstrike,dx_dip,dx_strike,epicenter,num_updip,num_downdip,rise_time)
 
+
+#%%
 # Plot to coarsely view fault models
 o = genfromtxt('/Users/tnye/FakeQuakes/files/model_info/depth_adjusted/han_yue_depth_adjusted.rupt')
 f = genfromtxt(fout)
@@ -68,3 +74,9 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(f[:,1], f[:,2], -f[:,3], c='blue')
 ax.scatter(o[:,1], o[:,2], -o[:,3], c='red')
+
+
+#%%
+
+frupt = fout.replace('fault_info','model_info').replace('.fault','.rupt')
+subprocess.run(['./resample_to_finer_rupt.sh',fout,frupt])
