@@ -1,0 +1,2 @@
+Lon,lat,event
+100.14,-3.49,2010 M7.8 Mentawai

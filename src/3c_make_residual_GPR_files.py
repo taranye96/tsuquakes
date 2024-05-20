@@ -30,7 +30,7 @@ rupture_list = genfromtxt(f'{home_dir}/{parameter}/standard/data/ruptures.list',
 ################################ tPGD Residuals ###############################
 
 # Read in residual files
-gnss_res_files = sorted(glob(f'{home_dir}/{parameter}/rt*/flatfiles/residuals/*_gnss.csv'))
+gnss_res_files = sorted(glob(f'{home_dir}/{parameter}/2D/rt*/flatfiles/residuals/*_gnss.csv'))
 
 # Initialize arrays
 rise = np.array([])
@@ -77,10 +77,10 @@ gnss_df.to_csv('/Users/tnye/tsuquakes/gaussian_process/tPGD_parameter_residuals_
 ################################# HF Residuals ################################
 
 # Read in residual files
-sm_res_files = sorted(glob(f'{home_dir}/{parameter}/sd*/flatfiles/residuals/*_sm.csv'))
+sm_res_files = sorted(glob(f'{home_dir}/{parameter}/1D/sd*/flatfiles/residuals/*_sm.csv'))
 
 # Read in rupture list
-rupture_list = genfromtxt(f'{home_dir}/{parameter}/sd2.0/data/ruptures.list',dtype=str)
+rupture_list = genfromtxt(f'{home_dir}/{parameter}/1D/sd2.0/data/ruptures.list',dtype=str)
 
 # Initialize arrays
 stress = np.array([])

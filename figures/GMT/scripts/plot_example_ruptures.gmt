@@ -1,0 +1,58 @@
+#!/bin/bash
+
+## Make a map of the Mentawai, Indonesia region
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset FORMAT_GEO_MAP ddd
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=18p,Helvetica
+# gmt gmtset MAP_SCALE_HEIGHT 20p
+
+########### Parameters ###########
+OUT=mentawai.000001
+# OUT=han_yue
+LOCATION=/Users/tnye/conferences/NASA_SET
+
+LONMIN=98.5
+LONMAX=100.5
+LATMIN=-4.4
+LATMAX=-2.25
+
+# J="M5i"
+J="M3i"
+MAPSCALE=5.5
+
+# SLIP=/Users/tnye/tsuquakes/rupture_models/mentawai.000010.txt
+SLIP=/Users/tnye/tsuquakes/rupture_models/mentawai.000001.txt
+colorCPT=/Users/tnye/cpt/temperature.cpt
+slipCPT=/Users/tnye/cpt/slip.cpt
+menbath=/Users/tnye/tsuquakes/code/GMT/stations_fig/menbath.grd
+CPTbath=/Users/tnye/tsuquakes/code/GMT/stations_fig/menbath.cpt
+bathgradient=/Users/tnye/tsuquakes/code/GMT/stations_fig/bathgradient.grd
+
+gmt makecpt -C$colorCPT -T0/20/.5 > $slipCPT
+
+# Start plotting map
+gmt psbasemap -J$J -R$LONMIN/$LONMAX/$LATMIN/$LATMAX -B1WSne -V -P -X1.5i -Y5i -K > ${OUT}.eps
+
+# Plot land and water
+gmt pscoast -R -J -Df -W0p -S217/235/252 -G158/127/81 -O -K >> $OUT.eps
+
+# Add coastlines
+gmt pscoast -R -J -Na -Df -A25 -L99.3/-4/0/50 -W0.25p,black -K -O >> ${OUT}.eps
+
+# Plot rupture model
+gmt psxy $SLIP -R -J -C$slipCPT -Sc0.2c -K -O >> ${OUT}.eps
+# gmt psscale -R -J -C$slipCPT -Dg108.8/-4.25+w9c/0.4c -Bxaf+l"Slip (m)" -K -O >> ${OUT}.eps
+gmt psscale -R -J -C$slipCPT -Dg98.6/-4+w5c/0.3c+ -B10+l"Slip (m)" -K -O >> ${OUT}.eps
+
+# Plot earthquake epicenter
+    # Icon is a yellow star
+gmt psxy /Users/tnye/tsuquakes/code/GMT/mentawai_epi.txt -R -J -Dj0.08[0.06] -Sa0.6c -G255/255/0 -W.5p,black -B -O >> ${OUT}.eps
+
+
+open $OUT.eps  # shows plot
+
+# Convert to png and move
+gmt psconvert $OUT.eps -TG -P -A1c
+mv $OUT.png $LOCATION/.
+mv $OUT.eps $LOCATION/$OUT.eps

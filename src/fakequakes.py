@@ -59,8 +59,6 @@ def run_fq(main_ncpus,home,project_name,fault,model_name,GF_list,copy_ruptures,r
     ################################## Parameters #################################
     
     # # Define variables for project location 
-    # home = '/Users/tnye/FakeQuakes/FQ_status/orig_Q_model/'
-    # project_name='standard_parameters'
     
     # Runtime parameters 
     ncpus=16                                        # how many CPUS you want to use for parallelization (needs ot be at least 2)

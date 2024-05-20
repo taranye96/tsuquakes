@@ -18,10 +18,10 @@ import matplotlib.dates as mdates
 from matplotlib.ticker import LogLocator, MultipleLocator, ScalarFormatter, FormatStrFormatter
 import matplotlib as mpl
 from matplotlib import ticker
-# sys.path.insert(0, '/Users/tnye/tsuquakes/code/processing/') # location of src 
-import signal_average_fns as avg
-from rotd50 import compute_rotd50
 import latex
+
+# Local Imports
+import tsuquakes_main_fns as tmf
 
 hf_stn_names = ['PPSI','LHSI','SBSI']
 lf_stn_names = ['BSAT','SLBU','PKRT']
@@ -84,9 +84,9 @@ for i in range(len(disp_obs_files)):
 
 ################################ Synthetic data ###############################
 
-all_disp_syn_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/processed_wfs/disp_noise/mentawai.000000/*'))
-all_acc_syn_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/processed_wfs/acc/mentawai.000000/*'))
-all_vel_syn_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/processed_wfs/vel/mentawai.000000/*'))
+all_disp_syn_files = sorted(glob('/Users/tnye/tsuquakes/simulations/test_simulations/standard/processed_wfs/disp_noise/mentawai.000000/*'))
+all_acc_syn_files = sorted(glob('/Users/tnye/tsuquakes/simulations/test_simulations/standard/processed_wfs/acc/mentawai.000000/*'))
+all_vel_syn_files = sorted(glob('/Users/tnye/tsuquakes/simulations/test_simulations/standard/processed_wfs/vel/mentawai.000000/*'))
 
 # Group all files by station
 N = 3
@@ -120,9 +120,9 @@ for i in range(len(disp_syn_files)):
     stE_vel = read(vel_syn_files[i][0])
     stN_vel = read(vel_syn_files[i][1])
     
-    avg_disp = avg.get_eucl_norm_3comp(stE_disp[0].data, stN_disp[0].data, stZ_disp[0].data)
-    avg_acc = compute_rotd50(stE_acc[0].data,stN_acc[0].data)
-    avg_vel = compute_rotd50(stE_vel[0].data,stN_vel[0].data)
+    avg_disp = tmf.get_eucl_norm_3comp(stE_disp[0].data, stN_disp[0].data, stZ_disp[0].data)
+    avg_acc = tmf.compute_rotd50(stE_acc[0].data,stN_acc[0].data)
+    avg_vel = tmf.compute_rotd50(stE_vel[0].data,stN_vel[0].data)
     syn_disp_amps.append(avg_disp)
     syn_lf_times.append(stE_disp[0].times('matplotlib'))
     syn_acc_amps.append(avg_acc)
@@ -171,14 +171,13 @@ j=0
 
 # Disp waveforms
 for i in range(3):
-    axs[layout[0][i]].plot(syn_lf_times[i],syn_disp_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[layout[0][i]].plot(obs_lf_times[i],obs_disp_amps[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
+    axs[layout[0][i]].plot(syn_lf_times[i],syn_disp_amps[i],color='C1',alpha=0.7,lw=0.65,label='synthetic')
+    axs[layout[0][i]].plot(obs_lf_times[i],obs_disp_amps[i],'steelblue',alpha=0.7,lw=0.65,label='observed')
     axs[layout[0][i]].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     axs[layout[0][i]].text(0.98,5E-2,r'$R_{hyp}$'+f'={int(lf_hypdist[i])}km',horizontalalignment='right',transform=axs[layout[0][i]].transAxes,size=10)
     axs[layout[0][i]].text(0.98,0.85,lf_stn_names[i],transform=axs[layout[0][i]].transAxes,size=10,horizontalalignment='right')
     axs[layout[0][i]].grid(alpha=0.25)
     axs[layout[0][i]].text(-0.05,1.1,labels[j],transform=axs[layout[0][i]].transAxes,fontsize=10,va='top',ha='right')
-    # axs[layout[0][i]].tick_params('x', labelbottom=False)
     if np.max(np.abs(syn_disp_amps[i].tolist()+obs_disp_amps[i])) < 0.2:
        axs[layout[0][i]].yaxis.set_major_locator(MultipleLocator(0.05))
     else:
@@ -186,12 +185,11 @@ for i in range(3):
     if i == 1:
         axs[layout[0][i]].set_title(r'$\bf{Waveforms}$',pad=10,fontsize=11)
     j+=1
-# axs['a'].set_ylabel('Amplitude (m)')
     
 # Acc waveforms
 for i in range(3):
-    # axs[layout[1][i]].plot(syn_hf_times[i],syn_acc_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[layout[1][i]].plot(obs_hf_times[i],obs_acc_amps[i],'steelblue',alpha=0.7,lw=0.5,label='observed')
+    axs[layout[1][i]].plot(syn_hf_times[i],syn_acc_amps[i],color='C1',alpha=0.7,lw=0.65,label='synthetic')
+    axs[layout[1][i]].plot(obs_hf_times[i],obs_acc_amps[i],'steelblue',alpha=0.7,lw=0.65,label='observed')
     axs[layout[1][i]].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     axs[layout[1][i]].tick_params(axis='both', which='major', labelsize=10)
     axs[layout[1][i]].text(0.98,5E-2,r'$R_{hyp}$'+f'={int(hf_hypdist[i])}km',horizontalalignment='right',transform=axs[layout[1][i]].transAxes,size=10)
@@ -206,32 +204,26 @@ for i in range(3):
         axs[layout[1][i]].yaxis.set_major_locator(MultipleLocator(0.5))
     j+=1
 axs["e"].set_xlabel('October 25, 2010 UTC Time(hr:min)',fontsize=10)
-# axs['d'].set_ylabel(r'Amplitude (m/s$^{2}$)')
 
 # Disp spectra
 for i in range(3):
-    axs[layout[3][i]].loglog(syn_lf_freq[i],syn_disp_spec[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[layout[3][i]].loglog(obs_lf_freq[i],obs_disp_spec[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
+    axs[layout[3][i]].loglog(syn_lf_freq[i],syn_disp_spec[i],color='C1',alpha=0.7,lw=0.65,label='synthetic')
+    axs[layout[3][i]].loglog(obs_lf_freq[i],obs_disp_spec[i],'steelblue',alpha=0.7,lw=0.65,label='observed')
     axs[layout[3][i]].tick_params(axis='both', which='major', labelsize=10)
     axs[layout[3][i]].text(0.98,5E-2,r'$R_{hyp}$'+f'={int(lf_hypdist[i])}km',horizontalalignment='right',transform=axs[layout[3][i]].transAxes,size=10)
     axs[layout[3][i]].text(0.98,0.85,lf_stn_names[i],transform=axs[layout[3][i]].transAxes,size=10,horizontalalignment='right')
     axs[layout[3][i]].grid(alpha=0.25)
-    axs[layout[3][i]].set_xlim(xmax=0.5)
     axs[layout[3][i]].text(-0.05,1.1,labels[j],transform=axs[layout[3][i]].transAxes,fontsize=10,va='top',ha='right')
     axs[layout[3][i]].set_ylim(2*10**-4,5)
-    axs[layout[3][i]].set_xlim(0.004,1)
-    axs[layout[3][i]].tick_params(which='minor',bottom=False,left=False)
-    # if i !=0:
-    #     axs[layout[3][i]].yaxis.set_tick_params(labelleft=False)
+    axs[layout[3][i]].set_xlim(0.004,0.5)
     if i == 1:
         axs[layout[3][i]].set_title(r'$\bf{Fourier}$ $\bf{Amplitude}$ $\bf{Spectra}$',pad=10,fontsize=11)
     j+=1
-# axs['g'].set_ylabel('Amplitude (m*s)')
 
 # Acc spectra
 for i in range(3):
-    axs[layout[4][i]].loglog(syn_hf_freq[i],syn_acc_spec[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[layout[4][i]].loglog(obs_hf_freq[i],obs_acc_spec[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
+    axs[layout[4][i]].loglog(syn_hf_freq[i],syn_acc_spec[i],color='C1',alpha=0.7,lw=0.65,label='synthetic')
+    axs[layout[4][i]].loglog(obs_hf_freq[i],obs_acc_spec[i],'steelblue',alpha=0.7,lw=0.65,label='observed')
     axs[layout[4][i]].tick_params(axis='both', which='major', labelsize=10)
     axs[layout[4][i]].text(0.98,5E-2,r'$R_{hyp}$'+f'={int(hf_hypdist[i])}km',horizontalalignment='right',transform=axs[layout[4][i]].transAxes,size=10)
     axs[layout[4][i]].text(0.98,0.85,hf_stn_names[i],transform=axs[layout[4][i]].transAxes,size=10,horizontalalignment='right')
@@ -239,125 +231,13 @@ for i in range(3):
     axs[layout[4][i]].set_xlim(0.01,10)
     axs[layout[4][i]].set_ylim(2*10**-12,8*10**-1)
     axs[layout[4][i]].text(-0.05,1.1,labels[j],transform=axs[layout[4][i]].transAxes,fontsize=10,va='top',ha='right')
-    # if i == 1:
-        # axs[layout[4][i]].set_title(r'$\bf{Acceleration}$',pad=10)   
-    # if i !=0:
-    #     axs[layout[4][i]].yaxis.set_tick_params(labelleft=False)
+    
     j+=1
 axs["k"].set_xlabel('Fequency (Hz)',fontsize=10)
-# axs['j'].set_ylabel('Amplitude (m/s)')
 
 axs["null"].remove()
 axs["k"].legend(loc='upper center', bbox_to_anchor=(0.5, -0.6),fancybox=False, shadow=False, ncol=2)
 fig.supylabel(f'Amplitude',fontsize=10,x=0.01,y=0.575)
-# fig.supxlabel('October 25, 2010 UTC Time(hr:min)',fontsize=11,x=0.545,y=0.115,va='bottom')
-plt.subplots_adjust(left=0.115, bottom=0.15, right=0.975, top=0.95, wspace=0.4, hspace=0.55)
-# plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/wf-spectra_comparison_standard.png',dpi=300)
+plt.subplots_adjust(left=0.115, bottom=0.15, right=0.975, top=0.95, wspace=0.4, hspace=0.6)
+plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/Fig4_wf-spectra_comparison.png',dpi=300)
     
-    
-#%%
-
-labels=[r'$\bf{(a)}$',r'$\bf{(b)}$',r'$\bf{(c)}$',r'$\bf{(d)}$',r'$\bf{(e)}$',r'$\bf{(f)}$']
-
-
-# Waveform figure
-fig, axs = plt.subplots(2,3,figsize=(6.5,5)) 
-
-j=0
-
-# Disp
-for i in range(3):
-    axs[0][i].plot(syn_lf_times[i],syn_disp_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[0][i].plot(obs_lf_times[i],obs_disp_amps[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
-    axs[0][i].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    axs[0][i].text(0.98,5E-2,f'Hypdist={int(lf_hypdist[i])}km',horizontalalignment='right',transform=axs[0][i].transAxes,size=10)
-    axs[0][i].text(0.98,0.9,lf_stn_names[i],transform=axs[0][i].transAxes,size=10,horizontalalignment='right')
-    axs[0][i].grid(alpha=0.25)
-    axs[0][i].text(-0.05,1.0,labels[j],transform=axs[0][i].transAxes,fontsize=10,va='top',ha='right')
-    if np.max(np.abs(syn_disp_amps[i].tolist()+obs_disp_amps[i])) < 0.2:
-       axs[0][i].yaxis.set_major_locator(MultipleLocator(0.05))
-    else:
-       axs[0][i].yaxis.set_major_locator(MultipleLocator(0.1))
-    if i == 1:
-        axs[0][i].set_title(r'$\bf{Displacement}$',pad=10)
-    j+=1
-    
-    
-# Acc
-for i in range(3):
-    axs[1][i].plot(syn_hf_times[i],syn_acc_amps[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[1][i].plot(obs_hf_times[i],obs_acc_amps[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
-    axs[1][i].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    axs[1][i].tick_params(axis='both', which='major', labelsize=10)
-    axs[1][i].text(0.98,5E-2,f'Hypdist={int(hf_hypdist[i])}km',horizontalalignment='right',transform=axs[1][i].transAxes,size=10)
-    axs[1][i].text(0.98,0.9,hf_stn_names[i],transform=axs[1][i].transAxes,size=10,horizontalalignment='right')
-    axs[1][i].grid(alpha=0.25)   
-    axs[1][i].text(-0.05,1.0,labels[j],transform=axs[1][i].transAxes,fontsize=10,va='top',ha='right')
-    if np.max(np.abs(syn_acc_amps[i])) > 0.025 and np.max(np.abs(syn_acc_amps[i])) < 0.1:
-        axs[1][i].yaxis.set_major_locator(MultipleLocator(0.05))
-    elif np.max(np.abs(syn_acc_amps[i])) < 0.025:
-        axs[1][i].yaxis.set_major_locator(MultipleLocator(0.01))
-    else:
-        axs[1][i].yaxis.set_major_locator(MultipleLocator(0.5))
-    if i == 1:
-        axs[1][i].set_title(r'$\bf{Acceleration}$',pad=10)
-    j+=1
-
-
-        
-handles, labels = axs[0][0].get_legend_handles_labels()
-axs[1][1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.4),fancybox=False, shadow=False, ncol=2)
-fig.supylabel(f'Amplitude',fontsize=11,x=0.01,y=0.575)
-fig.supxlabel('October 25, 2010 UTC Time(hr:min)',fontsize=11,x=0.545,y=0.115,va='bottom')
-plt.subplots_adjust(left=0.115, bottom=0.215, right=0.975, top=0.925, wspace=0.3, hspace=0.5)
-plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/wf_comparison_standard.png',dpi=300)
-
-#%%
-
-fig, axs = plt.subplots(2,3,figsize=(6.5,5))
-labels=[r'$\bf{(a)}$',r'$\bf{(b)}$',r'$\bf{(c)}$',r'$\bf{(d)}$',r'$\bf{(e)}$',r'$\bf{(f)}$']
-
-j = 0
-
-# Disp
-for i in range(3):
-    axs[0][i].loglog(syn_lf_freq[i],syn_disp_spec[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[0][i].loglog(obs_lf_freq[i],obs_disp_spec[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
-    axs[0][i].tick_params(axis='both', which='major', labelsize=10)
-    axs[0][i].text(0.98,5E-2,f'Hypdist={int(lf_hypdist[i])}km',horizontalalignment='right',transform=axs[0][i].transAxes,size=10)
-    axs[0][i].text(0.98,0.9,lf_stn_names[i],transform=axs[0][i].transAxes,size=10,horizontalalignment='right')
-    axs[0][i].grid(alpha=0.25)
-    axs[0][i].set_xlim(xmax=0.5)
-    axs[0][i].text(-0.05,1.0,labels[j],transform=axs[0][i].transAxes,fontsize=10,va='top',ha='right')
-    axs[0][i].set_ylim(2*10**-4,5)
-    axs[0][i].tick_params(which='minor',bottom=False,left=False)
-    if i !=0:
-        axs[0][i].yaxis.set_tick_params(labelleft=False)
-    if i == 1:
-        axs[0][i].set_title(r'$\bf{Displacement}$',pad=10)
-    j+=1
-
-# Acc
-for i in range(3):
-    axs[1][i].loglog(syn_hf_freq[i],syn_acc_spec[i],color='C1',alpha=0.7,lw=0.75,label='synthetic')
-    axs[1][i].loglog(obs_hf_freq[i],obs_acc_spec[i],'steelblue',alpha=0.7,lw=0.75,label='observed')
-    axs[1][i].tick_params(axis='both', which='major', labelsize=10)
-    axs[1][i].text(0.98,5E-2,f'Hypdist={int(hf_hypdist[i])}km',horizontalalignment='right',transform=axs[1][i].transAxes,size=10)
-    axs[1][i].text(0.98,0.9,hf_stn_names[i],transform=axs[1][i].transAxes,size=10,horizontalalignment='right')
-    axs[1][i].grid(alpha=0.25)
-    axs[1][i].set_xlim(xmax=10)
-    axs[1][i].set_ylim(2*10**-12,8*10**-1)
-    axs[1][i].text(-0.05,1.0,labels[j],transform=axs[1][i].transAxes,fontsize=10,va='top',ha='right')
-    if i == 1:
-        axs[1][i].set_title(r'$\bf{Acceleration}$',pad=10)   
-    if i !=0:
-        axs[1][i].yaxis.set_tick_params(labelleft=False)
-    j+=1
-
-        
-handles, labels = axs[0][0].get_legend_handles_labels()
-axs[1][1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.4),fancybox=False, shadow=False, ncol=2)
-fig.supylabel(f'Amplitude',fontsize=11,x=0.01,y=0.575)
-fig.supxlabel('Frequency (Hz)',fontsize=11,x=0.545,y=0.115,va='bottom')
-plt.subplots_adjust(left=0.115, bottom=0.215, right=0.975, top=0.925, wspace=0.3, hspace=0.5)
-plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/fas_comparison_standard.png',dpi=300)

@@ -31,5 +31,5 @@ if not path.exists(figdir):
 # a = []
 for slip_file in slip_files:
     rupt_name = slip_file.split('/')[-1].strip('.txt')
-    rupt_file = f'/Users/tnye/FakeQuakes/simulations/{parameter}/standard/output/ruptures/{rupt_name}.rupt'
+    rupt_file = f'/Users/tnye/tsuquakes/simulations/{parameter}/standard/output/ruptures/{rupt_name}.rupt'
     subprocess.run(['/Users/tnye/tsuquakes/code/figures/call_plot_example_ruptures.gmt',cpt,rupt_name,rupt_file,slip_file,figdir])

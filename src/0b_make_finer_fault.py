@@ -24,10 +24,10 @@ import geopy.distance
 import subprocess
 
 # File path to save new .fault file
-fout = '/Users/tnye/FakeQuakes/files/fault_info/mentawai_fine2.fault'
+fout = '/Users/tnye/tsuquakes/files/fault_info/mentawai_fine2.fault'
 
 # Read in Han Yue et al. (2014) fault model
-han_yue = pd.read_csv('/Users/tnye/FakeQuakes/files/model_info/han_yue.rupt', delimiter='\t')
+han_yue = pd.read_csv('/Users/tnye/tsuquakes/files/model_info/han_yue.rupt', delimiter='\t')
 
 # Get the coordinates of each subfault
 han_lon = np.array(han_yue['lon'])
@@ -67,7 +67,7 @@ forward.makefault(fout,strike,dip,nstrike,dx_dip,dx_strike,epicenter,num_updip,n
 
 #%%
 # Plot to coarsely view fault models
-o = genfromtxt('/Users/tnye/FakeQuakes/files/model_info/depth_adjusted/han_yue_depth_adjusted.rupt')
+o = genfromtxt('/Users/tnye/tsuquakes/files/model_info/depth_adjusted/han_yue_depth_adjusted.rupt')
 f = genfromtxt(fout)
 
 fig = plt.figure()

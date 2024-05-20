@@ -31,107 +31,112 @@ import tsuquakes_main_fns as tmf
 
 ############################# Set up parameters ##############################
 
-# project_list = np.array([['final_runs_m7.8','standard']])
+# project_list = np.array([['gpr_simulations','standard']])
 
-# project_list = np.array([['final_runs_m7.8','rt1.0x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.0x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.0x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.0x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.0x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.1x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.1x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.1x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.1x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.1x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.2x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.2x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.2x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.2x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.2x_sf0.49'],    
-#                           ['final_runs_m7.8','rt1.3x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.3x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.3x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.3x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.3x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.4x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.4x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.4x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.4x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.4x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.5x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.5x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.5x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.5x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.5x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.6x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.6x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.6x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.6x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.6x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.7x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.7x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.7x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.7x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.7x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.8x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.8x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.8x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.8x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.8x_sf0.49'],
-#                           ['final_runs_m7.8','rt1.9x_sf0.37'],
-#                           ['final_runs_m7.8','rt1.9x_sf0.4'],
-#                           ['final_runs_m7.8','rt1.9x_sf0.43'],
-#                           ['final_runs_m7.8','rt1.9x_sf0.46'],
-#                           ['final_runs_m7.8','rt1.9x_sf0.49'],
-#                           ['final_runs_m7.8','rt2.0x_sf0.37'],
-#                           ['final_runs_m7.8','rt2.0x_sf0.4'],
-#                           ['final_runs_m7.8','rt2.0x_sf0.43'],
-#                           ['final_runs_m7.8','rt2.0x_sf0.46'],
-#                           ['final_runs_m7.8','rt2.0x_sf0.49'],
-#                           ['final_runs_m7.8','rt2.1x_sf0.37'],
-#                           ['final_runs_m7.8','rt2.1x_sf0.4'],
-#                           ['final_runs_m7.8','rt2.1x_sf0.43'],
-#                           ['final_runs_m7.8','rt2.1x_sf0.46'],
-#                           ['final_runs_m7.8','rt2.1x_sf0.49'],
-#                           ['final_runs_m7.8','rt2.2x_sf0.37'],
-#                           ['final_runs_m7.8','rt2.2x_sf0.4'],
-#                           ['final_runs_m7.8','rt2.2x_sf0.43'],
-#                           ['final_runs_m7.8','rt2.2x_sf0.46'],
-#                           ['final_runs_m7.8','rt2.2x_sf0.49'],
-#                           ['final_runs_m7.8','rt2.3x_sf0.37'],
-#                           ['final_runs_m7.8','rt2.3x_sf0.4'],
-#                           ['final_runs_m7.8','rt2.3x_sf0.43'],
-#                           ['final_runs_m7.8','rt2.3x_sf0.46'],
-#                           ['final_runs_m7.8','rt2.3x_sf0.49'],
-#                           ['final_runs_m7.8','standard']
+# project_list = np.array([['gpr_simulations','rt1.0x_sf0.37'],
+#                           ['gpr_simulations','rt1.0x_sf0.4'],
+#                           ['gpr_simulations','rt1.0x_sf0.43'],
+#                           ['gpr_simulations','rt1.0x_sf0.46'],
+#                           ['gpr_simulations','rt1.0x_sf0.49'],
+#                           ['gpr_simulations','rt1.1x_sf0.37'],
+#                           ['gpr_simulations','rt1.1x_sf0.4'],
+#                           ['gpr_simulations','rt1.1x_sf0.43'],
+#                           ['gpr_simulations','rt1.1x_sf0.46'],
+#                           ['gpr_simulations','rt1.1x_sf0.49'],
+#                           ['gpr_simulations','rt1.2x_sf0.37'],
+#                           ['gpr_simulations','rt1.2x_sf0.4'],
+#                           ['gpr_simulations','rt1.2x_sf0.43'],
+#                           ['gpr_simulations','rt1.2x_sf0.46'],
+#                           ['gpr_simulations','rt1.2x_sf0.49'],    
+#                           ['gpr_simulations','rt1.3x_sf0.37'],
+#                           ['gpr_simulations','rt1.3x_sf0.4'],
+#                           ['gpr_simulations','rt1.3x_sf0.43'],
+#                           ['gpr_simulations','rt1.3x_sf0.46'],
+#                           ['gpr_simulations','rt1.3x_sf0.49'],
+#                           ['gpr_simulations','rt1.4x_sf0.37'],
+#                           ['gpr_simulations','rt1.4x_sf0.4'],
+#                           ['gpr_simulations','rt1.4x_sf0.43'],
+#                           ['gpr_simulations','rt1.4x_sf0.46'],
+#                           ['gpr_simulations','rt1.4x_sf0.49'],
+#                           ['gpr_simulations','rt1.5x_sf0.37'],
+#                           ['gpr_simulations','rt1.5x_sf0.4'],
+#                           ['gpr_simulations','rt1.5x_sf0.43'],
+#                           ['gpr_simulations','rt1.5x_sf0.46'],
+#                           ['gpr_simulations','rt1.5x_sf0.49'],
+#                           ['gpr_simulations','rt1.6x_sf0.37'],
+#                           ['gpr_simulations','rt1.6x_sf0.4'],
+#                           ['gpr_simulations','rt1.6x_sf0.43'],
+#                           ['gpr_simulations','rt1.6x_sf0.46'],
+#                           ['gpr_simulations','rt1.6x_sf0.49'],
+#                           ['gpr_simulations','rt1.7x_sf0.37'],
+#                           ['gpr_simulations','rt1.7x_sf0.4'],
+#                           ['gpr_simulations','rt1.7x_sf0.43'],
+#                           ['gpr_simulations','rt1.7x_sf0.46'],
+#                           ['gpr_simulations','rt1.7x_sf0.49'],
+#                           ['gpr_simulations','rt1.8x_sf0.37'],
+#                           ['gpr_simulations','rt1.8x_sf0.4'],
+#                           ['gpr_simulations','rt1.8x_sf0.43'],
+#                           ['gpr_simulations','rt1.8x_sf0.46'],
+#                           ['gpr_simulations','rt1.8x_sf0.49'],
+#                           ['gpr_simulations','rt1.9x_sf0.37'],
+#                           ['gpr_simulations','rt1.9x_sf0.4'],
+#                           ['gpr_simulations','rt1.9x_sf0.43'],
+#                           ['gpr_simulations','rt1.9x_sf0.46'],
+#                           ['gpr_simulations','rt1.9x_sf0.49'],
+#                           ['gpr_simulations','rt2.0x_sf0.37'],
+#                           ['gpr_simulations','rt2.0x_sf0.4'],
+#                           ['gpr_simulations','rt2.0x_sf0.43'],
+#                           ['gpr_simulations','rt2.0x_sf0.46'],
+#                           ['gpr_simulations','rt2.0x_sf0.49'],
+#                           ['gpr_simulations','rt2.1x_sf0.37'],
+#                           ['gpr_simulations','rt2.1x_sf0.4'],
+#                           ['gpr_simulations','rt2.1x_sf0.43'],
+#                           ['gpr_simulations','rt2.1x_sf0.46'],
+#                           ['gpr_simulations','rt2.1x_sf0.49'],
+#                           ['gpr_simulations','rt2.2x_sf0.37'],
+#                           ['gpr_simulations','rt2.2x_sf0.4'],
+#                           ['gpr_simulations','rt2.2x_sf0.43'],
+#                           ['gpr_simulations','rt2.2x_sf0.46'],
+#                           ['gpr_simulations','rt2.2x_sf0.49'],
+#                           ['gpr_simulations','rt2.3x_sf0.37'],
+#                           ['gpr_simulations','rt2.3x_sf0.4'],
+#                           ['gpr_simulations','rt2.3x_sf0.43'],
+#                           ['gpr_simulations','rt2.3x_sf0.46'],
+#                           ['gpr_simulations','rt2.3x_sf0.49'],
+#                           ['gpr_simulations','standard']
 #                           ])
 
+# project_list = np.array([
+#                           ['test_simulations/stress_drop','sd0.1'],
+#                           ['test_simulations/stress_drop','sd1.0'],
+#                           ['test_simulations/stress_drop','sd2.0'],
+#                           ['test_simulations/risetime','rt2x'],
+#                           ['test_simulations/risetime','rt3x'],
+#                           ['test_simulations/vrupt','sf0.3'],
+#                           ['test_simulations/vrupt','sf0.4'],
+#                           ['test_simulations','standard']])
 
-# project_list = np.array([['ideal_runs_m7.8','standard']
-#                           ])
+# project_list = np.array([['test_simulations/stress_drop','sd0.1'],
+#                          ['test_simulations/stress_drop','sd1.0'],
+#                          ['test_simulations/stress_drop','sd2.0']
+#                          ])
+
+project_list = np.array([['tse_simulations','standard'],
+                         ['tse_simulations','rt1.234x_sf0.41_sd1.196'],
+                          ['tse_simulations','rt1.4x_sf0.45_sd1.0'],
+                          ['tse_simulations','rt1.4x_sf0.45_sd2.0'],
+                          ['tse_simulations','rt1.75x_sf0.42_sd1.0'],
+                          ['tse_simulations','rt1.75x_sf0.42_sd2.0'],
+                          ['tse_simulations','rt1.954x_sf0.469_sd1.196']
+                          ])
 
 
-project_list = np.array([
-                          ['test_runs_m7.8/stress_drop','sd0.1'],
-                          ['test_runs_m7.8/stress_drop','sd1.0'],
-                          ['test_runs_m7.8/stress_drop','sd2.0'],
-                          ['test_runs_m7.8/risetime','rt2x'],
-                          ['test_runs_m7.8/risetime','rt3x'],
-                          ['test_runs_m7.8/vrupt','sf0.3'],
-                          ['test_runs_m7.8/vrupt','sf0.4'],
-                          ['test_runs_m7.8','standard']])
-
-# project_list = np.array([['test_runs_m7.8','standard']
-#                           ])
-
-
-
-# home = '/Users/tnye/FakeQuakes/simulations/test_runs_m7.8'
-home = '/Users/tnye/FakeQuakes/simulations'
+# home = '/Users/tnye/tsuquakes/simulations/test_simulations'
+home = '/Users/tnye/tsuquakes/simulations'
 home_dir = f'{home}'
 
-# data_types = ['gnss','sm']
-data_types = ['sm']
+data_types = ['gnss','sm']
+# data_types = ['sm']
 
 ############################# Start Parallelization ###########################
 
@@ -224,8 +229,10 @@ for index in recvbuf:
     #     param_dir = f'{home_dir}/{parameter}/{project}'
     param_dir = f'{home_dir}/{parameter}/{project}'
 
-    
-    rupture_list = genfromtxt(f'{param_dir}/data/ruptures.list',dtype='U')
+    try:
+        rupture_list = genfromtxt(f'{param_dir}/data/ruptures.sublist',dtype='U')
+    except:
+        rupture_list = genfromtxt(f'{param_dir}/data/ruptures.list',dtype='U')
     
     for rupture in rupture_list:
     
@@ -306,14 +313,14 @@ for index in recvbuf:
                 files = gnss_files
                 IMs = ['pgd']
                 filtering = 'lowpass'
-                station_names = np.genfromtxt('/Users/tnye/FakeQuakes/files/stn_info/gnss_clean.gflist',dtype=str)[:,0]
+                station_names = np.genfromtxt('/Users/tnye/tsuquakes/files/fakequakes/stn_info/gnss_clean.gflist',dtype=str)[:,0]
                 
             elif data == 'sm':
                 metadata_file = data_dir + '/' + eventname + '/' + eventname + '_sm.chan'
                 files = sm_files
                 IMs = ['pga', 'pgv']
                 filtering = 'highpass'
-                station_names = np.genfromtxt('/Users/tnye/FakeQuakes/files/stn_info/sm_close.gflist',dtype=str)[:,0]
+                station_names = np.genfromtxt('/Users/tnye/tsuquakes/files/fakequakes/stn_info/sm_close.gflist',dtype=str)[:,0]
     
             metadata = pd.read_csv(metadata_file, sep='\t', header=0,
                                   names=['net', 'sta', 'loc', 'chan', 'lat',

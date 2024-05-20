@@ -21,10 +21,10 @@ import tsuquakes_main_fns as tmf
 
 #%% 
 
-velmod_0 = np.genfromtxt('/Users/tnye/FakeQuakes/files/velmods/mentawai_v0.mod')
-velmod_1 = np.genfromtxt('/Users/tnye/FakeQuakes/files/velmods/mentawai_soft1.mod')
-velmod_2 = np.genfromtxt('/Users/tnye/FakeQuakes/files/velmods/mentawai_soft2.mod')
-velmod_3 = np.genfromtxt('/Users/tnye/FakeQuakes/files/velmods/mentawai_soft3.mod')
+velmod_0 = np.genfromtxt('/Users/tnye/tsuquakes/files/velmods/mentawai_v0.mod')
+velmod_1 = np.genfromtxt('/Users/tnye/tsuquakes/files/velmods/mentawai_soft1.mod')
+velmod_2 = np.genfromtxt('/Users/tnye/tsuquakes/files/velmods/mentawai_soft2.mod')
+velmod_3 = np.genfromtxt('/Users/tnye/tsuquakes/files/velmods/mentawai_soft3.mod')
 
 
 d_0 = []
@@ -103,11 +103,11 @@ for i in range(len(obs_grouped)):
 
 ################################ Synthetic data ###############################
 
-disp_syn_soft0 = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/output/waveforms/mentawai.000000/*.LY*'))
-disp_syn_soft1 = sorted(glob('/Users/tnye/FakeQuakes/simulations/soft_velmod_test/soft1/output/waveforms/mentawai.000000/*.LY*'))
-disp_syn_soft2 = sorted(glob('/Users/tnye/FakeQuakes/simulations/soft_velmod_test/soft2/output/waveforms/mentawai.000000/*.LY*'))
-disp_syn_soft3 = sorted(glob('/Users/tnye/FakeQuakes/simulations/soft_velmod_test/soft3/output/waveforms/mentawai.000000/*.LY*'))
-disp_syn_soft4 = sorted(glob('/Users/tnye/FakeQuakes/simulations/soft_velmod_test/soft4/output/waveforms/mentawai.000000/*.LY*'))
+disp_syn_soft0 = sorted(glob('/Users/tnye/tsuquakes/simulations/test_runs_m7.8/standard/output/waveforms/mentawai.000000/*.LY*'))
+disp_syn_soft1 = sorted(glob('/Users/tnye/tsuquakes/simulations/soft_velmod_test/soft1/output/waveforms/mentawai.000000/*.LY*'))
+disp_syn_soft2 = sorted(glob('/Users/tnye/tsuquakes/simulations/soft_velmod_test/soft2/output/waveforms/mentawai.000000/*.LY*'))
+disp_syn_soft3 = sorted(glob('/Users/tnye/tsuquakes/simulations/soft_velmod_test/soft3/output/waveforms/mentawai.000000/*.LY*'))
+disp_syn_soft4 = sorted(glob('/Users/tnye/tsuquakes/simulations/soft_velmod_test/soft4/output/waveforms/mentawai.000000/*.LY*'))
 
 # Group all files by station
 disp_syn_soft0_grouped = [disp_syn_soft0[n:n+N] for n in range(0, len(disp_syn_soft0), N)]
@@ -242,7 +242,7 @@ plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/S_softer_velmod.png',dpi=3
 #%%
 
 
-velmod_0 = np.genfromtxt('/Users/tnye/FakeQuakes/files/velmods/mentawai_v0.mod')
+velmod_0 = np.genfromtxt('/Users/tnye/tsuquakes/files/velmods/mentawai_v0.mod')
 d_0 = []
 
 for i in range(len(velmod_0)):

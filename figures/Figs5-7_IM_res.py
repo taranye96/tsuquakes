@@ -18,21 +18,21 @@ from matplotlib.ticker import MultipleLocator, ScalarFormatter
 from matplotlib.patches import Patch
 import matplotlib.ticker as ticker
 
-home_dir = f'/Users/tnye/FakeQuakes/simulations/test_runs_m7.8'
+home_dir = f'/Users/tnye/tsuquakes/simulations/test_simulations'
 
 # Set parameters
 
-parameter = 'stress_drop'      # parameter being varied
-projects = ['sd0.1','sd1.0','sd2.0']  # array of projects for the parameter
-param_vals = ['0.1', '1.0', '2.0']
+# parameter = 'stress_drop'      # parameter being varied
+# projects = ['sd0.1','sd1.0','sd2.0']  # array of projects for the parameter
+# param_vals = ['0.1', '1.0', '2.0']
 
 # parameter = 'risetime'      # parameter being varied
 # projects = ['rt2x','rt3x']  # array of projects for the parameter
 # param_vals = ['10.8','16.2']        # array of parameter values associated w/ the projects
 
-# parameter = 'vrupt'      # parameter being varied
-# projects = ['sf0.3', 'sf0.4']  # array of projects for the parameter
-# param_vals = ['1.0', '1.3']        # array of parameter values associated w/ the projects
+parameter = 'vrupt'      # parameter being varied
+projects = ['sf0.3', 'sf0.4']  # array of projects for the parameter
+param_vals = ['1.0', '1.3']        # array of parameter values associated w/ the projects
 
 
 sns.set_style("whitegrid")
@@ -187,9 +187,6 @@ for i, project in enumerate(projects):
 
 # Add default parameter last if not risetime
 if parameter != 'risetime':
-    
-    # Residual dataframe for default (aka stdtered) parameters
-    # std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/parameters/standard/std/flatfiles/residuals/std_{res}.csv')
     
     try:
         gnss_std_df = pd.read_csv(f'{home_dir}/standard/flatfiles/residuals/standard_gnss.csv')
@@ -383,8 +380,6 @@ ax2 = axs['B']
 ax3 = axs['C']
 ax4 = axs['D']
 
-PROPS = {'boxprops':{'edgecolor':'black'},'medianprops':{},'whiskerprops':{},'capprops':{}}
-
 # PGD subplot
 ax1.text(-0.25,1.1,r'$\bf{(a)}$',transform=ax1.transAxes,fontsize=10,va='top',ha='right')
 if parameter == 'risetime':
@@ -392,20 +387,34 @@ if parameter == 'risetime':
     grouped_PGD.extend([list(pgd_df['ln Residual (m)'].values[pgd_df['Parameter'].values == float(param)]) for param in param_vals])
     b = ax1.boxplot(grouped_PGD,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='k'),
-                medianprops=dict(lw=1,color='k'),whiskerprops=dict(lw=1,color='k'),
-                capprops=dict(lw=1,color='k'),widths=0.8,
+                medianprops=dict(lw=1,color='k'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    
+    for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+            b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+            b['caps'][2::2], b['caps'][3::2], colors), start=1):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
+
     b['boxes'][0].set_facecolor('none')
-    b['boxes'][0].set_edgecolor('dimgray')
+    b['boxes'][0].set_edgecolor('k')
     b['boxes'][0].set_linestyle('--')
-    b['medians'][0].set_color('dimgray')
+    b['medians'][0].set_color('k')
+    b['medians'][0].set_linestyle('--')
+    for whisker in b['whiskers'][:2]:
+        whisker.set_linestyle('--')
+    for cap in b['caps'][:2]:
+        cap.set_linestyle('--')
     for whisker in b['whiskers'][:2]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][:2]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
+    
     labels = []
     labels.append(val)
     labels.extend(param_vals)
@@ -415,20 +424,32 @@ else:
     grouped_PGD.extend([list(list(std_pgd_df['ln Residual (m)'].values[~np.isnan(std_pgd_df['ln Residual (m)'].values)]))])
     b = ax1.boxplot(grouped_PGD,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='k'),
-                medianprops=dict(lw=1,color='k'),whiskerprops=dict(lw=1,color='k'),
-                capprops=dict(lw=1,color='k'),widths=0.8,
+                medianprops=dict(lw=1,color='k'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][:-1], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    for box, whisker1, whisker2, cap1, cap2, color in zip(
+            b['boxes'], b['whiskers'][::2], b['whiskers'][1::2], 
+            b['caps'][::2], b['caps'][1::2], colors):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
+        
     b['boxes'][-1].set_facecolor('none')
-    b['boxes'][-1].set_edgecolor('dimgray')
+    b['boxes'][-1].set_edgecolor('k')
     b['boxes'][-1].set_linestyle('--')
-    b['medians'][-1].set_color('dimgray')
+    b['medians'][-1].set_color('k')
+    b['medians'][-1].set_linestyle('--')
+    for whisker in b['whiskers'][-2:]:
+        whisker.set_linestyle('--')
+    for cap in b['caps'][-2:]:
+        cap.set_linestyle('--')
     for whisker in b['whiskers'][-2:]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][-2:]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
     labels = param_vals.copy()
     labels.append(val)
     ax1.set_xticklabels(labels)
@@ -451,20 +472,28 @@ if parameter == 'risetime':
     grouped_tPGD.extend([list(tPGD_df['Residual (s)'].values[tPGD_df['Parameter'].values == float(param)]) for param in param_vals])
     b = ax2.boxplot(grouped_tPGD,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='black'),
-                medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-                capprops=dict(lw=1,color='black'),widths=0.8,
+                medianprops=dict(lw=1,color='black'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+            b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+            b['caps'][2::2], b['caps'][3::2], colors), start=1):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
+        
     b['boxes'][0].set_facecolor('none')
-    b['boxes'][0].set_edgecolor('dimgray')
+    b['boxes'][0].set_edgecolor('k')
     b['boxes'][0].set_linestyle('--')
-    b['medians'][0].set_color('dimgray')
+    b['medians'][0].set_color('k')
+    b['medians'][0].set_linestyle('--')
     for whisker in b['whiskers'][:2]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][:2]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
     labels = []
     labels.append(val)
     labels.extend(param_vals)
@@ -474,20 +503,28 @@ else:
     grouped_tPGD.extend([list(list(std_tPGD_df['Residual (s)'].values[~np.isnan(std_tPGD_df['Residual (s)'].values)]))])
     b = ax2.boxplot(grouped_tPGD,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='black'),
-                medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-                capprops=dict(lw=1,color='black'),widths=0.8,
+                medianprops=dict(lw=1,color='black'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][:-1], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    for box, whisker1, whisker2, cap1, cap2, color in zip(
+            b['boxes'], b['whiskers'][::2], b['whiskers'][1::2], 
+            b['caps'][::2], b['caps'][1::2], colors):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
+        
     b['boxes'][-1].set_facecolor('none')
-    b['boxes'][-1].set_edgecolor('dimgray')
+    b['boxes'][-1].set_edgecolor('k')
     b['boxes'][-1].set_linestyle('--')
-    b['medians'][-1].set_color('dimgray')
+    b['medians'][-1].set_color('k')
+    b['medians'][-1].set_linestyle('--')
     for whisker in b['whiskers'][-2:]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][-2:]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
     labels = param_vals.copy()
     labels.append(val)
     ax2.set_xticklabels(labels)
@@ -508,20 +545,28 @@ if parameter == 'risetime':
     grouped_PGA.extend([list(pga_df['ln Residual (m/s/s)'].values[pga_df['Parameter'].values == float(param)]) for param in param_vals])
     b = ax3.boxplot(grouped_PGA,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='black'),
-                medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-                capprops=dict(lw=1,color='black'),widths=0.8,
+                medianprops=dict(lw=1,color='black'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+            b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+            b['caps'][2::2], b['caps'][3::2], colors), start=1):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
+        
     b['boxes'][0].set_facecolor('none')
-    b['boxes'][0].set_edgecolor('dimgray')
+    b['boxes'][0].set_edgecolor('k')
     b['boxes'][0].set_linestyle('--')
-    b['medians'][0].set_color('dimgray')
+    b['medians'][0].set_color('k')
+    b['medians'][0].set_linestyle('--')
     for whisker in b['whiskers'][:2]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][:2]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
     labels = []
     labels.append(val)
     labels.extend(param_vals)
@@ -531,20 +576,27 @@ else:
     grouped_PGA.extend([list(list(std_pga_df['ln Residual (m/s/s)'].values[~np.isnan(std_pga_df['ln Residual (m/s/s)'].values)]))])
     b = ax3.boxplot(grouped_PGA,patch_artist=True,boxprops=dict(lw=1,
                 linestyle='--',edgecolor='black'),
-                medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-                capprops=dict(lw=1,color='black'),widths=0.8,
+                medianprops=dict(lw=1,color='black'),widths=0.8,
                 flierprops=dict(marker='d',markersize=5))
-    for patch, color in zip(b['boxes'][:-1], colors[:len(projects)]):
-        patch.set_facecolor(color)
+    for box, whisker1, whisker2, cap1, cap2, color in zip(
+            b['boxes'], b['whiskers'][::2], b['whiskers'][1::2], 
+            b['caps'][::2], b['caps'][1::2], colors):
+        box.set(color=color, linewidth=1)
+        box.set(facecolor=color)
+        whisker1.set(color=color, linewidth=1)
+        whisker2.set(color=color, linewidth=1)
+        cap1.set(color=color, linewidth=1)
+        cap2.set(color=color, linewidth=1)
     b['boxes'][-1].set_facecolor('none')
-    b['boxes'][-1].set_edgecolor('dimgray')
+    b['boxes'][-1].set_edgecolor('k')
     b['boxes'][-1].set_linestyle('--')
-    b['medians'][-1].set_color('dimgray')
+    b['medians'][-1].set_color('k')
+    b['medians'][-1].set_linestyle('--')
     for whisker in b['whiskers'][-2:]:  # Adjust indices as needed
-        whisker.set(color='dimgray')
+        whisker.set(color='k')
     for cap in b['caps'][-2:]:  # Adjust indices as needed
-        cap.set(color='dimgray')
-    b['fliers'][-1].set_color('dimgray')
+        cap.set(color='k')
+    b['fliers'][-1].set_color('k')
     labels = param_vals.copy()
     labels.append(val)
     ax3.set_xticklabels(labels)
@@ -589,30 +641,31 @@ for i, project in enumerate(projects):
     project_df = acc_spec_df[acc_spec_df['Project'] == project]
     grouped_res = [list(project_df[f'{label} ({res_units})'].values[project_df['Frequency (Hz)'].values == fbin]) for fbin in bins]
     ax4.boxplot(grouped_res,positions=positions,patch_artist=True,
-               boxprops=dict(lw=1,linestyle='-',edgecolor='black',facecolor=colors[i]),
+               boxprops=dict(lw=1,linestyle='-',edgecolor=colors[i],facecolor=colors[i]),
                medianprops=dict(lw=1,color='black'),
-               whiskerprops=dict(lw=1,color='black'),
-               capprops=dict(lw=1,color='black'),
+               whiskerprops=dict(lw=1,color=colors[i]),
+               capprops=dict(lw=1,color=colors[i]),
                widths=width(bins,w)/len(projects),
                flierprops=dict(marker='d',markersize=5)
                )
-    handles = handles + [Patch(facecolor=colors[i],edgecolor='k',lw=1,ls='-',label=param_vals[i])]
+    
+    handles = handles + [Patch(facecolor=colors[i],edgecolor=colors[i],lw=1,ls='-',label=param_vals[i])]
     labels = labels + [param_vals[i]]
     ax4.boxplot(grouped_res_std,positions=bins,
-               boxprops=dict(lw=1,linestyle='--',color='dimgray'),
-               medianprops=dict(lw=1,color='dimgray',ls='-'),
-               whiskerprops=dict(lw=1,color='dimgray'),
-               capprops=dict(lw=1,color='dimgray'),
+               boxprops=dict(lw=1,linestyle='--',color='k'),
+               medianprops=dict(lw=1,color='k',ls='--'),
+               whiskerprops=dict(lw=1,color='k'),
+               capprops=dict(lw=1,color='k'),
                widths=width(bins,w),
                flierprops=dict(marker='d',linewidth=0.5,markersize=5)
                )
-std_handles = [Patch(facecolor='none',edgecolor='dimgray',lw=1,ls='--',label=val)]
+std_handles = [Patch(facecolor='none',edgecolor='k',lw=1,ls='--',label=val)]
 std_labels = [val]
 if parameter != 'risetime':
-    handles = handles + [Patch(facecolor='none',edgecolor='dimgray',lw=1,ls='--',label=val)]
+    handles = handles + [Patch(facecolor='none',edgecolor='k',lw=1,ls='--',label=val)]
     labels = labels + [val]
 else:
-    handles = [Patch(facecolor='none',edgecolor='dimgray',lw=1,ls='--',label=val)] + handles
+    handles = [Patch(facecolor='none',edgecolor='k',lw=1,ls='--',label=val)] + handles
     labels = [val] + labels
 ax4.legend(handles, labels, loc='lower left',ncol=4,title=legend_title)
 ax4.set_xscale('log')
@@ -643,4 +696,12 @@ ax4.set_ylabel('ln (obs / sim)', fontsize=11)
 ax4.text(-0.08,1.1,r'$\bf{(d)}$',transform=ax4.transAxes,fontsize=10,va='top',ha='right')
 
 plt.subplots_adjust(wspace=0.5,hspace=0.45,bottom=0.1,left=0.115,right=0.95,top=0.925)
-plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/{parameter}_residuals.png',dpi=300)
+
+if parameter == 'risetime':
+    plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/Fig5_{parameter}_residuals.png',dpi=300)
+elif parameter == 'vrupt':
+    plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/Fig6_{parameter}_residuals.png',dpi=300)
+elif parameter == 'stress_drop':
+    plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/Fig7_{parameter}_residuals.png',dpi=300)
+    
+    

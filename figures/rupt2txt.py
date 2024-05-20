@@ -18,7 +18,7 @@ from os import path, makedirs
 import matplotlib.pyplot as plt
 
 # Gather .rupt files
-rupt_files = sorted(glob('/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/output/ruptures/mentawai*.rupt'))
+rupt_files = sorted(glob('/Users/tnye/tsuquakes/simulations/test_simulations/standard/output/ruptures/mentawai*.rupt'))
 max_slip_list = []
 
 # Loop over .rupt files
@@ -40,13 +40,13 @@ for file in rupt_files:
     max_slip_list.append(max_slip)
     
     # Create output directory
-    if not path.exists('/Users/tnye/tsuquakes/rupture_models/test_runs_m7.8'):
-        makedirs('/Users/tnye/tsuquakes/rupture_models/test_runs_m7.8')
+    if not path.exists('/Users/tnye/tsuquakes/rupture_models/test_simulations'):
+        makedirs('/Users/tnye/tsuquakes/rupture_models/test_simulations')
     
     # Turn into a dataframe
     data = {'Longitude':lon,'Latitude':lat,'Slip':slip}
     df = pd.DataFrame.from_dict(data)
-    df.to_csv(f'/Users/tnye/tsuquakes/rupture_models/test_runs_m7.8/{run}.txt',header=False,index=False)
+    df.to_csv(f'/Users/tnye/tsuquakes/rupture_models/test_simulations/{run}.txt',header=False,index=False)
     
 
 plt.figure()

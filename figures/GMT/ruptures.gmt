@@ -1,0 +1,91 @@
+#!/bin/bash
+
+## Make a map of the Mentawai, Indonesia region
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset FORMAT_GEO_MAP ddd
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=18p,Helvetica
+# gmt gmtset MAP_SCALE_HEIGHT 20p
+
+# Define range variable with lon/lat coordinates for my region
+# range="98.75/101.25/-4.5/-2.25"
+range="94/107/-6/5"
+
+# Define J variable with map projection
+J="M5i"
+# Define out variable to be name of map
+OUT="mentawai.000011"
+LOCATION=/Users/tnye/tsuquakes/GMT/
+SLIP=/Users/tnye/tsuquakes/rupture_models/$OUT.txt
+
+# Slip CPT
+colorCPT=/Users/tnye/cpt/temperature.cpt
+slipCPT=/Users/tnye/cpt/slip.cpt
+
+gmt makecpt -C$colorCPT -T0/20/.5 > $slipCPT
+
+# Convert topography img to grd file with specified range
+gmt img2grd /Users/tnye/Classes/Geol610/Nye_week2/topo_19.1.img -Gmentawai.grd -R$range -V
+
+# Define zmin and zmax variables to be min and max elevations of topography
+zmin=-6384.66308594
+zmax=3269.9855957
+
+# Make bathymetry color palette using zmin to 0 range in increments of 10
+gmt makecpt -D -C/Users/tnye/cpt/bath_111.cpt -T$zmin/0/10 > menbath.cpt
+
+# Make topography color palette using 0 to zmax range in increments of 10
+gmt makecpt -D -C/Users/tnye/cpt/tpglarm.cpt -T0/$zmax/10 > mentopo2.cpt
+
+# Make a clipping mask for the bathymetry and set all values above 0m to be NaN
+gmt grdclip mentawai.grd -Sa0/NaN -V -Gmenbath.grd
+
+# Make a clipping mask for the topography and set all values below 0m to be NaN
+gmt grdclip mentawai.grd -Sb0/NaN -V -Gmentopo.grd
+
+# Make a shading map for topo and bath. Illuminate from the North and West and
+    # normalize using a cumulative Laplace distribution
+gmt grdgradient menbath.grd -A0/270 -Gbathgradient.grd -Ne0.4 -V
+gmt grdgradient mentopo.grd -A0/270 -Gtopogradient.grd -Ne0.4 -V
+
+# Start plotting map
+    # Set parallel and meridian line spacing to be 4 degrees
+    # Set to be portrait mode
+    # Define location of image on pdf
+    # Add title
+#gmt psbasemap -J$J -R$range -B4 -V -P -X1.5i -Y5i -B+t"Mentawai Region" -K > ${OUT}.eps
+gmt psbasemap -J$J -R$range -B4 -V -P -X1.5i -Y5i -K > ${OUT}.eps
+# Plot bathymetry and topography using their cpt's and gradient's
+    # Make grid nodes transparent
+    # Add axes to all edges but only labels to bottom and left axes
+    # Add grid lines every 4 degrees
+# gmt grdimage menbath.grd -R$range -J$J -Cmenbath.cpt -Ibathgradient.grd -Q -BWSne -Bg4 -K -O >> ${OUT}.eps
+# gmt grdimage mentopo.grd -R$range -J$J -Cmentopo2.cpt -Itopogradient.grd -Q -Bg4 -K -O >> ${OUT}.eps
+# gmt grdimage menbath.grd -R$range -J$J -Cmenbath.cpt -Ibathgradient.grd -Q -BWSne -K -O >> ${OUT}.eps
+gmt grdimage mentopo.grd -R$range -J$J -Cmentopo2.cpt -Itopogradient.grd -Q -K -O >> ${OUT}.eps
+
+# Add coastlines
+    # Add border to all boundaries
+    # Use full resolution
+    # Only add coastline to land with an area at >= 25 km^2
+    # Add scalebar length 200 km and scaled at the equator
+    # Add north arrow
+gmt pscoast -R$range -J$J -Na -Df -A25 -Lf96/-4.5/0/200 -W0.25p,black -K -O >> ${OUT}.eps
+
+# Plot rupture model
+# gmt psxy $SLIP -R$range -J$J -C$slipCPT -Dj0.08[0.06] -B -K -O >> ${OUT}.eps
+gmt psxy $SLIP -R$range -J$J -C$slipCPT -Sc0.2c -K -O >> ${OUT}.eps
+# gmt psscale -R$range -J$J -C$slipCPT -Dg108/-6.5+w12c/0.5c -Bxaf+l"Slip (m)" -K -O >> ${OUT}.eps
+gmt psscale -R$range -J$J -C$slipCPT -Dg101.2/-4.25+w9c/0.4c -Bxaf+l"Slip (m)" -K -O >> ${OUT}.eps
+
+# Plot earthquake epicenter
+    # Icon is a yellow star
+gmt psxy /Users/tnye/tsuquakes/code/GMT/mentawai_epi.txt -R$range -J$J -Dj0.08[0.06] -Sa0.6c -G255/255/0 -W.5p,black -B -O >> ${OUT}.eps
+
+
+open $OUT.eps  # shows plot
+
+Convert to tifs, and move
+# gmt psconvert $OUT.eps -Tt -P -A
+# mv $OUT.eps /Users/tnye/tsuquakes/rupture_models/eps/$OUT.eps
+# mv $OUT.tif /Users/tnye/tsuquakes/rupture_models/tif/$OUT.tif

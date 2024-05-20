@@ -1,0 +1,65 @@
+#!/bin/csh
+
+#set rupt='/Users/tnye/FakeQuakes/Men_fine_dt.5/output/ruptures/run.000005.rupt'
+set rupt='/Users/tnye/FakeQuakes/Men_fine_dt.5/forward_models/mentawai_fine.rupt'
+
+set reg='99.05/100.55/-4.2/-2.5'
+
+set DEMraw='/Users/tnye/tsuquakes/data/Mentawai2010/mentawai_srtm1.grd'
+set DEMcut='/Users/tnye/tsuquakes/data/Mentawai2010/mentawai_cut.grd'
+set SHD='/Users/tnye/tsuquakes/data/Mentawai2010/mentawai_cut_shd.grd'
+
+set fileout='/Users/tnye/FakeQuakes/Men_fine_dt.5/plots/rupt_models/test.ps'
+
+set topocptpath='/Users/tnye/cpt/gray_lt.cpt'
+#set topocptpath='/Users/tnye/cpt/tpglpof.cpt'
+set slipcptpath='/Users/tnye/cpt/slip.cpt'
+
+set topocpt='/Users/tnye/cpt/mentawai_topo.cpt'
+set slipcpt='/Users/tnye/cpt/mentawai_slip.cpt'
+
+set SCALEBAR=100.4/-4.35+c33+w50k+l+f
+
+#gmt grdgradient $TOPO -Iindo.grad -A90 -Ne0.5
+
+#gmt makecpt -I -Cseis -T0/2000/10 -Z >topt.cpt #make cpt file
+
+#gmt grdimage $TOPO -Iindo.grad -JM5i -R$reg  -Ctopo.cpt  -K >>$fileout
+#gmt grdimage $TOPO  -JM5i -R$reg  -Ctopo.cpt  -K >$fileout
+
+#Make topo and bathy grids
+###################################
+#############################
+#First, prepare the DEM###
+###
+Cut the dem
+gmt xyz2grd -R98.8/100.8/-4.45/-2.3 -I0.017  /Users/tnye/tsuquakes/data/Mentawai2010/mentawai_srtm1.txt -G/Users/tnye/tsuquakes/data/Mentawai2010/mentawai_srtm1.grd
+echo 'converted xyz to grd'
+gmt grdcut -R$reg ${DEMraw} -G${DEMcut}
+echo 'cut dem'
+
+
+#Get the gradient, illumination oblique (90 degrees) to most features
+gmt grdgradient ${DEMcut} -A270 -Ne0.6 -G${SHD}
+echo 'shaded dem'
+
+#gmt grdclip topo_no.grd -Sa0/nan -Gtopo.grd
+
+
+#Make cpt files
+gmt makecpt -C${topocptpath} -T-6000/400/1 -Z -V0 > ${topocpt}
+
+
+gmt pscoast -R$reg -JM5i -Df -W2  -G200/200/200   -N1  -K >$fileout
+gmt psbasemap -R -J -Ba0.5f0.25 -O -K >>$fileout
+#gmt psbasemap -R -J -B[wesn]]0.5f0.2 -O -K >>$fileout
+
+#render topo
+#gmt grdimage ${DEMcut} -I${SHD} -R -J -C${topocpt} -O -K >> $fileout
+#gmt pscoast -R$reg -JM5i -Df -W2  -G200/200/200   -N1 -O -K >$fileout
+
+gmt makecpt -I -Cseis -T0/15/0.01 -Z > $slipcpt #make cpt file
+cat $rupt | awk '{print($2,$3,sqrt($9**2+$10**2))}'| gmt psxy -R -J -Sc0.1 -C${slipcpt} -O -K >> $fileout
+gmt psscale -D0.25i/2.2i/2.5i/0.1i -Ba2f1:"slip(m)": -C$slipcpt  -O -K >> $fileout
+
+gmt pscoast -R -J -Df -W0p -Lg${SCALEBAR} -O >> $fileout

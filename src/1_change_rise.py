@@ -16,8 +16,8 @@ def change_risetime(home, project_name, mf):
     
     # Parameters 
     orig_rupt_dir = f'{home}{project_name}/output/ruptures'
-    # orig_rupt_dir = f'/Users/tnye/FakeQuakes/simulations/final_suite/add_ruptures/output/ruptures'
-    new_rupt_dir = f"/Users/tnye/FakeQuakes/files/risetime_ruptures/{home.split('/')[-2]}/rt{mf}x"
+    # orig_rupt_dir = f'/Users/tnye/tsuquakes/simulations/final_suite/add_ruptures/output/ruptures'
+    new_rupt_dir = f"/Users/tnye/tsuquakes/files/fakequakes/risetime_ruptures/{home.split('/')[-2]}/rt{mf}x"
     
     # Set up new directory for ruptures
     if not path.exists(new_rupt_dir):
@@ -65,11 +65,10 @@ def change_risetime(home, project_name, mf):
     return()
 
 # mf_list = [1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3]
-# mf_list = [1.422,1.742,1.2,2.0]
-# mf_list = [1.358,1.808,1.1]
-mf_list = [1.954,1.234,1.4,1.75]
+# mf_list = [1.954,1.234,1.4,1.75]
+mf_list = [2,3]
 
-home = '/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/'
+home = '/Users/tnye/tsuquakes/simulations/test_simulations/'
 project_name = 'standard'
 
 for mf in mf_list:

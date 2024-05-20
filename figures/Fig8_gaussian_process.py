@@ -24,14 +24,6 @@ from matplotlib.ticker import MultipleLocator
 from math import ceil
 import gmm_call as gmm
 
-## Kernel tests
-# kernel = C(1.0, constant_value_bounds="fixed") * RBF(1.0, length_scale_bounds="fixed")
-# kernel = 1.0 * RBF(length_scale=1e1, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(
-#     noise_level=1, noise_level_bounds=(1e-5, 1e1)
-# )
-# kernel = 1.0 * RBF(length_scale=1e-1, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(
-#     noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
-
 
 #%%
 
@@ -39,7 +31,7 @@ import gmm_call as gmm
 # 1D test with stress drop
 ###############################################################################
 
-sm_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/HF_mean_residuals_corrected.csv')
+sm_df = pd.read_csv('/Users/tnye/tsuquakes/gaussian_process/HF_mean_residuals.csv')
 
 stress = sm_df['stress drop'].values
 HF_res = sm_df['HF res'].values
@@ -52,21 +44,7 @@ oneD_x = np.linspace(0.1,4,1000)
 oneD_X = oneD_x.reshape(-1, 1)
 
 # Run Gaussian process
-# oneD_gp = GaussianProcessRegressor(kernel=None,n_restarts_optimizer=9)
-# oneD_gp = GaussianProcessRegressor(kernel=C(1.0, constant_value_bounds="fixed") * RBF(1.0, length_scale_bounds="fixed"),n_restarts_optimizer=9)
-# oneD_gp = GaussianProcessRegressor(kernel=RBF(1.0, length_scale_bounds="fixed"),n_restarts_optimizer=9)
-
-# kernel = 1.0 * RBF(length_scale=1e-1, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(
-#     noise_level=1e-2, noise_level_bounds=(1e-10, 1e1)
-# )
-# kernel = 1.0 * RBF(length_scale=1e-1, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(
-#     noise_level=1e-2, noise_level_bounds=(1e-10, 1e1)
-# )
-
-# Kernel for 1D regression
-# oneD_kernel = RBF(1.0, length_scale_bounds=(0.4,2.9))
 oneD_kernel = RBF(2.9, length_scale_bounds=("fixed"))
-
 oneD_gp = GaussianProcessRegressor(kernel=oneD_kernel,n_restarts_optimizer=9)
 
 # Get grid predictions
@@ -169,8 +147,12 @@ print(min_coords_3)
 
 ##### Plot Results #####
 
+x = [min_coords_1[0], min_coords_2[0], min_coords_3[0]]
+y = [min_coords_1[1], min_coords_2[1], min_coords_3[1]]
+slope, intercept = np.polyfit(x, y, 1)
+
 line_x = np.array([1,2.3])
-line_y = line_x*0.088 + 0.270
+line_y = line_x*slope + intercept
 line_x2 = np.array([5.4,12.42])
 line_y2 = line_y*3.24
 
@@ -224,19 +206,13 @@ pred_cbar.set_label(r'GPR $\delta_{tPGD}$ prediction (s)', size=10)
 temp1.tick_params(left=False,right=False,top=False,bottom=False,labelleft=False,
                   labelright=False,labeltop=False,labelbottom=False)
 
-# for i in range(len(kfactor)):
 for i in range(70):
-    # if i == 0:
-    #     pred_ax2.scatter(kfactor[i],ssf[i],facecolors='none',edgecolors='k',lw=0.4,s=40,label='Regression parameters sampled')
-    # else:
-    #     pred_ax2.scatter(kfactor[i],ssf[i],facecolors='none',edgecolors='k',lw=0.4,s=40)
     if i == 0:
         pred_ax2.scatter(kfactor[i*30],ssf[i*30],edgecolors='k',facecolors=pred_scalarMap.to_rgba(np.mean(tPGD_res[:30])),lw=0.4,s=40,label='Regression parameters sampled')
     else:
         pred_ax2.scatter(kfactor[i*30],ssf[i*30],edgecolors='k',facecolors=pred_scalarMap.to_rgba(np.mean(tPGD_res[i*30:i*30+30])),lw=0.4,s=40)
-# pred_ax2.scatter([1.422,1.742,1.2,2.0],[0.395,0.422,0.41,0.42],c='k',lw=1,s=40,alpha=1,label='TsE parameters evalauted')
+pred_ax2.plot(line_x,line_y,c='yellow',lw=2)
 pred_ax2.scatter([1.954,1.234,1.4,1.75],[0.469,0.410,0.45,0.42],c='k',lw=1,s=40,alpha=1,label='TsE parameters evalauted')
-# pred_ax2.plot(line_x,line_y,c='yellow',lw=2)
 
 temp1.plot([0,0],[0,0],c='yellow',lw=2,label='Linear fit')
 temp1.legend(loc='upper left')
@@ -266,7 +242,6 @@ std_xax2.plot([0],[0],c='k',lw=0.8,label='0-residual line')
 std_xax2.plot([0],[0],c='k',lw=0.8,ls='--',label=r'$1\sigma$ residuals')
 std_cbar = plt.colorbar(std_scalarMap,ax=std_xax2, orientation='horizontal',pad=0.2)
 std_cbar.set_label(r'GPR std dev', size=10)
-# std_ax.tick_params(labelleft=False)
 std_ax.tick_params(axis='both',labelsize=10)
 std_xax2.tick_params(axis='x',labelsize=10)
 std_yax2.tick_params(axis='y',labelsize=10)
@@ -275,7 +250,7 @@ std_ax.set_ylabel(r'$\bf{SSF}$',size=10)
 # 1D stress drop
 axs['C'].grid(alpha=0.25)
 axs['C'].scatter(stress,HF_res,facecolors='none',edgecolors='k',lw=0.2,s=40,alpha=0.7)
-axs['C'].scatter([1.0,1.419,2.0],[0,0,0],c='k',lw=1,s=40,alpha=1)
+axs['C'].scatter([1.0,1.196,2.0],[0,0,0],c='k',lw=1,s=40,alpha=1)
 axs['C'].plot(oneD_x, oneD_pred, label=r"GPR $\delta_{HF}$ prediction")
 axs['C'].fill_between(
     oneD_X.ravel(),
@@ -292,19 +267,62 @@ axs['C'].set_ylim(-3,3)
 axs['C'].set_xlabel(r'$\bf{Stress}$ $\bf{Parameter}$ $\bf{(MPa)}$',fontsize=10)
 axs['C'].set_ylabel(r'$\bf{\delta_{HF}}$',fontsize=10)
 axs['C'].tick_params(axis='both', which='major', labelsize=10)
-# axs['C'].text(1.035, 0.6, r'$\bf{SSF}$', ha='left', transform=axs['A'].transAxes)
-
-# tpgd_handles, tpgd_labels = pred_ax2.get_legend_handles_labels()
-# sd_handles, sd_labels = axs['C'].get_legend_handles_labels()
-# handles = tpgd_handles+sd_handles
-# labels = tpgd_labels+sd_labels
 axs['C'].legend(loc='upper right',fontsize=10)
 handles, labels = pred_ax2.get_legend_handles_labels()
 handles[2].set_facecolor('none')
 axs['C'].legend(handles, labels, loc='upper center',bbox_to_anchor=(0.5,-0.275),facecolor='white',
                 frameon=True,fontsize=10,ncol=2)
-# pred_ax2.legend(handles, labels, loc='upper center',bbox_to_anchor=(1.3,-1.95),facecolor='white',
-#                 frameon=True,fontsize=10,ncol=2)
-plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/unannotated/GPR_figure_revised.png',dpi=300)
+plt.savefig('/Users/tnye/tsuquakes/manuscript/figures/Fig8_GPR.png',dpi=300)
 # plt.close()
+
+#%% Get 2D equation standard deviation
+
+# Extract the contour lines for the 0 line and the standard deviation contours
+contours_0 = pred_ax2.contour(x_mesh, y_mesh, z_pred_mesh, levels=[0])
+contours_std = pred_ax2.contour(x_mesh, y_mesh, z_pred_mesh, levels=[0-tpgd_res_std, 0+tpgd_res_std])
+
+# Get the vertices of the contour lines
+vertices_0 = contours_0.collections[0].get_paths()[0].vertices
+vertices_std_lower = contours_std.collections[0].get_paths()[0].vertices
+vertices_std_upper = contours_std.collections[1].get_paths()[0].vertices
+
+# Calculate the average vertical distance between std contours and 0 contour
+distances_lower = []
+distances_upper = []
+
+for vertex_std_lower in vertices_std_lower:
+    y_std_lower = vertex_std_lower[1]
+    # Find the nearest vertex on the 0 contour
+    closest_vertex_0_lower = min(vertices_0, key=lambda vertex_0: abs(vertex_0[0] - vertex_std_lower[0]))
+    # Calculate the vertical distance
+    distance_lower = y_std_lower - closest_vertex_0_lower[1]
+    distances_lower.append(distance_lower)
+
+for vertex_std_upper in vertices_std_upper:
+    y_std_upper = vertex_std_upper[1]
+    # Find the nearest vertex on the 0 contour
+    closest_vertex_0_upper = min(vertices_0, key=lambda vertex_0: abs(vertex_0[0] - vertex_std_upper[0]))
+    # Calculate the vertical distance
+    distance_upper = y_std_upper - closest_vertex_0_upper[1]
+    distances_upper.append(distance_upper)
+
+# Calculate the average distances
+avg_distance_lower = np.mean(distances_lower)*3.24
+avg_distance_upper = np.mean(distances_upper)*3.24
+
+print("Average vertical distance for standard deviation contour (lower):", avg_distance_lower)
+print("Average vertical distance for standard deviation contour (upper):", avg_distance_upper)
+print(f"Mean standard deviation = {round(np.mean(np.array([np.abs(avg_distance_lower),avg_distance_upper])),2)}")
+
+
+#%% Get 1D equation standard deviation
+
+upper_bound = oneD_pred[np.where(oneD_pred>=oneD_std)[0][0]]
+
+
+# Calculate the average distances
+eq_std = round(np.mean(np.array([1.196 - 0.1, upper_bound])),2)
+
+print(f"Mean standard deviation = {eq_std}")
+
 

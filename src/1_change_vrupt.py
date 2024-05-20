@@ -26,8 +26,7 @@ def change_vrupt(home, project_name, model_name, sf):
 
     # Parameters
     orig_rupt_dir = f'{home}{project_name}/output/ruptures'
-    # orig_rupt_dir = f'/Users/tnye/FakeQuakes/simulations/final_suite/add_ruptures/output/ruptures'
-    new_rupt_dir = f"/Users/tnye/FakeQuakes/files/vrupt_ruptures/{home.split('/')[-2]}/sf{sf}"
+    new_rupt_dir = f"/Users/tnye/tsuquakes/files/fakequakes/vrupt_ruptures/{home.split('/')[-2]}/sf{sf}"
     
     # Set up new directory for ruptures
     if not path.exists(new_rupt_dir):
@@ -94,9 +93,9 @@ def change_vrupt(home, project_name, model_name, sf):
 
 # sf_list = [0.37,0.4,0.43,0.46,0.49]
 # sf_list = [0.415,0.447,0.42,0.42]
-sf_list = [0.469,0.410,0.45,0.42]
+sf_list = [0.3,0.4]
 
-home = '/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/'
+home = '/Users/tnye/tsuquakes/simulations/test_simulations/'
 project_name = 'standard'
 model_name = 'mentawai_v1.mod'
 

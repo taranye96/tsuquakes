@@ -1,0 +1,9 @@
+lon,lat,event
+144,39.5,1896 M8.0 Sanriku
+-162.83,53.49,1946 M8.2 Aleutian Islands
+178.24,-38.92,1947 M7.0 Gisborne
+178.67,-38.28,1947 M7.0 Tolga Bay
+-80.62,-6.70,1960 M7.6 Peru
+149.53,44.81,1963 M7.8 Kuriles
+147.5,43,1975 M7.5 Kuriles
+95.5,2.5,1907 M8.2 Nias

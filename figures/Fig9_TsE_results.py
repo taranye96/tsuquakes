@@ -6,6 +6,11 @@ Created on Wed Oct 18 19:06:44 2023
 @author: tnye
 """
 
+###############################################################################
+# This script makes Figure 9.
+###############################################################################
+
+
 # Imports
 import numpy as np
 import pandas as pd
@@ -24,14 +29,21 @@ yue_stf_df = pd.read_csv('/Users/tnye/tsuquakes/files/STFs/yue_STF.csv',header=N
 yue_time = yue_stf_df[0]
 yue_moment = yue_stf_df[1]
 
+mu1 = 'rt1.234x_sf0.41_sd1.196'
+mu2 = 'rt1.954x_sf0.469_sd1.196'
+sig1 = 'rt1.4x_sf0.45_sd1.0'
+sig2 = 'rt1.4x_sf0.45_sd2.0'
+sig3 = 'rt1.75x_sf0.42_sd1.0'
+sig4 = 'rt1.75x_sf0.42_sd2.0'
+
 # Get rupture files for TsE scenarios
-mu1_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt1.422_sf0.395_sd1.428/output/ruptures/*.rupt'))
-mu2_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt1.742_sf0.422_sd1.428/output/ruptures/*.rupt'))
-sig1_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt1.2_sf0.41_sd1.0/output/ruptures/*.rupt'))
-sig2_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt1.2_sf0.41_sd2.0/output/ruptures/*.rupt'))
-sig3_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt2.0_sf0.42_sd1.0/output/ruptures/*.rupt'))
-sig4_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/rt2.0_sf0.42_sd2.0/output/ruptures/*.rupt'))
-std_rupts = sorted(glob('/Users/tnye/FakeQuakes/simulations/ideal_runs_m7.8/standard/output/ruptures/*.rupt'))
+mu1_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{mu1}/output/ruptures/*.rupt'))
+mu2_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{mu2}/output/ruptures/*.rupt'))
+sig1_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{sig1}/output/ruptures/*.rupt'))
+sig2_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{sig2}/output/ruptures/*.rupt'))
+sig3_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{sig3}/output/ruptures/*.rupt'))
+sig4_rupts = sorted(glob(f'/Users/tnye/tsuquakes/simulations/tse_simulations/{sig4}/output/ruptures/*.rupt'))
+std_rupts = sorted(glob('/Users/tnye/tsuquakes/simulations/tse_simulations/standard/output/ruptures/*.rupt'))
 
 # Initialize lists for time and moment arrays from the simulation files
 mu1_t = []
@@ -125,11 +137,10 @@ std_df.to_csv('/Users/tnye/tsuquakes/files/STFs/std_STF_1s.csv')
 #%%
 # Calculate IM residuals
 
-home_dir = f'/Users/tnye/FakeQuakes/simulations'
+home_dir = f'/Users/tnye/tsuquakes/simulations'
 
-parameter = 'ideal_runs_m7.8'      # parameter being varied
-projects = ['rt1.422_sf0.395_sd1.428','rt1.742_sf0.422_sd1.428','rt1.2_sf0.41_sd1.0',
-            'rt1.2_sf0.41_sd2.0','rt2.0_sf0.42_sd1.0','rt2.0_sf0.42_sd2.0']  
+parameter = 'tse_simulations'      # parameter being varied
+projects = [mu1,mu2,sig1,sig2,sig3,sig4]
 param_vals = [r'$\mu$-a',r'$\mu$-b',r'$\sigma$-a',r'$\sigma$-b',r'$\sigma$-c',r'$\sigma$-d']        # array of parameter values associated w/ the projects
 
 # sns.set_style("whitegrid")
@@ -155,7 +166,7 @@ legend_title = ''
 # Add default parameter first if risetime 
 for i, project in enumerate(projects):
     
-    gnss_std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/flatfiles/residuals/standard_gnss.csv')
+    gnss_std_df = pd.read_csv(f'/Users/tnye/tsuquakes/simulations/tse_simulations/standard/flatfiles/residuals/standard_gnss.csv')
    
     # Remove GNSS stations with low SNR from residual plots
     poor_GNSS = ['MKMK', 'LNNG', 'LAIS', 'TRTK', 'MNNA', 'BTHL']
@@ -185,7 +196,7 @@ for i, project in enumerate(projects):
     std_tPGD_res_list.extend([None]*len(param_vals))
     std_disp_project.extend(param_vals)
     
-    sm_std_df = pd.read_csv(f'/Users/tnye/FakeQuakes/simulations/test_runs_m7.8/standard/flatfiles/residuals/standard_sm.csv')
+    sm_std_df = pd.read_csv(f'/Users/tnye/tsuquakes/simulations/tse_simulations/standard/flatfiles/residuals/standard_sm.csv')
 
     # Remove strong motion stations farther than 600km to avoid surface waves
     far_sm = ['PPBI', 'PSI', 'CGJI', 'TSI', 'CNJI', 'LASI', 'MLSI']
@@ -408,22 +419,33 @@ grouped_PGD = np.array([grouped_PGD[0],grouped_PGD[1]+grouped_PGD[2],
                         grouped_PGD[3]+grouped_PGD[4]+grouped_PGD[3]+grouped_PGD[4]])
 b = ax1.boxplot(grouped_PGD,patch_artist=True,boxprops=dict(lw=1,
             linestyle='--',edgecolor='black'),
-            medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-            capprops=dict(lw=1,color='black'),widths=0.8,
+            medianprops=dict(lw=1,color='black'),widths=0.8,
             flierprops=dict(marker='d',markersize=5))
-for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-    patch.set_facecolor(color)
-# b['boxes'][0].set_facecolor('white')
-# b['boxes'][0].set_linestyle('--')
+for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+        b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+        b['caps'][2::2], b['caps'][3::2], colors), start=1):
+    box.set(color=color, linewidth=1)
+    box.set(facecolor=color)
+    whisker1.set(color=color, linewidth=1)
+    whisker2.set(color=color, linewidth=1)
+    cap1.set(color=color, linewidth=1)
+    cap2.set(color=color, linewidth=1)
+    
 b['boxes'][0].set_facecolor('none')
-b['boxes'][0].set_edgecolor('dimgray')
+b['boxes'][0].set_edgecolor('k')
 b['boxes'][0].set_linestyle('--')
-b['medians'][0].set_color('dimgray')
+b['medians'][0].set_color('k')
+b['medians'][0].set_linestyle('--')
+for whisker in b['whiskers'][:2]:
+    whisker.set_linestyle('--')
+for cap in b['caps'][:2]:
+    cap.set_linestyle('--')
 for whisker in b['whiskers'][:2]:  # Adjust indices as needed
-    whisker.set(color='dimgray')
+    whisker.set(color='k')
 for cap in b['caps'][:2]:  # Adjust indices as needed
-    cap.set(color='dimgray')
-b['fliers'][-1].set_color('dimgray')
+    cap.set(color='k')
+b['fliers'][-1].set_color('k')
+
 labels = []
 labels.append(val)
 labels.extend([r'TsE-$\mu$',r'TsE-$1\sigma$'])
@@ -438,7 +460,7 @@ ax1.set_ylim(ymin=-2, ymax=2)
 ax1.tick_params(width=1,length=5,right=False,top=False,labelleft=True,labelright=False,labelbottom=True,labeltop=False,labelsize=10)
 ax1.yaxis.set_major_locator(MultipleLocator(1))
 ax1.set_title(r'$\bf{PGD}$',fontsize=11)
-ax1.axhline(0, ls='--')
+ax1.axhline(0, ls=':',c='k',lw=1)
 
 # tPGD subplot
 ax2.text(-0.35,1.1,r'$\bf{(b)}$',transform=ax2.transAxes,fontsize=10,va='top',ha='right')
@@ -449,13 +471,33 @@ grouped_tPGD = np.array([grouped_tPGD[0],grouped_tPGD[1]+grouped_tPGD[2],
 
 b = ax2.boxplot(grouped_tPGD,patch_artist=True,boxprops=dict(lw=1,
             linestyle='--',edgecolor='black'),
-            medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-            capprops=dict(lw=1,color='black'),widths=0.8,
+            medianprops=dict(lw=1,color='black'),widths=0.8,
             flierprops=dict(marker='d',markersize=5))
-for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-    patch.set_facecolor(color)
-b['boxes'][0].set_facecolor('white')
+for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+        b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+        b['caps'][2::2], b['caps'][3::2], colors), start=1):
+    box.set(color=color, linewidth=1)
+    box.set(facecolor=color)
+    whisker1.set(color=color, linewidth=1)
+    whisker2.set(color=color, linewidth=1)
+    cap1.set(color=color, linewidth=1)
+    cap2.set(color=color, linewidth=1)
+
+b['boxes'][0].set_facecolor('none')
+b['boxes'][0].set_edgecolor('k')
 b['boxes'][0].set_linestyle('--')
+b['medians'][0].set_color('k')
+b['medians'][0].set_linestyle('--')
+for whisker in b['whiskers'][:2]:
+    whisker.set_linestyle('--')
+for cap in b['caps'][:2]:
+    cap.set_linestyle('--')
+for whisker in b['whiskers'][:2]:  # Adjust indices as needed
+    whisker.set(color='k')
+for cap in b['caps'][:2]:  # Adjust indices as needed
+    cap.set(color='k')
+b['fliers'][-1].set_color('k')
+
 labels = []
 labels.append(val)
 labels.extend([r'TsE-$\mu$',r'TsE-$1\sigma$'])
@@ -468,7 +510,7 @@ yabs_max = abs(max(ax2.get_ylim(), key=abs))
 # ax2.set_ylim(ymin=-yabs_max, ymax=yabs_max)
 ax2.tick_params(width=1,length=5,right=False,top=False,labelleft=True,labelright=False,labelbottom=True,labeltop=False,labelsize=10)
 ax2.set_title(r'$\bf{tPGD}$',fontsize=11)
-ax2.axhline(0, ls='--')
+ax2.axhline(0, ls=':',c='k',lw=1)
 
 # PGA subplot
 ax3.text(-0.25,1.1,r'$\bf{(c)}$',transform=ax3.transAxes,fontsize=10,va='top',ha='right')
@@ -479,13 +521,33 @@ grouped_PGA = np.array([grouped_PGA[0],grouped_PGA[1]+grouped_PGA[2],
 
 b = ax3.boxplot(grouped_PGA,patch_artist=True,boxprops=dict(lw=1,
             linestyle='--',edgecolor='black'),
-            medianprops=dict(lw=1,color='black'),whiskerprops=dict(lw=1,color='black'),
-            capprops=dict(lw=1,color='black'),widths=0.8,
+            medianprops=dict(lw=1,color='black'),widths=0.8,
             flierprops=dict(marker='d',markersize=5))
-for patch, color in zip(b['boxes'][1:], colors[:len(projects)]):
-    patch.set_facecolor(color)
-b['boxes'][0].set_facecolor('white')
+for i, (box, whisker1, whisker2, cap1, cap2, color) in enumerate(zip(
+        b['boxes'][1:], b['whiskers'][2::2], b['whiskers'][3::2], 
+        b['caps'][2::2], b['caps'][3::2], colors), start=1):
+    box.set(color=color, linewidth=1)
+    box.set(facecolor=color)
+    whisker1.set(color=color, linewidth=1)
+    whisker2.set(color=color, linewidth=1)
+    cap1.set(color=color, linewidth=1)
+    cap2.set(color=color, linewidth=1)
+    
+b['boxes'][0].set_facecolor('none')
+b['boxes'][0].set_edgecolor('k')
 b['boxes'][0].set_linestyle('--')
+b['medians'][0].set_color('k')
+b['medians'][0].set_linestyle('--')
+for whisker in b['whiskers'][:2]:
+    whisker.set_linestyle('--')
+for cap in b['caps'][:2]:
+    cap.set_linestyle('--')
+for whisker in b['whiskers'][:2]:  # Adjust indices as needed
+    whisker.set(color='k')
+for cap in b['caps'][:2]:  # Adjust indices as needed
+    cap.set(color='k')
+b['fliers'][-1].set_color('k')
+
 labels = []
 labels.append(val)
 labels.extend([r'TsE-$\mu$',r'TsE-$1\sigma$'])
@@ -497,7 +559,7 @@ ax3.set_ylim(ymin=-yabs_max, ymax=yabs_max)
 ax3.tick_params(width=1,length=5,right=False,top=False,labelleft=True,labelright=False,labelbottom=True,labeltop=False,labelsize=10)
 ax3.yaxis.set_major_locator(MultipleLocator(1))
 ax3.set_title(r'$\bf{PGA}$',fontsize=11)
-ax3.axhline(0, ls='--')
+ax3.axhline(0, ls=':',c='k',lw=1)
 ax3.yaxis.grid(True)
 
 res_units = 'm/s'
@@ -524,24 +586,24 @@ for i, project in enumerate(grouped_projects):
     project_df = acc_spec_df[acc_spec_df['Project'].str.contains(project, case=False)]
     grouped_res = [list(project_df[f'{label} ({res_units})'].values[project_df['Frequency (Hz)'].values == fbin]) for fbin in bins]
     ax4.boxplot(grouped_res,positions=positions,patch_artist=True,
-                boxprops=dict(lw=1,linestyle='--',edgecolor='black',facecolor=colors[i]),
+                boxprops=dict(lw=1,linestyle='--',edgecolor=colors[i],facecolor=colors[i]),
                 medianprops=dict(lw=1,color='black'),
-                whiskerprops=dict(lw=1,color='black'),
-                capprops=dict(lw=1,color='black'),
+                whiskerprops=dict(lw=1,color=colors[i]),
+                capprops=dict(lw=1,color=colors[i]),
                 widths=width(bins,w)/2,
                 flierprops=dict(marker='d',markersize=5)
                 )
-    handles = handles + [Patch(facecolor=colors[i],edgecolor='black',lw=1,ls='-',label=param_vals[i])]
+    handles = handles + [Patch(facecolor=colors[i],edgecolor=colors[i],lw=1,ls='-',label=param_vals[i])]
     labels = labels + [param_vals[i]]
     ax4.boxplot(grouped_res_std,positions=bins,
-                boxprops=dict(lw=1.5,linestyle='--',color='black'),
-                medianprops=dict(lw=1.5,color='black'),
-                whiskerprops=dict(lw=1.5,color='black'),
-                capprops=dict(lw=1.5,color='black'),
+                boxprops=dict(lw=1,linestyle='--',color='black'),
+                medianprops=dict(lw=1,color='black',ls='--'),
+                whiskerprops=dict(lw=1,color='black',ls='--'),
+                capprops=dict(lw=1,color='black',ls='--'),
                 widths=width(bins,w),
                 flierprops=dict(marker='d',linewidth=0.5,markersize=5)
                 )
-handles = [Patch(facecolor='white',edgecolor='black',lw=1.5,ls='--',label=val)] + handles 
+handles = [Patch(facecolor='white',edgecolor='black',lw=1,ls='--',label=val)] + handles 
 labels = ['standard',r'TsE-$\mu$',r'TsE-$1\sigma$']
 ax4.legend(handles, labels, loc='lower left',ncol=4,title=legend_title,fontsize=10)
 ax4.set_xscale('log')
@@ -556,17 +618,17 @@ ax4.tick_params(axis='x', bottom=True, length=5, which='major', labelsize=11)
 ax4.tick_params(axis='x', bottom=True, length=3, which='minor')
 ax4.grid(True, which="both", ls="-", alpha=0.5)
 ax4.set_title(r'$\bf{Acc}$ $\bf{Fourier}$ $\bf{Amplitude}$ $\bf{Spectra}$',fontsize=11)
-ax4.axhline(0, ls='--')
+ax4.axhline(0, ls=':',c='k',lw=1)
 ax4.set_xlabel('Frequency (Hz)', fontsize=11)
 ax4.set_ylabel('ln (obs / sim)', fontsize=11)
 ax4.text(-0.08,1.1,r'$\bf{(d)}$',transform=ax4.transAxes,fontsize=10,va='top',ha='right')
 ax4.grid(True, which="both", ls="-", alpha=0.5)
 
-ax5.plot(yue_time,yue_moment,c='k',lw=3,label='Yue14 STF')
-ax5.plot(std_df['Time'].loc[i],np.mean(std_df['Moment']),c='k',lw=2,ls='--',label='standard')
-ax5.plot(mu1_df['Time'].loc[0],np.mean(np.concatenate([mu1_df['Moment'].values,mu2_df['Moment'].values])),c=colors[0],lw=2,label=r'TsE-$\mu$')  
+ax5.plot(yue_time,yue_moment,c='k',lw=1.5,label='Yue14 STF')
+ax5.plot(std_df['Time'].loc[i],np.mean(std_df['Moment']),c='k',lw=1.5,ls='--',label='standard')
+ax5.plot(mu1_df['Time'].loc[0],np.mean(np.concatenate([mu1_df['Moment'].values,mu2_df['Moment'].values])),c=colors[0],lw=1.5,label=r'TsE-$\mu$')  
 ax5.plot(mu1_df['Time'].loc[0],np.mean(np.concatenate([sig1_df['Moment'].values,
-         sig2_df['Moment'].values,sig3_df['Moment'].values,sig4_df['Moment'].values])),c=colors[1],lw=2,label=r'TsE-$1\sigma$')  
+         sig2_df['Moment'].values,sig3_df['Moment'].values,sig4_df['Moment'].values])),c=colors[1],lw=1.5,label=r'TsE-$1\sigma$')  
 ax5.tick_params(axis='x', length=5, which='major', labelsize=11)
 ax5.tick_params(axis='y', length=5, which='major', labelsize=11)
 ax5.grid(True, which="both", ls="-", alpha=0.5)
@@ -578,4 +640,4 @@ ax5.set_xlabel('Time (s)',fontsize=11)
 ax5.set_ylabel(r'Moment rate, $10^{18}$ Nm/s',fontsize=11)
 ax5.set_title(r'$\bf{STFs}$',fontsize=11)
 plt.subplots_adjust(wspace=0.55,hspace=0.5,bottom=0.075,left=0.13,right=0.95,top=0.95)
-# plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/TsE_residuals.png',dpi=300)
+plt.savefig(f'/Users/tnye/tsuquakes/manuscript/figures/Fig9_TsE_residuals.png',dpi=300)

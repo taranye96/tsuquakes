@@ -115,7 +115,7 @@ for data in data_types:
     
         stn_name = station[0].split('.')[0].split('/')[-1]
         if data == 'disp':
-            if stn_name in pd.read_csv('/Users/tnye/FakeQuakes/files/stn_info/gnss_clean.gflist',delimiter='\t')['#station'].values:
+            if stn_name in pd.read_csv('/Users/tnye/tsuquakes/files/stn_info/gnss_clean.gflist',delimiter='\t')['#station'].values:
                 stn_name_list.append(stn_name)
                 
                 for mseed_file in station:
@@ -126,7 +126,7 @@ for data in data_types:
                 channel_list.append(components)
                 mseed_list.append(mseeds)
         else:
-            if stn_name in pd.read_csv('/Users/tnye/FakeQuakes/files/stn_info/sm_close.gflist',delimiter='\t')['#station'].values:
+            if stn_name in pd.read_csv('/Users/tnye/tsuquakes/files/stn_info/sm_close.gflist',delimiter='\t')['#station'].values:
                 stn_name_list.append(stn_name)
                 
                 for mseed_file in station:

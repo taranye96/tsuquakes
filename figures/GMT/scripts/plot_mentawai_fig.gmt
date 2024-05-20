@@ -1,0 +1,66 @@
+#!/bin/bash
+
+gmt gmtset MAP_FRAME_TYPE plain
+gmt gmtset FORMAT_GEO_MAP ddd
+gmt gmtset COLOR_MODEL rgb
+gmt gmtset FONT_ANNOT_PRIMARY=18p,Helvetica
+
+OUT=mentawai
+LOCATION=/Users/tnye/conferences/NASA_SET
+
+LONMIN=94
+LONMAX=107
+LATMIN=-6
+LATMAX=5
+
+J="M5i"
+BOUNDS="-BWeSn -B0.5p"
+MAPSCALE=5.5
+
+SM_STATIONS=/Users/tnye/tsuquakes/code/GMT/stations_fig/sm.txt
+GNSS_STATIONS=/Users/tnye/tsuquakes/code/GMT/stations_fig/disp.txt
+EPICENTER=/Users/tnye/tsuquakes/code/GMT/stations_fig/mentawai_epi.txt
+bathgradient=/Users/tnye/tsuquakes/code/GMT/stations_fig/bathgradient.grd
+topogradient=/Users/tnye/tsuquakes/code/GMT/stations_fig/topogradient.grd
+menbath=/Users/tnye/tsuquakes/code/GMT/stations_fig/menbath.grd
+mentopo=/Users/tnye/tsuquakes/code/GMT/stations_fig/mentopo.grd
+CPTbath=/Users/tnye/tsuquakes/code/GMT/stations_fig/menbath.cpt
+CPTtopo=/Users/tnye/tsuquakes/code/GMT/stations_fig/mentopo2.cpt
+
+##########
+###Plot###
+##########
+
+# Plot basemap
+gmt psbasemap -J$J -R$LONMIN/$LONMAX/$LATMIN/$LATMAX -B4WSne -P -V -X1.5i -Y5i -K > ${OUT}.eps
+
+# Plot topography
+gmt grdimage $menbath -R -J -C$CPTbath -I$bathgradient -Q -K -O >> ${OUT}.eps
+gmt grdimage $mentopo -R -J -C$CPTtopo -I$topogradient -Q -K -O >> ${OUT}.eps
+
+# Plot coastline
+gmt pscoast -R -J -Na -Df -A25 -L97/-4.5/0/500 -W0.25p,black -K -O >> ${OUT}.eps
+
+gmt psxy $GNSS_STATIONS -R -J -Ss0.6c -G0/100/0 -W.5p,black -t10 -B -K -O >> ${OUT}.eps
+gmt psxy $SM_STATIONS -R -J -Si0.6c -G255/50/100 -W.5p,black -t10 -B -K -O >> ${OUT}.eps
+gmt psxy $EPICENTER -R -J -Sa0.6c -G255/255/0 -W.5p,black -t10 -B -K -O >> ${OUT}.eps
+
+gmt psxy -R -J$J -W0.05c,black -G255/255/255 -K -O >> ${OUT}.eps << BOXEND
+100 1.9
+107 1.9
+107 5
+100 5
+BOXEND
+  echo "102.2 4.6 Legend" | gmt pstext -R -J -F+f20p+jML -K -O >> ${OUT}.eps
+  echo "100.4 3.8" | gmt psxy -R -J -Si0.6c -G255/50/100 -W.5p,black -K -O >> ${OUT}.eps
+  echo "100.8 3.8 Seismic Stations" | gmt pstext -R -J -F+f18p+jML -K -O >> ${OUT}.eps
+  echo "100.4 3.1" | gmt psxy -R -J -Ss0.6c -G0/100/0 -W.5p,black -K -O >> ${OUT}.eps
+  echo "100.8 3.1 GNSS Stations" | gmt pstext -R -J -F+f18p+jML -K -O >> ${OUT}.eps
+  echo "100.4 2.4" | gmt psxy -R -J -Dj0.08[0.06] -Sa0.6c -G255/255/0 -W.5p,black -B -K -O >> ${OUT}.eps
+  echo "100.8 2.4 2010 M7.8 Mentawai" | gmt pstext -R -J -F+f18p+jML -O >> ${OUT}.eps
+
+# open $OUT.eps  # shows plot
+
+gmt psconvert $OUT.eps -TG -P -A1c
+mv $OUT.png $LOCATION/.
+mv $OUT.eps $LOCATION/$OUT.eps

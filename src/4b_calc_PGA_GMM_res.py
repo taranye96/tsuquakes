@@ -20,7 +20,7 @@ import scipy.constants as sp
 import tsuquakes_main_fns as tmf
 
 # Set up working directory
-home_dir = '/Users/tnye/FakeQuakes/simulations/tse_simulations'
+home_dir = '/Users/tnye/tsuquakes/simulations/tse_simulations'
 
 # Gather strong motion intensity measure files
 all_files = sorted(glob(f'{home_dir}/*/flatfiles/IMs/*_sm.csv'))
@@ -28,7 +28,7 @@ all_files = sorted(glob(f'{home_dir}/*/flatfiles/IMs/*_sm.csv'))
 # Define parameters for trial magnitude, hypocenter depth, and Vs30
 trial_M = np.arange(5.5,8.5,0.1)  
 hypdepth = 8.82                   
-vs30 = pd.read_csv('/Users/tnye/tsuquakes/data/vs30/sm_vs30_close.csv').vs30
+vs30 = pd.read_csv('/Users/tnye/tsuquakes/files/vs30/sm_vs30_close.csv').vs30
 
 M_list = np.array([])
 event_list = np.array([])

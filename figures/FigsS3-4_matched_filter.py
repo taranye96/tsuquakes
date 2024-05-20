@@ -31,11 +31,11 @@ rupture = 'mentawai.000001'
 stn = 'LHSI'
 # stn = 'KASI'
 
-home = '/Users/tnye/FakeQuakes/simulations/final_runs_m7.8/'
+home = '/Users/tnye/tsuquakes/simulations/gpr_simulations/'
 project_name = 'standard'
 
-lf_wfs = sorted(glob(f'/Users/tnye/FakeQuakes/simulations/final_runs_m7.8/standard/output/waveforms/{rupture}/{stn}.LY*'))
-hf_wfs = sorted(glob(f'/Users/tnye/FakeQuakes/simulations/final_runs_m7.8/standard/output/waveforms/{rupture}/{stn}.HN*mpi*'))
+lf_wfs = sorted(glob(f'/Users/tnye/tsuquakes/simulations/gpr_simulations/standard/output/waveforms/{rupture}/{stn}.LY*'))
+hf_wfs = sorted(glob(f'/Users/tnye/tsuquakes/simulations/gpr_simulations/standard/output/waveforms/{rupture}/{stn}.HN*mpi*'))
 
 ############################## Read in waveforms ##############################
 
