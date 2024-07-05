@@ -7,7 +7,7 @@ This repository contains the codes referenced in Nye et al. (2024). The full ref
 - Scripts starting with "0" are used to prepare the observed data and finite fault inversion data from Yu et al. (2014) for this study.
 - Scripts starting with "1" are used to modify the rise time and rupture velocity before generating simulations.
 - The script starting with "2" is used to run the simulations.
-- Scripts starting with "3" are used to evalaute the intensity measures and perform thje Gaussian process regressions.
+- Scripts starting with "3" are used to evalaute the intensity measures and perform the Gaussian process regressions.
 - Scripts starting with "4" are used to compute Mpga-Mpgd for the near-real time analysis.
 - Scripts without a number are called within the other scripts.
 
